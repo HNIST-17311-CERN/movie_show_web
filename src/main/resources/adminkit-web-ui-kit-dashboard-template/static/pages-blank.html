@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>电影管理</title>
+    <link href="css/app.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #movieTable { table-layout: fixed; }
+        #movieTable th, #movieTable td { vertical-align: middle; padding: 14px 12px; }
+        #movieTable tbody tr:nth-child(odd) { background-color: #f8fafc; }
+        #movieTable tbody tr:nth-child(even) { background-color: #e9eff5; }
+        #movieTable tbody tr:hover { background-color: #dbe7f3; }
+        #movieTable th:nth-child(2), #movieTable td:nth-child(2) { width: 120px; }
+
+        .movie-cover-thumb {
+            width: 88px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
+            display: block;
+        }
+
+        .movie-modal .modal-content {
+            border: none;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 28px 60px rgba(15, 23, 42, 0.18);
+        }
+
+        .movie-modal .modal-header {
+            background: linear-gradient(135deg, #0f172a 0%, #2563eb 100%);
+            color: #fff;
+            border-bottom: none;
+            padding: 20px 24px;
+        }
+
+        .movie-modal .modal-title {
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .movie-modal .btn-close {
+            filter: invert(1);
+            opacity: 0.9;
+        }
+
+        .movie-modal .modal-body {
+            background: #f8fafc;
+            padding: 24px;
+        }
+
+        .movie-modal .modal-footer {
+            border-top: none;
+            background: #f8fafc;
+            padding: 0 24px 24px;
+        }
+
+        .movie-form-grid {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .movie-cover-panel, .movie-fields-panel {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 18px;
+        }
+
+        .movie-panel-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 14px;
+        }
+
+        .movie-cover-preview {
+            width: 100%;
+            aspect-ratio: 3 / 4;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #e2e8f0;
+            border: 1px solid #dbe3ee;
+            margin-bottom: 14px;
+        }
+
+        #coverPreview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            background: #e2e8f0;
+        }
+
+        .movie-cover-tip, .cover-file-name {
+            font-size: 12px;
+            line-height: 1.6;
+            color: #64748b;
+        }
+
+        .cover-file-name {
+            margin-top: 10px;
+            min-height: 20px;
+            word-break: break-all;
+        }
+
+        .movie-cover-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .movie-modal .form-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 8px;
+        }
+
+        .movie-modal .form-control {
+            border-radius: 12px;
+            border-color: #d7dfeb;
+        }
+
+        .movie-modal textarea.form-control { min-height: 110px; }
+
+        .movie-modal .btn {
+            border-radius: 12px;
+            padding-inline: 16px;
+            font-weight: 700;
+        }
+
+        @media (max-width: 991px) {
+            .movie-form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <nav id="sidebar" class="sidebar js-sidebar">
+        <div class="sidebar-content js-simplebar">
+            <a class="sidebar-brand" href="index.html">
+                <span class="align-middle">AdminKit</span>
+            </a>
+            <ul class="sidebar-nav">
+                <li class="sidebar-header">Pages</li>
+
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="index.html">
+                        <i class="align-middle" data-feather="sliders"></i>
+                        <span class="align-middle">Dashboard</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-item active">
+                    <a class="sidebar-link" href="pages-blank.html">
+                        <i class="align-middle" data-feather="book"></i>
+                        <span class="align-middle">Movie Manage</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="pages-sign-in.html">
+                        <i class="align-middle" data-feather="log-in"></i>
+                        <span class="align-middle">Sign In</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="pages-update.html">
+                        <i class="align-middle" data-feather="edit-3"></i>
+                        <span class="align-middle">Update Page</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main">
+        <nav class="navbar navbar-expand navbar-light navbar-bg">
+            <a class="sidebar-toggle js-sidebar-toggle"><i class="hamburger align-self-center"></i></a>
+        </nav>
+
+        <main class="content">
+            <div class="container-fluid p-0">
+                <h1 class="h3 mb-3"><strong>电影管理</strong> Dashboard</h1>
+
+                <div class="mb-3 d-flex align-items-center gap-2">
+                    <button class="btn btn-primary" onclick="openAddModal()">添加电影</button>
+                    <input type="text" id="searchName" class="form-control w-auto" placeholder="输入名称查询">
+                    <button class="btn btn-secondary" onclick="searchMovies()">查询</button>
+                    <button class="btn btn-light" onclick="fetchMovies()">重置</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <table class="table table-hover" id="movieTable">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>封面</th>
+                                <th>名称</th>
+                                <th>导演</th>
+                                <th>主演</th>
+                                <th>类型</th>
+                                <th>地区</th>
+                                <th>语言</th>
+                                <th>上映日期</th>
+                                <th>片长</th>
+                                <th>简介</th>
+                                <th>操作</th>
+                            </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div class="modal fade movie-modal" id="movieModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="movieModalTitle">添加电影</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="movieForm">
+                            <input type="hidden" id="movieId">
+                            <input type="hidden" id="existingCover">
+
+                            <div class="movie-form-grid">
+                                <div class="movie-cover-panel">
+                                    <div class="movie-panel-title">封面预览</div>
+                                    <div class="movie-cover-preview">
+                                        <img id="coverPreview" src="" alt="封面预览">
+                                    </div>
+                                    <div class="movie-cover-actions">
+                                        <label class="btn btn-primary mb-0" for="coverFile">选择图片</label>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="clearSelectedFile()">清空选择</button>
+                                    </div>
+                                    <input type="file" id="coverFile" class="d-none" accept="image/*" onchange="handleCoverChange(event)">
+                                    <div class="cover-file-name" id="coverFileName">新增电影时必须选择一张封面图片。</div>
+                                    <div class="movie-cover-tip">
+                                        新增电影会按控制器要求上传图片文件。编辑电影时如果不重新选图，就保留原封面地址并直接更新文字信息。
+                                    </div>
+                                </div>
+
+                                <div class="movie-fields-panel">
+                                    <div class="movie-panel-title">电影信息</div>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">名称</label>
+                                            <input type="text" id="name" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">导演</label>
+                                            <input type="text" id="director" class="form-control">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">主演（逗号分隔）</label>
+                                            <input type="text" id="actors" class="form-control">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">类型</label>
+                                            <input type="text" id="type" class="form-control">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">地区</label>
+                                            <input type="text" id="region" class="form-control">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">语言</label>
+                                            <input type="text" id="language" class="form-control">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">片长（分钟）</label>
+                                            <input type="number" id="duration" class="form-control">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">上映日期</label>
+                                            <input type="date" id="releaseDate" class="form-control">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">简介</label>
+                                            <textarea id="description" class="form-control" rows="3"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-primary" onclick="saveMovie()">保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/app.js"></script>
+<script>
+    let movies = [];
+    let previewObjectUrl = null;
+
+    const API_BASE = "http://localhost:8080/FILMES";
+    const LOGIN_URL = "pages-sign-in.html";
+    const DEFAULT_COVER_URL = "../../filmlane-master/assets/images/movie-1.png";
+
+    function getToken() {
+        return localStorage.getItem("token") || "";
+    }
+
+    function getCoverUrl(cover) {
+        if (!cover) return DEFAULT_COVER_URL;
+        if (/^(blob:|data:|https?:\/\/)/i.test(cover)) return cover;
+
+        const normalized = String(cover).replace(/\\/g, "/");
+        const assetsIndex = normalized.indexOf("assets/images/");
+        if (assetsIndex !== -1) {
+            return "../../filmlane-master/" + normalized.substring(assetsIndex);
+        }
+
+        const resourceIndex = normalized.indexOf("resource/cover/");
+        if (resourceIndex !== -1) {
+            return "../../filmlane-master/" + normalized.substring(resourceIndex);
+        }
+
+        if (normalized.startsWith("./") || normalized.startsWith("../")) return normalized;
+        if (normalized.startsWith("/")) return "." + normalized;
+        return normalized;
+    }
+
+    function setLocalImage(imgEl, cover) {
+        imgEl.src = getCoverUrl(cover);
+        imgEl.onerror = function() {
+            this.onerror = null;
+            this.src = DEFAULT_COVER_URL;
+        };
+    }
+
+    function revokePreviewObjectUrl() {
+        if (previewObjectUrl) {
+            URL.revokeObjectURL(previewObjectUrl);
+            previewObjectUrl = null;
+        }
+    }
+
+    function setSelectedFileLabel(text) {
+        document.getElementById("coverFileName").textContent = text;
+    }
+
+    function clearSelectedFile() {
+        revokePreviewObjectUrl();
+        document.getElementById("coverFile").value = "";
+        setSelectedFileLabel(document.getElementById("movieId").value ? "未重新选择图片，将保留当前封面。" : "新增电影时必须选择一张封面图片。");
+        const existingCover = document.getElementById("existingCover").value;
+        setLocalImage(document.getElementById("coverPreview"), existingCover);
+    }
+
+    function handleCoverChange(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) {
+            clearSelectedFile();
+            return;
+        }
+
+        revokePreviewObjectUrl();
+        previewObjectUrl = URL.createObjectURL(file);
+        document.getElementById("coverPreview").src = previewObjectUrl;
+        setSelectedFileLabel("已选择图片：" + file.name);
+    }
+
+    function getFormMovieData() {
+        const idValue = document.getElementById("movieId").value;
+        const durationValue = document.getElementById("duration").value;
+
+        return {
+            id: idValue ? parseInt(idValue, 10) : null,
+            name: document.getElementById("name").value.trim(),
+            cover: document.getElementById("existingCover").value || null,
+            director: document.getElementById("director").value.trim(),
+            actors: document.getElementById("actors").value.trim(),
+            type: document.getElementById("type").value.trim(),
+            region: document.getElementById("region").value.trim(),
+            language: document.getElementById("language").value.trim(),
+            releaseDate: document.getElementById("releaseDate").value || null,
+            duration: durationValue ? parseInt(durationValue, 10) : null,
+            description: document.getElementById("description").value.trim()
+        };
+    }
+
+    function renderTable(data) {
+        const tbody = document.querySelector("#movieTable tbody");
+        tbody.innerHTML = "";
+
+        (data || movies).forEach(movie => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${movie.id ?? ""}</td>
+                    <td><img src="${DEFAULT_COVER_URL}" data-cover="${(movie.cover || "").replace(/"/g, "&quot;")}" alt="封面" class="movie-cover-thumb"></td>
+                    <td>${movie.name || movie.movieName || ""}</td>
+                    <td>${movie.director || ""}</td>
+                    <td>${movie.actors || ""}</td>
+                    <td>${movie.type || ""}</td>
+                    <td>${movie.region || ""}</td>
+                    <td>${movie.language || ""}</td>
+                    <td>${movie.releaseDate || ""}</td>
+                    <td>${movie.duration || ""}</td>
+                    <td>${movie.description || ""}</td>
+                    <td>
+                        <button class="btn btn-sm btn-info" onclick="openEditModal(${movie.id})">编辑</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteMovie(${movie.id})">删除</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        tbody.querySelectorAll("img[data-cover]").forEach(img => setLocalImage(img, img.dataset.cover));
+    }
+
+    function showTableMessage(message) {
+        const tbody = document.querySelector("#movieTable tbody");
+        tbody.innerHTML = `<tr><td colspan="12" class="text-center text-muted py-4">${message}</td></tr>`;
+    }
+
+    function openAddModal() {
+        document.getElementById("movieForm").reset();
+        document.getElementById("movieId").value = "";
+        document.getElementById("existingCover").value = "";
+        document.getElementById("movieModalTitle").textContent = "添加电影";
+        revokePreviewObjectUrl();
+        document.getElementById("coverFile").value = "";
+        setSelectedFileLabel("新增电影时必须选择一张封面图片。");
+        setLocalImage(document.getElementById("coverPreview"), DEFAULT_COVER_URL);
+        new bootstrap.Modal(document.getElementById("movieModal")).show();
+    }
+
+    function openEditModal(id) {
+        const movie = movies.find(m => m.id === id);
+        if (!movie) return;
+
+        document.getElementById("movieId").value = movie.id;
+        document.getElementById("existingCover").value = movie.cover || movie.coverUrl || "";
+        document.getElementById("movieModalTitle").textContent = "编辑电影";
+        document.getElementById("name").value = movie.name || movie.movieName || "";
+        document.getElementById("director").value = movie.director || "";
+        document.getElementById("actors").value = movie.actors || "";
+        document.getElementById("type").value = movie.type || "";
+        document.getElementById("region").value = movie.region || "";
+        document.getElementById("language").value = movie.language || "";
+        document.getElementById("releaseDate").value = movie.releaseDate ? String(movie.releaseDate).substring(0, 10) : "";
+        document.getElementById("duration").value = movie.duration || "";
+        document.getElementById("description").value = movie.description || "";
+        revokePreviewObjectUrl();
+        document.getElementById("coverFile").value = "";
+        setSelectedFileLabel("未重新选择图片，将保留当前封面。");
+        setLocalImage(document.getElementById("coverPreview"), movie.cover || movie.coverUrl || DEFAULT_COVER_URL);
+        new bootstrap.Modal(document.getElementById("movieModal")).show();
+    }
+
+    async function createMovie(movieData) {
+        const fileInput = document.getElementById("coverFile");
+        const file = fileInput.files && fileInput.files[0];
+        if (!file) {
+            alert("新增电影时请先选择封面图片。");
+            return false;
+        }
+
+        const formData = new FormData();
+        formData.append("movie", new Blob([JSON.stringify(movieData)], { type: "application/json" }));
+        formData.append("file", file);
+
+        const res = await fetch(`${API_BASE}/ADD`, {
+            method: "POST",
+            headers: { token: getToken() },
+            body: formData
+        });
+
+        const text = await res.text();
+        if (!res.ok) throw new Error(text || ("HTTP " + res.status));
+        return text;
+    }
+
+    async function updateMovie(movieData) {
+        const res = await fetch(`${API_BASE}/UPDATE`, {
+            method: "POST",
+            headers: {
+                token: getToken(),
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(movieData)
+        });
+
+        const text = await res.text();
+        if (!res.ok) throw new Error(text || ("HTTP " + res.status));
+        return text;
+    }
+
+    async function saveMovie() {
+        const movieData = getFormMovieData();
+        if (!movieData.name) {
+            alert("请填写电影名称。");
+            return;
+        }
+
+        try {
+            if (movieData.id) {
+                await updateMovie(movieData);
+                alert("更新成功");
+            } else {
+                await createMovie(movieData);
+                alert("添加成功");
+            }
+
+            bootstrap.Modal.getInstance(document.getElementById("movieModal")).hide();
+            await fetchMovies();
+        } catch (err) {
+            console.error("保存电影失败:", err);
+            alert("保存失败：" + err.message);
+        }
+    }
+
+    async function deleteMovie(id) {
+        if (!confirm("确定删除吗？")) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/DELETE?id=${id}`, {
+                method: "POST",
+                headers: { token: getToken() }
+            });
+
+            const text = await res.text();
+            if (!res.ok) throw new Error(text || ("HTTP " + res.status));
+
+            alert("删除成功");
+            await fetchMovies();
+        } catch (err) {
+            console.error("删除电影失败:", err);
+            alert("删除失败：" + err.message);
+        }
+    }
+
+    async function searchMovies() {
+        const keyword = document.getElementById("searchName").value.trim();
+        if (!keyword) {
+            await fetchMovies();
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}/ONENAME?name=${encodeURIComponent(keyword)}`, {
+                headers: { token: getToken() }
+            });
+
+            if (res.status === 401) {
+                localStorage.removeItem("token");
+                showTableMessage(`请先<a href="${LOGIN_URL}">登录</a>后再访问`);
+                return;
+            }
+
+            if (!res.ok) throw new Error("HTTP " + res.status);
+
+            const data = await res.json();
+            const movieList = Array.isArray(data) ? data : [];
+            movies = movieList.map(m => ({
+                id: m.id,
+                name: m.name || m.movieName,
+                cover: m.cover || m.coverUrl,
+                director: m.director,
+                actors: m.actors,
+                type: m.type,
+                region: m.region,
+                language: m.language,
+                releaseDate: m.releaseDate,
+                duration: m.duration,
+                description: m.description
+            }));
+
+            if (movies.length) {
+                renderTable();
+            } else {
+                showTableMessage("没有找到匹配的电影");
+            }
+        } catch (err) {
+            console.error("搜索电影失败:", err);
+            showTableMessage("搜索失败，请检查接口是否可用");
+        }
+    }
+
+    async function fetchMovies() {
+        const token = getToken();
+        if (!token) {
+            showTableMessage(`请先<a href="${LOGIN_URL}">登录</a>后再访问`);
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}/ALL`, {
+                headers: {
+                    token: token,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (res.status === 401) {
+                localStorage.removeItem("token");
+                showTableMessage(`登录已过期，请重新<a href="${LOGIN_URL}">登录</a>`);
+                return;
+            }
+
+            if (!res.ok) throw new Error("HTTP " + res.status);
+
+            const data = await res.json();
+            const movieList = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : []);
+            movies = movieList.map(m => ({
+                id: m.id,
+                name: m.name || m.movieName,
+                cover: m.cover || m.coverUrl,
+                director: m.director,
+                actors: m.actors,
+                type: m.type,
+                region: m.region,
+                language: m.language,
+                releaseDate: m.releaseDate,
+                duration: m.duration,
+                description: m.description
+            }));
+
+            if (movies.length) {
+                renderTable();
+            } else {
+                showTableMessage("暂无电影数据");
+            }
+        } catch (err) {
+            console.error("获取电影列表失败:", err);
+            showTableMessage("获取电影列表失败，请检查后端接口是否可用");
+        }
+    }
+
+    window.addEventListener("beforeunload", revokePreviewObjectUrl);
+    fetchMovies();
+</script>
+</body>
+</html>

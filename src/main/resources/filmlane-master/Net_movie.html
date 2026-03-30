@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>动漫 - 观影 GYING</title>
+  <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./assets/css/style.css">
+</head>
+<body id="top">
+
+  <header class="header">
+    <div class="header-inner">
+      <a href="./index.html" class="logo"><span class="logo-cn">观影</span> <span class="logo-en">GYING</span></a>
+      <nav class="nav-links">
+        <a href="./index.html">首页</a>
+        <a href="./All_movie.html">电影</a>
+        <a href="./TV_series.html">剧集</a>
+        <a href="./Net_movie.html" class="active">动漫</a>
+        <a href="#">热门</a>
+        <a href="#">解析</a>
+        <a href="./Setting.html">设置</a>
+      </nav>
+      <div class="search-box">
+        <input type="text" placeholder="搜索影片">
+      </div>
+      <div class="header-actions">
+        <a href="#">收藏</a>
+        <a href="#">观看历史</a>
+        <div class="user-avatar">用</div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <div class="filter-section">
+        <div class="filter-row">
+          <span class="filter-label">类型</span>
+          <div class="filter-pills">
+            <button class="filter-pill">全部</button>
+            <button class="filter-pill active">动漫</button>
+            <button class="filter-pill">动画电影</button>
+          </div>
+        </div>
+        <div class="filter-row">
+          <span class="filter-label">地区</span>
+          <div class="filter-pills">
+            <button class="filter-pill active">全部</button>
+            <button class="filter-pill">日本</button>
+            <button class="filter-pill">美国</button>
+            <button class="filter-pill">国产</button>
+          </div>
+        </div>
+        <div class="filter-toolbar">
+          <select><option>按添加时间</option></select>
+        </div>
+      </div>
+
+      <ul class="movies-list">
+        <li>
+          <div class="movie-card">
+            <a href="./movie-details.html">
+              <figure class="card-banner">
+                <img src="./assets/images/upcoming-1.png" alt="示例动漫">
+                <span class="card-badge">HD</span>
+                <div class="card-overlay">
+                  <span class="star-count">★ 156</span>
+                  <span class="rating">8.2</span>
+                </div>
+              </figure>
+            </a>
+            <h3 class="card-title">示例动漫 1</h3>
+            <p class="card-meta">2023 / 日本 / 动漫</p>
+          </div>
+        </li>
+        <li>
+          <div class="movie-card">
+            <a href="./movie-details.html">
+              <figure class="card-banner">
+                <img src="./assets/images/upcoming-2.png" alt="示例动漫">
+                <span class="card-badge">2K</span>
+                <div class="card-overlay">
+                  <span class="star-count">★ 234</span>
+                  <span class="rating">9.0</span>
+                </div>
+              </figure>
+            </a>
+            <h3 class="card-title">示例动漫 2</h3>
+            <p class="card-meta">2023 / 日本 / 动漫</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </main>
+
+  <a href="#top" class="go-top" data-go-top>↑</a>
+  <script src="./assets/js/script.js"></script>
+</body>
+</html>

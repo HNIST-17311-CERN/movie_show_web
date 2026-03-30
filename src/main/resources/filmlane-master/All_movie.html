@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>电影 - 观影 GYING</title>
+  <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./assets/css/style.css">
+</head>
+<body id="top">
+
+<header class="header">
+  <div class="header-inner">
+    <a href="./index.html" class="logo"><span class="logo-cn">观影</span> <span class="logo-en">GYING</span></a>
+    <nav class="nav-links">
+      <a href="./index.html">首页</a>
+      <a href="./All_movie.html" class="active">电影</a>
+      <a href="./TV_series.html">剧集</a>
+      <a href="./Net_movie.html">动漫</a>
+      <a href="#">热门</a>
+      <a href="#">解析</a>
+      <a href="./Setting.html">设置</a>
+    </nav>
+    <div class="search-box">
+      <input type="text" placeholder="搜索影片">
+    </div>
+    <div class="header-actions">
+      <a href="#">收藏</a>
+      <a href="#">观看历史</a>
+      <div class="user-avatar">用</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+    <div class="filter-section">
+      <div class="filter-row">
+        <span class="filter-label">类型</span>
+        <div class="filter-pills">
+          <button class="filter-pill active">全部</button>
+          <button class="filter-pill">电影</button>
+          <button class="filter-pill">电视剧</button>
+          <button class="filter-pill">综艺</button>
+          <button class="filter-pill">动漫</button>
+          <button class="filter-pill">纪录片</button>
+        </div>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">年代</span>
+        <div class="filter-pills">
+          <button class="filter-pill active">全部</button>
+          <button class="filter-pill">2024</button>
+          <button class="filter-pill">2023</button>
+          <button class="filter-pill">2022</button>
+          <button class="filter-pill">2021</button>
+        </div>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">地区</span>
+        <div class="filter-pills">
+          <button class="filter-pill active">全部</button>
+          <button class="filter-pill">大陆</button>
+          <button class="filter-pill">美国</button>
+          <button class="filter-pill">韩国</button>
+          <button class="filter-pill">日本</button>
+          <button class="filter-pill">其他</button>
+        </div>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">语言</span>
+        <div class="filter-pills">
+          <button class="filter-pill active">全部</button>
+          <button class="filter-pill">国语</button>
+          <button class="filter-pill">英语</button>
+          <button class="filter-pill">粤语</button>
+          <button class="filter-pill">其他</button>
+        </div>
+      </div>
+      <div class="filter-toolbar">
+        <select>
+          <option>按添加时间</option>
+          <option>按评分</option>
+        </select>
+        <select><option>类型</option></select>
+        <select><option>状态</option></select>
+        <label class="filter-checkbox"><input type="checkbox"> IMDB评分</label>
+        <label class="filter-checkbox"><input type="checkbox"> 可播放</label>
+      </div>
+    </div>
+
+    <div id="loading" class="loading-state">加载中...</div>
+    <div id="error" class="error-state" style="display:none;">加载失败，请检查网络或接口地址后重试</div>
+    <ul class="movies-list" id="movies-list"></ul>
+  </div>
+</main>
+
+<a href="#top" class="go-top" data-go-top>↑</a>
+
+<script src="./assets/js/script.js"></script>
+<script>
+  (function() {
+    var API_URL = 'http://localhost:8080/FILMES/ONEP';
+    var LOGIN_URL = '../adminkit-web-ui-kit-dashboard-template/static/pages-sign-in.html';
+    var DEFAULT_COVER_URL = './assets/images/movie-1.png';
+
+    function getCoverUrl(cover) {
+      if (!cover) return DEFAULT_COVER_URL;
+      if (/^https?:\/\//i.test(cover)) return cover;
+      var normalized = String(cover).replace(/\\/g, '/');
+      if (normalized.indexOf('assets/images/') !== -1) return './' + normalized.substring(normalized.indexOf('assets/images/'));
+      if (normalized.indexOf('resource/cover/') !== -1) return './' + normalized.substring(normalized.indexOf('resource/cover/'));
+      if (normalized.startsWith('/')) return '.' + normalized;
+      return normalized;
+    }
+
+    function setLocalImage(imgEl, cover) {
+      imgEl.src = getCoverUrl(cover);
+      imgEl.onerror = function() {
+        this.onerror = null;
+        this.src = DEFAULT_COVER_URL;
+      };
+    }
+
+    function needLogin() {
+      var loadingEl = document.getElementById('loading');
+      var listEl = document.getElementById('movies-list');
+      loadingEl.style.display = 'none';
+      listEl.innerHTML = '<li class="empty-state">请先 <a href="' + LOGIN_URL + '">登录</a> 后访问</li>';
+    }
+
+    function renderMovie(movie) {
+      var meta = [movie.releaseDate ? String(movie.releaseDate).substring(0, 4) : '', movie.region || '', movie.type || ''].filter(Boolean).join(' / ');
+      var li = document.createElement('li');
+      li.className = 'movie-card-wrapper';
+      li.innerHTML =
+        '<div class="movie-card">' +
+        '<a href="./movie-details.html?id=' + movie.id + '">' +
+        '<figure class="card-banner">' +
+        '<img alt="' + (movie.name || '').replace(/"/g, '&quot;') + '">' +
+        '<span class="card-badge">HD</span>' +
+        '<div class="card-overlay">' +
+        '<span class="star-count">☆ ' + (movie.duration ? movie.duration + 'min' : '--') + '</span>' +
+        '<span class="rating">--</span>' +
+        '</div>' +
+        '</figure>' +
+        '</a>' +
+        '<h3 class="card-title">' + (movie.name || '未知').replace(/</g, '&lt;') + '</h3>' +
+        '<p class="card-meta">' + (meta || '--') + '</p>' +
+        '</div>';
+
+      document.getElementById('movies-list').appendChild(li);
+      var coverImg = li.querySelector('.card-banner img');
+      if (coverImg) setLocalImage(coverImg, movie.cover);
+
+      fetch('http://localhost:8080/FILMES/SCORE/ONE?id=' + movie.id, {
+        headers: { token: localStorage.getItem('token') || '' }
+      })
+        .then(function(res) { return res.json(); })
+        .then(function(scores) {
+          var douban = Array.isArray(scores) ? scores.find(function(s) { return s.source === 'douban'; }) : null;
+          if (douban) {
+            var ratingEl = li.querySelector('.rating');
+            if (ratingEl) ratingEl.textContent = '★ ' + douban.score.toFixed(1);
+          }
+        })
+        .catch(function() {});
+    }
+
+    function loadMovies() {
+      var token = localStorage.getItem('token');
+      var listEl = document.getElementById('movies-list');
+      var loadingEl = document.getElementById('loading');
+      var errorEl = document.getElementById('error');
+
+      if (!token) {
+        needLogin();
+        return;
+      }
+
+      fetch(API_URL, {
+        headers: {
+          token: token,
+          'Content-Type': 'application/json'
+        }
+      })
+        .then(function(res) {
+          if (res.status === 401) {
+            localStorage.removeItem('token');
+            needLogin();
+            throw new Error('Unauthorized');
+          }
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function(json) {
+          var movies = json;
+          if (json && typeof json.data !== 'undefined') movies = json.data;
+          if (!Array.isArray(movies)) movies = [];
+
+          loadingEl.style.display = 'none';
+          errorEl.style.display = 'none';
+          listEl.innerHTML = '';
+
+          if (movies.length > 0) {
+            movies.forEach(renderMovie);
+          } else {
+            listEl.innerHTML = '<li class="empty-state">暂无电影</li>';
+          }
+        })
+        .catch(function(err) {
+          if (err.message === 'Unauthorized') return;
+          loadingEl.style.display = 'none';
+          errorEl.style.display = 'block';
+        });
+    }
+
+    loadMovies();
+  })();
+</script>
+</body>
+</html>

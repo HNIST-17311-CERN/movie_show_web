@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>电影详情 - 观影 GYING</title>
+  <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .ratings-card .rating-score {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .ratings-card .rating-platform {
+      font-size: 16px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body id="top">
+
+<header class="header">
+  <div class="header-inner">
+    <a href="./index.html" class="logo"><span class="logo-cn">观影</span> <span class="logo-en">GYING</span></a>
+    <nav class="nav-links">
+      <a href="./index.html">首页</a>
+      <a href="./All_movie.html" class="active">电影</a>
+      <a href="./TV_series.html">剧集</a>
+      <a href="./Net_movie.html">动漫</a>
+      <a href="#">热门</a>
+      <a href="#">解析</a>
+      <a href="./Setting.html">设置</a>
+    </nav>
+    <div class="search-box">
+      <input type="text" placeholder="搜索影片">
+    </div>
+    <div class="header-actions">
+      <a href="#">收藏</a>
+      <a href="#">观看历史</a>
+      <div class="user-avatar">用</div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="movie-header">
+    <div class="poster-col">
+      <img id="movie-poster" src="./assets/images/movie-1.png" alt="电影海报">
+    </div>
+    <div class="meta-col">
+      <h1 id="movie-title" class="movie-title">电影标题</h1>
+      <span id="movie-status" class="status-tag"></span>
+      <div class="meta-list" id="movie-meta"></div>
+    </div>
+    <div class="ratings-card">
+      <div class="rating-item">
+        <div class="rating-platform">豆瓣</div>
+        <div class="rating-score" id="douban-score">--</div>
+        <div class="rating-count" id="douban-count"></div>
+      </div>
+      <div class="rating-item">
+        <div class="rating-platform">IMDb</div>
+        <div class="rating-score" id="imdb-score">--</div>
+        <div class="rating-count" id="imdb-count"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-section">
+    <h2 class="section-title">电影简介</h2>
+    <p class="intro-text" id="movie-intro">电影简介...</p>
+  </div>
+
+  <div class="detail-section">
+    <div class="detail-tabs" id="resource-tabs"></div>
+    <div class="quality-filters" id="quality-filters">
+      <span class="quality-tag active">全部</span>
+      <span class="quality-tag">720P</span>
+      <span class="quality-tag">1080P</span>
+      <span class="quality-tag">4K</span>
+      <span class="quality-tag">蓝光</span>
+    </div>
+    <div class="detail-toolbar">
+      <input type="text" placeholder="搜索资源..." id="resource-search">
+      <select id="resource-sort"><option>按发布时间排序</option></select>
+    </div>
+    <table class="resource-table">
+      <thead>
+      <tr>
+        <th>名称</th>
+        <th>下载</th>
+        <th>大小</th>
+        <th>做种</th>
+        <th>发布时间</th>
+      </tr>
+      </thead>
+      <tbody id="resource-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<a href="#top" class="go-top" data-go-top>↑</a>
+
+<script>
+  (function() {
+    var params = new URLSearchParams(window.location.search);
+    var movieId = params.get('id');
+    var token = localStorage.getItem('token');
+    var DEFAULT_COVER_URL = './assets/images/movie-1.png';
+
+    if (!movieId) {
+      alert('未传入电影 ID');
+      return;
+    }
+
+    function normalizeLocalCover(cover) {
+      if (!cover) return DEFAULT_COVER_URL;
+      if (/^https?:\/\//i.test(cover)) return cover;
+
+      var normalized = String(cover).replace(/\\/g, '/');
+      var imageIndex = normalized.indexOf('assets/images/');
+      if (imageIndex !== -1) return './' + normalized.substring(imageIndex);
+      var resourceIndex = normalized.indexOf('resource/cover/');
+      if (resourceIndex !== -1) return './' + normalized.substring(resourceIndex);
+      if (normalized.startsWith('./')) return normalized;
+      if (normalized.startsWith('/')) return '.' + normalized;
+      return normalized;
+    }
+
+    function setLocalImage(imgEl, cover) {
+      imgEl.src = normalizeLocalCover(cover);
+      imgEl.onerror = function() {
+        this.onerror = null;
+        this.src = DEFAULT_COVER_URL;
+      };
+    }
+
+    function setText(id, text) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = text;
+    }
+
+    function createMetaItem(label, value) {
+      return '<div class="meta-item"><span class="meta-label">' + label + '：</span><span class="meta-value">' + (value || '未知') + '</span></div>';
+    }
+
+    function renderMovieDetails(details) {
+      setLocalImage(document.getElementById('movie-poster'), details.cover);
+      setText('movie-title', (details.name || '未知') + (details.releaseDate ? ' (' + String(details.releaseDate).substring(0, 4) + ')' : ''));
+      setText('movie-status', details.status || '');
+
+      var metaHtml = [
+        createMetaItem('导演', details.director),
+        createMetaItem('编剧', details.screenwriter),
+        createMetaItem('主演', details.actors),
+        createMetaItem('类型', details.type),
+        createMetaItem('地区', details.region),
+        createMetaItem('语言', details.language),
+        createMetaItem('上映', details.releaseDate),
+        createMetaItem('片长', details.duration ? details.duration + '分钟' : '')
+      ].join('');
+      document.getElementById('movie-meta').innerHTML = metaHtml;
+      setText('movie-intro', details.description || '暂无简介');
+    }
+
+    function renderScores(scores) {
+      if (!scores || !scores.length) return;
+      var douban = scores.find(function(s) { return s.source === 'douban'; });
+      var imdb = scores.find(function(s) { return s.source === 'imdb'; });
+      setText('douban-score', douban ? douban.score.toFixed(1) : '--');
+      setText('douban-count', douban && douban.count ? douban.count + '人评价' : '');
+      setText('imdb-score', imdb ? imdb.score.toFixed(1) : '--');
+      setText('imdb-count', imdb && imdb.count ? imdb.count + '人评价' : '');
+    }
+
+    function renderResources(resources) {
+      var tbody = document.getElementById('resource-tbody');
+      var tabsContainer = document.getElementById('resource-tabs');
+      if (!resources || !resources.length) {
+        tbody.innerHTML = '<tr><td colspan="5">暂无资源</td></tr>';
+        tabsContainer.innerHTML = '';
+        return;
+      }
+
+      var categories = Array.from(new Set(resources.map(function(r) { return r.category || '其他'; })));
+      tabsContainer.innerHTML = categories.map(function(c) {
+        return '<button class="tab-btn">' + c + ' (' + resources.filter(function(r) { return (r.category || '其他') === c; }).length + ')</button>';
+      }).join('');
+
+      function fillRows(list) {
+        tbody.innerHTML = list.map(function(r) {
+          return '<tr>' +
+            '<td><span class="resource-name">' + (r.name || '') + '</span></td>' +
+            '<td>' + (r.magnet ? '<span class="download-link">磁力</span>' : '') + (r.torrent ? '<span class="download-link">种子</span>' : '') + '</td>' +
+            '<td>' + (r.size || '') + '</td>' +
+            '<td>' + (r.seed || '') + '</td>' +
+            '<td>' + (r.pubDate || '') + '</td>' +
+            '</tr>';
+        }).join('');
+      }
+
+      fillRows(resources);
+      var tabBtns = tabsContainer.querySelectorAll('.tab-btn');
+      tabBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          tabBtns.forEach(function(b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          var category = btn.textContent.replace(/\(\d+\)/, '').trim();
+          fillRows(resources.filter(function(r) { return (r.category || '其他') === category; }));
+        });
+      });
+    }
+
+    fetch('http://localhost:8080/FILMES/ONEID?id=' + movieId, { headers: { token: token || '' } })
+      .then(function(res) { return res.json(); })
+      .then(renderMovieDetails)
+      .catch(function(err) { console.error('获取电影详情失败', err); });
+
+    fetch('http://localhost:8080/FILMES/SCORE/ONE?id=' + movieId, { headers: { token: token || '' } })
+      .then(function(res) { return res.json(); })
+      .then(renderScores)
+      .catch(function(err) { console.error('获取评分失败', err); });
+
+    fetch('http://localhost:8080/FILMES/RESOURCE/ONE?id=' + movieId, { headers: { token: token || '' } })
+      .then(function(res) { return res.json(); })
+      .then(renderResources)
+      .catch(function(err) { console.error('获取资源失败', err); });
+  })();
+</script>
+</body>
+</html>
