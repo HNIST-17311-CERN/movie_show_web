@@ -79,8 +79,12 @@ public class MovieController
 
     @PostMapping("/UPDATE")//更新电影
     @CrossOrigin // 允许跨域
-    public String update_movie(@RequestBody Movie_details movie)
+    public String update_movie(@RequestPart("movie") Movie_details movie,@RequestPart("file") MultipartFile file) throws IOException
     {
+        // 1. 上传图片 -> 得到 URL
+        String url = movieCoverUrlService.get_file_url(file);
+        movie.setCover(url); // 设置电影封面 URL
+
         boolean result = movieService.update_movie(movie);
         return result ? "更新成功" : "更新失败";
     }
