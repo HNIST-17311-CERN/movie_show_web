@@ -53,7 +53,7 @@ public class SecurityConfig {
                 // 配置接口权限.....................................
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/user/login").permitAll()  // 登录接口放行
-                       .anyRequest().authenticated()       // 其他接口需要登录
+                        .anyRequest().authenticated()       // 其他接口需要登录
                 )
 
                 // 关闭默认登录页面

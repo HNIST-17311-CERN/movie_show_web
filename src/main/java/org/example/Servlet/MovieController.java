@@ -119,8 +119,27 @@ public class MovieController
     }
 
 
+    @PostMapping("/RESOURCE/ADD")
+    public String add_resource(@RequestBody Movie_Resource resource)
+    {
+        int result = movieResourceService.insert(resource);
+        return result > 0 ? "资源添加成功" : "资源添加失败";
+    }
 
 
+    @PostMapping("/RESOURCE/UPDATE")
+    public String update_resource(@RequestBody Movie_Resource resource)
+    {
+        int result = movieResourceService.update(resource);
+        return result > 0 ? "资源更新成功" : "资源更新失败";
+    }
+
+    @PostMapping("/RESOURCE/DELETE")
+    public String delete_resource(@RequestParam("id")Long id)
+    {
+        int result = movieResourceService.deleteById(id);
+        return result > 0 ? "资源删除成功" : "资源删除失败";
+    }
 }
 
 

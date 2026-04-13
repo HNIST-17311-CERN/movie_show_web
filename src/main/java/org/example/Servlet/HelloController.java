@@ -12,7 +12,7 @@ public class HelloController
 {
     @GetMapping("/hello")
     @CrossOrigin // 允许跨域
-    @PreAuthorize("hasAuthority('test') or hasAuthority('admin')")
+    //@PreAuthorize("hasAuthority('test') or hasAuthority('admin')")
     public String hello()
     {
         return "hello world";

@@ -137,8 +137,113 @@
             font-weight: 700;
         }
 
+        .resource-modal .modal-content {
+            border: none;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 28px 60px rgba(15, 23, 42, 0.18);
+        }
+
+        .resource-modal .modal-header {
+            background: linear-gradient(135deg, #1e293b 0%, #0ea5e9 100%);
+            color: #fff;
+            border-bottom: none;
+            padding: 20px 24px;
+        }
+
+        .resource-modal .btn-close {
+            filter: invert(1);
+            opacity: 0.9;
+        }
+
+        .resource-modal .modal-body,
+        .resource-modal .modal-footer {
+            background: #f8fafc;
+        }
+
+        .resource-modal .modal-body {
+            padding: 24px;
+        }
+
+        .resource-modal .modal-footer {
+            border-top: none;
+            padding: 0 24px 24px;
+        }
+
+        .resource-summary {
+            margin-bottom: 18px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: #e0f2fe;
+            color: #0f172a;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .resource-layout {
+            display: grid;
+            grid-template-columns: 1.2fr 0.95fr;
+            gap: 18px;
+        }
+
+        .resource-panel {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 18px;
+        }
+
+        .resource-panel-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 14px;
+        }
+
+        .resource-table {
+            margin-bottom: 0;
+            table-layout: fixed;
+        }
+
+        .resource-table th,
+        .resource-table td {
+            vertical-align: middle;
+            font-size: 13px;
+        }
+
+        .resource-table td {
+            word-break: break-all;
+        }
+
+        .resource-empty {
+            padding: 24px 12px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .resource-form .form-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 8px;
+        }
+
+        .resource-form .form-control,
+        .resource-form .form-select {
+            border-radius: 12px;
+            border-color: #d7dfeb;
+        }
+
+        .resource-tip {
+            margin-top: 12px;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #64748b;
+        }
+
         @media (max-width: 991px) {
             .movie-form-grid { grid-template-columns: 1fr; }
+            .resource-layout { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -306,6 +411,98 @@
             </div>
         </div>
 
+        <div class="modal fade resource-modal" id="resourceModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div>
+                            <h5 class="modal-title mb-1">资源管理</h5>
+                            <div class="small opacity-75">后端还没写，这里先用前端样例数据演示</div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="resource-summary" id="resourceMovieSummary">当前电影：-</div>
+                        <div class="resource-layout">
+                            <div class="resource-panel">
+                                <div class="resource-panel-title">资源列表</div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover resource-table">
+                                        <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>名称</th>
+                                            <th>清晰度</th>
+                                            <th>大小</th>
+                                            <th>类型</th>
+                                            <th>字幕</th>
+                                            <th>发布时间</th>
+                                            <th>操作</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="resourceTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="resource-panel">
+                                <div class="resource-panel-title" id="resourceFormTitle">新增资源</div>
+                                <form id="resourceForm" class="resource-form">
+                                    <input type="hidden" id="resourceId">
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label class="form-label">资源名称</label>
+                                            <input type="text" id="resourceName" class="form-control" placeholder="如：蓝光原盘 / 压制版" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">清晰度</label>
+                                            <select id="resourceQuality" class="form-select">
+                                                <option value="1080p">1080p</option>
+                                                <option value="4K">4K</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">文件大小</label>
+                                            <input type="text" id="resourceSize" class="form-control" placeholder="如：2.9GB">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">资源类型</label>
+                                            <select id="resourceType" class="form-select">
+                                                <option value="磁力">磁力</option>
+                                                <option value="网盘">网盘</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">字幕类型</label>
+                                            <select id="resourceSubtitle" class="form-select">
+                                                <option value="中字">中字</option>
+                                                <option value="英文">英文</option>
+                                                <option value="无字幕">无字幕</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">下载地址</label>
+                                            <input type="text" id="resourceUrl" class="form-control" placeholder="磁力链接或网盘链接" required>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">发布时间</label>
+                                            <input type="datetime-local" id="resourceCreateTime" class="form-control">
+                                        </div>
+                                    </div>
+                                </form>
+                                <div class="resource-tip">
+                                    当前数据只保存在浏览器内存里，刷新页面会重新回到样例数据。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" onclick="resetResourceForm()">清空</button>
+                        <button type="button" class="btn btn-primary" onclick="saveResource()">保存资源</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
     </div>
 </div>
@@ -315,6 +512,8 @@
 <script>
     let movies = [];
     let previewObjectUrl = null;
+    let resourceMovieId = null;
+    let resourceMovies = {};
 
     const API_BASE = "http://localhost:8080/FILMES";
     const LOGIN_URL = "pages-sign-in.html";
@@ -356,6 +555,184 @@
         if (previewObjectUrl) {
             URL.revokeObjectURL(previewObjectUrl);
             previewObjectUrl = null;
+        }
+    }
+
+    function formatDateTimeLocal(date) {
+        const pad = value => String(value).padStart(2, "0");
+        return [
+            date.getFullYear(),
+            pad(date.getMonth() + 1),
+            pad(date.getDate())
+        ].join("-") + "T" + [pad(date.getHours()), pad(date.getMinutes())].join(":");
+    }
+
+    function normalizeDateTime(value) {
+        if (!value) return "";
+        return String(value).replace(" ", "T").slice(0, 16);
+    }
+
+    function formatDateTimeDisplay(value) {
+        if (!value) return "";
+        return String(value).replace("T", " ").slice(0, 16);
+    }
+
+    function getSampleResources(movie) {
+        const movieId = movie.id || 0;
+        return [
+            {
+                id: movieId * 100 + 1,
+                movieId: movieId,
+                name: (movie.name || movie.movieName || "当前电影") + " 蓝光原盘",
+                quality: "4K",
+                size: "22.4GB",
+                type: "磁力",
+                url: "magnet:?xt=urn:btih:EXAMPLE" + movieId + "A",
+                createTime: "2026-04-01T20:30",
+                subtitle: "中字"
+            },
+            {
+                id: movieId * 100 + 2,
+                movieId: movieId,
+                name: (movie.name || movie.movieName || "当前电影") + " 压制版",
+                quality: "1080p",
+                size: "2.9GB",
+                type: "网盘",
+                url: "https://pan.example.com/s/movie-" + movieId,
+                createTime: "2026-04-01T18:00",
+                subtitle: "英文"
+            }
+        ];
+    }
+
+    function getMovieById(id) {
+        return movies.find(movie => movie.id === id);
+    }
+
+    function ensureMovieResources(movieId) {
+        if (!resourceMovies[movieId]) {
+            const movie = getMovieById(movieId) || { id: movieId, name: "当前电影" };
+            resourceMovies[movieId] = getSampleResources(movie);
+        }
+        return resourceMovies[movieId];
+    }
+
+    function getCurrentMovieResources() {
+        if (!resourceMovieId) return [];
+        return ensureMovieResources(resourceMovieId);
+    }
+
+    function renderResourceTable() {
+        const tbody = document.getElementById("resourceTableBody");
+        const resourceList = getCurrentMovieResources();
+
+        if (!resourceList.length) {
+            tbody.innerHTML = `<tr><td colspan="8" class="resource-empty">当前电影还没有资源，右侧可以直接新增样例资源。</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = resourceList.map(resource => `
+            <tr>
+                <td>${resource.id}</td>
+                <td>${resource.name || ""}</td>
+                <td>${resource.quality || ""}</td>
+                <td>${resource.size || ""}</td>
+                <td>${resource.type || ""}</td>
+                <td>${resource.subtitle || ""}</td>
+                <td>${formatDateTimeDisplay(resource.createTime)}</td>
+                <td class="text-nowrap">
+                    <button class="btn btn-sm btn-outline-primary" onclick="editResource(${resource.id})">编辑</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteResource(${resource.id})">删除</button>
+                </td>
+            </tr>
+        `).join("");
+    }
+
+    function resetResourceForm() {
+        document.getElementById("resourceForm").reset();
+        document.getElementById("resourceId").value = "";
+        document.getElementById("resourceFormTitle").textContent = "新增资源";
+        document.getElementById("resourceCreateTime").value = formatDateTimeLocal(new Date());
+    }
+
+    function openResourceModal(id) {
+        const movie = getMovieById(id);
+        if (!movie) {
+            alert("未找到对应电影");
+            return;
+        }
+
+        resourceMovieId = id;
+        ensureMovieResources(id);
+        document.getElementById("resourceMovieSummary").textContent = `当前电影：${movie.name || movie.movieName || "未命名电影"}（ID: ${movie.id}）`;
+        resetResourceForm();
+        renderResourceTable();
+        new bootstrap.Modal(document.getElementById("resourceModal")).show();
+    }
+
+    function getResourceFormData() {
+        return {
+            id: document.getElementById("resourceId").value ? parseInt(document.getElementById("resourceId").value, 10) : null,
+            movieId: resourceMovieId,
+            name: document.getElementById("resourceName").value.trim(),
+            quality: document.getElementById("resourceQuality").value,
+            size: document.getElementById("resourceSize").value.trim(),
+            type: document.getElementById("resourceType").value,
+            url: document.getElementById("resourceUrl").value.trim(),
+            createTime: document.getElementById("resourceCreateTime").value,
+            subtitle: document.getElementById("resourceSubtitle").value
+        };
+    }
+
+    function saveResource() {
+        if (!resourceMovieId) return;
+
+        const resource = getResourceFormData();
+        if (!resource.name || !resource.url) {
+            alert("请至少填写资源名称和下载地址");
+            return;
+        }
+
+        const resourceList = ensureMovieResources(resourceMovieId);
+
+        if (resource.id) {
+            const target = resourceList.find(item => item.id === resource.id);
+            if (!target) return;
+            Object.assign(target, resource);
+        } else {
+            const nextId = resourceList.length ? Math.max(...resourceList.map(item => item.id || 0)) + 1 : resourceMovieId * 100 + 1;
+            resource.id = nextId;
+            resourceList.unshift(resource);
+        }
+
+        renderResourceTable();
+        resetResourceForm();
+    }
+
+    function editResource(resourceId) {
+        const resource = getCurrentMovieResources().find(item => item.id === resourceId);
+        if (!resource) return;
+
+        document.getElementById("resourceId").value = resource.id;
+        document.getElementById("resourceName").value = resource.name || "";
+        document.getElementById("resourceQuality").value = resource.quality || "1080p";
+        document.getElementById("resourceSize").value = resource.size || "";
+        document.getElementById("resourceType").value = resource.type || "磁力";
+        document.getElementById("resourceUrl").value = resource.url || "";
+        document.getElementById("resourceCreateTime").value = normalizeDateTime(resource.createTime);
+        document.getElementById("resourceSubtitle").value = resource.subtitle || "中字";
+        document.getElementById("resourceFormTitle").textContent = "编辑资源";
+    }
+
+    function deleteResource(resourceId) {
+        if (!resourceMovieId) return;
+        if (!confirm("确定删除这条资源吗？")) return;
+
+        resourceMovies[resourceMovieId] = getCurrentMovieResources().filter(item => item.id !== resourceId);
+        renderResourceTable();
+
+        if (parseInt(document.getElementById("resourceId").value || "0", 10) === resourceId) {
+            resetResourceForm();
         }
     }
 
