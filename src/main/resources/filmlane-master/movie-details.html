@@ -191,7 +191,11 @@
         tbody.innerHTML = list.map(function(r) {
           return '<tr>' +
             '<td><span class="resource-name">' + (r.name || '') + '</span></td>' +
-            '<td>' + (r.magnet ? '<span class="download-link">磁力</span>' : '') + (r.torrent ? '<span class="download-link">种子</span>' : '') + '</td>' +
+                  '<td>' +
+                  (r.url
+                          ? '<a class="download-link" href="' + r.url + '" target="_blank">下载</a>'
+                          : '无') +
+                  '</td>' +
             '<td>' + (r.size || '') + '</td>' +
             '<td>' + (r.seed || '') + '</td>' +
             '<td>' + (r.pubDate || '') + '</td>' +
