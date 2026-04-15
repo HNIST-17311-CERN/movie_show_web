@@ -120,6 +120,7 @@ public class MovieController
 
 
     @PostMapping("/RESOURCE/ADD")
+    @CrossOrigin // 允许跨域
     public String add_resource(@RequestBody Movie_Resource resource)
     {
         int result = movieResourceService.insert(resource);
@@ -128,6 +129,7 @@ public class MovieController
 
 
     @PostMapping("/RESOURCE/UPDATE")
+    @CrossOrigin // 允许跨域
     public String update_resource(@RequestBody Movie_Resource resource)
     {
         int result = movieResourceService.update(resource);
@@ -135,6 +137,7 @@ public class MovieController
     }
 
     @PostMapping("/RESOURCE/DELETE")
+    @CrossOrigin // 允许跨域
     public String delete_resource(@RequestParam("id")Long id)
     {
         int result = movieResourceService.deleteById(id);

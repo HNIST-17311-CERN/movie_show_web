@@ -609,17 +609,23 @@
         return movies.find(movie => movie.id === id);
     }
 
-    function ensureMovieResources(movieId) {
-        if (!resourceMovies[movieId]) {
-            const movie = getMovieById(movieId) || { id: movieId, name: "当前电影" };
-            resourceMovies[movieId] = getSampleResources(movie);
+    async function loadMovieResources(movieId) {
+        try {
+            const res = await fetch(`${API_BASE}/RESOURCE/ONE?id=${movieId}`, {
+                headers: { token: getToken() }
+            });
+            if (!res.ok) throw new Error("获取资源列表失败");
+            const data = await res.json();
+            resourceMovies[movieId] = data || [];
+        } catch (error) {
+            console.error(error);
+            resourceMovies[movieId] = [];
         }
-        return resourceMovies[movieId];
     }
 
     function getCurrentMovieResources() {
         if (!resourceMovieId) return [];
-        return ensureMovieResources(resourceMovieId);
+        return resourceMovies[resourceMovieId] || [];
     }
 
     function renderResourceTable() {
@@ -655,7 +661,7 @@
         document.getElementById("resourceCreateTime").value = formatDateTimeLocal(new Date());
     }
 
-    function openResourceModal(id) {
+    async function openResourceModal(id) {
         const movie = getMovieById(id);
         if (!movie) {
             alert("未找到对应电影");
@@ -663,9 +669,10 @@
         }
 
         resourceMovieId = id;
-        ensureMovieResources(id);
         document.getElementById("resourceMovieSummary").textContent = `当前电影：${movie.name || movie.movieName || "未命名电影"}（ID: ${movie.id}）`;
         resetResourceForm();
+        
+        await loadMovieResources(id);
         renderResourceTable();
         new bootstrap.Modal(document.getElementById("resourceModal")).show();
     }
@@ -679,12 +686,12 @@
             size: document.getElementById("resourceSize").value.trim(),
             type: document.getElementById("resourceType").value,
             url: document.getElementById("resourceUrl").value.trim(),
-            createTime: document.getElementById("resourceCreateTime").value,
+            createTime: document.getElementById("resourceCreateTime").value || null,
             subtitle: document.getElementById("resourceSubtitle").value
         };
     }
 
-    function saveResource() {
+    async function saveResource() {
         if (!resourceMovieId) return;
 
         const resource = getResourceFormData();
@@ -693,20 +700,30 @@
             return;
         }
 
-        const resourceList = ensureMovieResources(resourceMovieId);
+        const isUpdate = !!resource.id;
+        const url = `${API_BASE}/RESOURCE/${isUpdate ? 'UPDATE' : 'ADD'}`;
 
-        if (resource.id) {
-            const target = resourceList.find(item => item.id === resource.id);
-            if (!target) return;
-            Object.assign(target, resource);
-        } else {
-            const nextId = resourceList.length ? Math.max(...resourceList.map(item => item.id || 0)) + 1 : resourceMovieId * 100 + 1;
-            resource.id = nextId;
-            resourceList.unshift(resource);
+        try {
+            const res = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    token: getToken()
+                },
+                body: JSON.stringify(resource)
+            });
+            
+            if (!res.ok) throw new Error("网络错误");
+            const text = await res.text();
+            alert(text);
+            
+            await loadMovieResources(resourceMovieId);
+            renderResourceTable();
+            resetResourceForm();
+        } catch (error) {
+            console.error(error);
+            alert("保存资源失败");
         }
-
-        renderResourceTable();
-        resetResourceForm();
     }
 
     function editResource(resourceId) {
@@ -724,15 +741,28 @@
         document.getElementById("resourceFormTitle").textContent = "编辑资源";
     }
 
-    function deleteResource(resourceId) {
+    async function deleteResource(resourceId) {
         if (!resourceMovieId) return;
         if (!confirm("确定删除这条资源吗？")) return;
 
-        resourceMovies[resourceMovieId] = getCurrentMovieResources().filter(item => item.id !== resourceId);
-        renderResourceTable();
+        try {
+            const res = await fetch(`${API_BASE}/RESOURCE/DELETE?id=${resourceId}`, {
+                method: "POST",
+                headers: { token: getToken() }
+            });
+            if (!res.ok) throw new Error("网络错误");
+            const text = await res.text();
+            alert(text);
+            
+            await loadMovieResources(resourceMovieId);
+            renderResourceTable();
 
-        if (parseInt(document.getElementById("resourceId").value || "0", 10) === resourceId) {
-            resetResourceForm();
+            if (parseInt(document.getElementById("resourceId").value || "0", 10) === resourceId) {
+                resetResourceForm();
+            }
+        } catch (error) {
+            console.error(error);
+            alert("删除资源失败");
         }
     }
 
