@@ -6,6 +6,60 @@
   <title>观影 GYING - 海量电影与剧集</title>
   <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    #home-movies-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      align-items: start;
+    }
+
+    #home-movies-list .movie-card,
+    #home-movies-list .movie-card-wrapper {
+      width: 100%;
+      min-width: 0;
+    }
+
+    #home-movies-list .card-banner {
+      width: 100%;
+      height: 320px;
+      overflow: hidden;
+    }
+
+    #home-movies-list .card-banner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    #hero-sidebar .hero-side-card.active {
+      border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(0,123,255,0.15);
+    }
+
+    .hero-banner {
+      align-items: stretch;
+    }
+
+    #hero-featured-link {
+      height: 100%;
+      min-height: 100%;
+    }
+
+    #hero-sidebar {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    #hero-sidebar .hero-side-card {
+      flex: 1;
+      min-height: 0;
+    }
+  </style>
 </head>
 <body id="top">
 
@@ -35,40 +89,15 @@
   <main>
     <div class="container">
       <section class="hero-banner">
-        <a href="./movie-details.html" class="hero-featured">
-          <img src="https://via.placeholder.com/800x450/2c3e50/ecf0f1?text=A+Knight+of+the+Seven+Kingdoms" alt="龙族前传">
+        <a href="./movie-details.html" class="hero-featured" id="hero-featured-link">
+          <img id="hero-featured-img" src="./assets/images/movie-1.png" alt="featured movie">
           <div class="hero-featured-overlay">
-            <h2 class="hero-featured-title">龙族前传</h2>
-            <p class="hero-featured-subtitle">A Knight of the Seven Kingdoms</p>
-            <p class="hero-featured-desc">维斯特洛大陆的史诗新章，讲述坦格利安王朝传奇故事。</p>
+            <h2 class="hero-featured-title" id="hero-featured-title">推荐影片</h2>
+            <p class="hero-featured-subtitle" id="hero-featured-subtitle">Featured movie</p>
+            <p class="hero-featured-desc" id="hero-featured-desc">把鼠标移到右侧卡片上可切换推荐内容。</p>
           </div>
         </a>
-        <div class="hero-sidebar">
-          <a href="./movie-details.html" class="hero-side-card">
-            <img src="./assets/images/movie-5.png" alt="The Batman">
-            <div class="hero-side-card-info">
-              <h3 class="hero-side-card-title">The Batman</h3>
-              <p class="hero-side-card-subtitle">新蝙蝠侠</p>
-              <p class="hero-side-card-meta">剧情 / 动作 / 冒险</p>
-            </div>
-          </a>
-          <a href="./movie-details.html" class="hero-side-card">
-            <img src="./assets/images/movie-4.png" alt="Free Guy">
-            <div class="hero-side-card-info">
-              <h3 class="hero-side-card-title">Free Guy</h3>
-              <p class="hero-side-card-subtitle">失控玩家</p>
-              <p class="hero-side-card-meta">喜剧 / 科幻 / 冒险</p>
-            </div>
-          </a>
-          <a href="./movie-details.html" class="hero-side-card">
-            <img src="./assets/images/series-1.png" alt="Moon Knight">
-            <div class="hero-side-card-info">
-              <h3 class="hero-side-card-title">Moon Knight</h3>
-              <p class="hero-side-card-subtitle">月光骑士</p>
-              <p class="hero-side-card-meta">剧情 / 动作 / 奇幻</p>
-            </div>
-          </a>
-        </div>
+        <div class="hero-sidebar" id="hero-sidebar"></div>
       </section>
 
       <section class="section">
@@ -76,116 +105,9 @@
           <h2 class="section-title">最近更新的电影</h2>
           <a href="./All_movie.html" class="section-more">更多 &gt;</a>
         </div>
-        <ul class="movies-list home-movies">
-          <li>
-            <div class="movie-card">
-              <a href="./movie-details.html">
-                <figure class="card-banner">
-                  <img src="./assets/images/movie-1.png" alt="Sonic the Hedgehog 2">
-                  <span class="card-badge">4K</span>
-                  <div class="card-overlay">
-                    <span class="star-count">★ 3991</span>
-                  </div>
-                </figure>
-              </a>
-              <div class="card-info">
-                <h3 class="card-title">Sonic the Hedgehog 2</h3>
-                <span class="card-rating">7.8</span>
-              </div>
-              <p class="card-meta">2022 / 美国 / 动作 / 冒险</p>
-            </div>
-          </li>
-          <li>
-            <div class="movie-card">
-              <a href="./movie-details.html">
-                <figure class="card-banner">
-                  <img src="./assets/images/movie-2.png" alt="Morbius">
-                  <span class="card-badge">BD</span>
-                  <div class="card-overlay">
-                    <span class="star-count">★ 1523</span>
-                  </div>
-                </figure>
-              </a>
-              <div class="card-info">
-                <h3 class="card-title">Morbius</h3>
-                <span class="card-rating">5.9</span>
-              </div>
-              <p class="card-meta">2022 / 美国 / 动作 / 科幻</p>
-            </div>
-          </li>
-          <li>
-            <div class="movie-card">
-              <a href="./movie-details.html">
-                <figure class="card-banner">
-                  <img src="./assets/images/movie-3.png" alt="The Adam Project">
-                  <span class="card-badge">4K</span>
-                  <div class="card-overlay">
-                    <span class="star-count">★ 2108</span>
-                  </div>
-                </figure>
-              </a>
-              <div class="card-info">
-                <h3 class="card-title">The Adam Project</h3>
-                <span class="card-rating">7.0</span>
-              </div>
-              <p class="card-meta">2022 / 美国 / 科幻 / 冒险</p>
-            </div>
-          </li>
-          <li>
-            <div class="movie-card">
-              <a href="./movie-details.html">
-                <figure class="card-banner">
-                  <img src="./assets/images/movie-4.png" alt="Free Guy">
-                  <span class="card-badge">4K</span>
-                  <div class="card-overlay">
-                    <span class="star-count">★ 3245</span>
-                  </div>
-                </figure>
-              </a>
-              <div class="card-info">
-                <h3 class="card-title">Free Guy</h3>
-                <span class="card-rating">7.7</span>
-              </div>
-              <p class="card-meta">2021 / 美国 / 喜剧 / 科幻</p>
-            </div>
-          </li>
-          <li>
-            <div class="movie-card">
-              <a href="./movie-details.html">
-                <figure class="card-banner">
-                  <img src="./assets/images/movie-5.png" alt="The Batman">
-                  <span class="card-badge">4K</span>
-                  <div class="card-overlay">
-                    <span class="star-count">★ 4189</span>
-                  </div>
-                </figure>
-              </a>
-              <div class="card-info">
-                <h3 class="card-title">The Batman</h3>
-                <span class="card-rating">7.9</span>
-              </div>
-              <p class="card-meta">2022 / 美国 / 动作 / 犯罪</p>
-            </div>
-          </li>
-          <li>
-            <div class="movie-card">
-              <a href="./movie-details.html">
-                <figure class="card-banner">
-                  <img src="./assets/images/movie-6.png" alt="Uncharted">
-                  <span class="card-badge">HD</span>
-                  <div class="card-overlay">
-                    <span class="star-count">★ 2876</span>
-                  </div>
-                </figure>
-              </a>
-              <div class="card-info">
-                <h3 class="card-title">Uncharted</h3>
-                <span class="card-rating">7.0</span>
-              </div>
-              <p class="card-meta">2022 / 美国 / 动作 / 冒险</p>
-            </div>
-          </li>
-        </ul>
+        <div id="home-loading" class="loading-state">加载中...</div>
+        <div id="home-error" class="error-state" style="display:none;">加载失败，请检查网络或 token 是否有效</div>
+        <ul class="movies-list home-movies" id="home-movies-list"></ul>
       </section>
     </div>
   </main>
@@ -198,5 +120,221 @@
   <a href="#top" class="go-top" data-go-top>↑</a>
 
   <script src="./assets/js/script.js"></script>
+  <script>
+    (function() {
+      var API_URL = 'http://localhost:8080/Mapper/findlast12';
+      var LOGIN_URL = '../adminkit-web-ui-kit-dashboard-template/static/pages-sign-in.html';
+      var DEFAULT_COVER_URL = './assets/images/movie-1.png';
+
+      function getCoverUrl(cover) {
+        if (!cover) return DEFAULT_COVER_URL;
+        if (/^https?:\/\//i.test(cover)) return cover;
+
+        var normalized = String(cover).replace(/\\/g, '/');
+        if (normalized.indexOf('assets/images/') !== -1) return './' + normalized.substring(normalized.indexOf('assets/images/'));
+        if (normalized.indexOf('resource/cover/') !== -1) return './' + normalized.substring(normalized.indexOf('resource/cover/'));
+        if (normalized.startsWith('/')) return '.' + normalized;
+        return normalized;
+      }
+
+      function escapeHtml(value) {
+        return String(value || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function renderEmpty(message) {
+        document.getElementById('home-movies-list').innerHTML = '<li class="empty-state">' + message + '</li>';
+      }
+
+      function shuffleMovies(list) {
+        var movies = list.slice();
+        for (var i = movies.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var temp = movies[i];
+          movies[i] = movies[j];
+          movies[j] = temp;
+        }
+        return movies;
+      }
+
+      function getHeroMeta(movie) {
+        return [
+          movie.releaseDate ? String(movie.releaseDate).substring(0, 4) : '',
+          movie.region || '',
+          movie.type || ''
+        ].filter(Boolean).join(' / ');
+      }
+
+      function getHeroDesc(movie) {
+        return movie.description || (movie.duration ? movie.duration + 'min' : '') || '暂无简介';
+      }
+
+      function updateHeroFeatured(movie) {
+        var featuredLink = document.getElementById('hero-featured-link');
+        var featuredImg = document.getElementById('hero-featured-img');
+        var featuredTitle = document.getElementById('hero-featured-title');
+        var featuredSubtitle = document.getElementById('hero-featured-subtitle');
+        var featuredDesc = document.getElementById('hero-featured-desc');
+
+        if (featuredLink) featuredLink.href = './movie-details.html?id=' + encodeURIComponent(movie.id || '');
+        if (featuredImg) {
+          featuredImg.src = getCoverUrl(movie.cover);
+          featuredImg.alt = movie.name || 'featured movie';
+          featuredImg.onerror = function() {
+            this.onerror = null;
+            this.src = DEFAULT_COVER_URL;
+          };
+        }
+        if (featuredTitle) featuredTitle.textContent = movie.name || 'Unknown';
+        if (featuredSubtitle) featuredSubtitle.textContent = getHeroMeta(movie) || 'Featured movie';
+        if (featuredDesc) featuredDesc.textContent = getHeroDesc(movie);
+      }
+
+      function renderHero(movies) {
+        var heroSidebar = document.getElementById('hero-sidebar');
+        if (!heroSidebar || !movies.length) return;
+
+        var picks = shuffleMovies(movies).slice(0, Math.min(3, movies.length));
+        heroSidebar.innerHTML = '';
+        updateHeroFeatured(picks[0]);
+
+        picks.forEach(function(movie, index) {
+          var link = document.createElement('a');
+          link.href = './movie-details.html?id=' + encodeURIComponent(movie.id || '');
+          link.className = 'hero-side-card' + (index === 0 ? ' active' : '');
+          link.innerHTML =
+            '<img src="' + escapeHtml(getCoverUrl(movie.cover)) + '" alt="' + escapeHtml(movie.name || 'movie') + '">' +
+            '<div class="hero-side-card-info">' +
+              '<h3 class="hero-side-card-title">' + escapeHtml(movie.name || 'Unknown') + '</h3>' +
+              '<p class="hero-side-card-subtitle">' + escapeHtml(movie.releaseDate ? String(movie.releaseDate).substring(0, 4) : '最新推荐') + '</p>' +
+              '<p class="hero-side-card-meta">' + escapeHtml(getHeroMeta(movie) || '--') + '</p>' +
+            '</div>';
+
+          var img = link.querySelector('img');
+          if (img) {
+            img.onerror = function() {
+              this.onerror = null;
+              this.src = DEFAULT_COVER_URL;
+            };
+          }
+
+          link.addEventListener('mouseenter', function() {
+            heroSidebar.querySelectorAll('.hero-side-card').forEach(function(card) {
+              card.classList.remove('active');
+            });
+            link.classList.add('active');
+            updateHeroFeatured(movie);
+          });
+
+          heroSidebar.appendChild(link);
+        });
+      }
+
+      function renderMovie(movie) {
+        var meta = [
+          movie.releaseDate ? String(movie.releaseDate).substring(0, 4) : '',
+          movie.region || '',
+          movie.type || ''
+        ].filter(Boolean).join(' / ');
+
+        var li = document.createElement('li');
+        li.className = 'movie-card-wrapper';
+        li.innerHTML =
+          '<div class="movie-card">' +
+            '<a href="./movie-details.html?id=' + encodeURIComponent(movie.id || '') + '">' +
+              '<figure class="card-banner">' +
+                '<img src="' + escapeHtml(getCoverUrl(movie.cover)) + '" alt="' + escapeHtml(movie.name || 'movie') + '">' +
+                '<span class="card-badge">HD</span>' +
+                '<div class="card-overlay">' +
+                  '<span class="star-count">' + escapeHtml(movie.duration ? movie.duration + 'min' : '--') + '</span>' +
+                  '<span class="rating">--</span>' +
+                '</div>' +
+              '</figure>' +
+            '</a>' +
+            '<h3 class="card-title">' + escapeHtml(movie.name || 'Unknown') + '</h3>' +
+            '<p class="card-meta">' + escapeHtml(meta || '--') + '</p>' +
+          '</div>';
+
+        var img = li.querySelector('img');
+        if (img) {
+          img.onerror = function() {
+            this.onerror = null;
+            this.src = DEFAULT_COVER_URL;
+          };
+        }
+
+        document.getElementById('home-movies-list').appendChild(li);
+
+        fetch('http://localhost:8080/FILMES/SCORE/ONE?id=' + encodeURIComponent(movie.id || ''), {
+          headers: { token: localStorage.getItem('token') || '' }
+        })
+          .then(function(res) { return res.json(); })
+          .then(function(scores) {
+            var douban = Array.isArray(scores) ? scores.find(function(s) { return s.source === 'douban'; }) : null;
+            if (douban) {
+              var ratingEl = li.querySelector('.rating');
+              if (ratingEl) ratingEl.textContent = '★ ' + douban.score.toFixed(1);
+            }
+          })
+          .catch(function() {});
+      }
+
+      function loadLastMovies() {
+        var token = localStorage.getItem('token');
+        var loadingEl = document.getElementById('home-loading');
+        var errorEl = document.getElementById('home-error');
+        var listEl = document.getElementById('home-movies-list');
+
+        if (!token) {
+          loadingEl.style.display = 'none';
+          renderEmpty('请先 <a href="' + LOGIN_URL + '">登录</a> 后访问');
+          return;
+        }
+
+        fetch(API_URL, {
+          headers: {
+            token: token,
+            'Content-Type': 'application/json'
+          }
+        })
+          .then(function(res) {
+            if (res.status === 401) {
+              localStorage.removeItem('token');
+              throw new Error('Unauthorized');
+            }
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+          })
+          .then(function(data) {
+            var movies = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
+            loadingEl.style.display = 'none';
+            errorEl.style.display = 'none';
+            listEl.innerHTML = '';
+
+            if (!movies.length) {
+              renderEmpty('暂无最新电影');
+              return;
+            }
+
+            renderHero(movies);
+            movies.forEach(renderMovie);
+          })
+          .catch(function(err) {
+            loadingEl.style.display = 'none';
+            if (err.message === 'Unauthorized') {
+              renderEmpty('token 已过期，请重新 <a href="' + LOGIN_URL + '">登录</a>');
+              return;
+            }
+            errorEl.style.display = 'block';
+          });
+      }
+
+      loadLastMovies();
+    })();
+  </script>
 </body>
 </html>
