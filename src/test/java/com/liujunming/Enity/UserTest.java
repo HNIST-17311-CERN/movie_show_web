@@ -1,4 +1,4 @@
-package com.liujunming;
+package com.liujunming.Enity;
 
 import org.example.Entity.User;
 

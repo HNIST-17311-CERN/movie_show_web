@@ -15,7 +15,9 @@ public class HelloController
     //@PreAuthorize("hasAuthority('test') or hasAuthority('admin')")
     public String hello()
     {
+        System.out.println("HELLO CONTROLLER ENTER");
         return "hello world";
     }
+
 
 }

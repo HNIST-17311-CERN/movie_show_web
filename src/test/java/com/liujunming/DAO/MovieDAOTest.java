@@ -1,4 +1,4 @@
-package com.liujunming;
+package com.liujunming.DAO;
 
 import org.example.DAO.MovieDAO;
 import org.example.Entity.Movie_details;

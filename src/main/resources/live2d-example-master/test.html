@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live2D 看板娘测试</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            text-align: center;
+            padding-top: 100px;
+        }
+        .content {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        p { color: #666; line-height: 1.6; }
+    </style>
+</head>
+<body>
+<div class="content">
+    <h1>Live2D 看板娘测试页面 🚀</h1>
+    <p>看看网页的<strong>右下角</strong>，你的看板娘应该已经出现了！</p>
+    <p>💡 <strong>互动测试：</strong>尝试用鼠标点击她的脸或者身体，看看会不会弹出对话框。</p>
+</div>
+
+<!-- 1. 引入 Live2D 核心库 (这里为了方便测试直接使用 CDN) -->
+<script src="https://l2dwidget.js.org/lib/L2Dwidget.min.js"></script>
+
+<!-- 2. 初始化并配置看板娘 -->
+<script type="text/javascript">
+    L2Dwidget.init({
+        "model": {
+            // 这里使用的是 koharu 模型。如果想换成别的，可以更改这里的 jsonPath
+            "jsonPath": "https://unpkg.com/live2d-widget-model-koharu@1.0.5/assets/koharu.model.json",
+            "scale": 1
+        },
+        "display": {
+            "position": "right", // 显示在右下角
+            "width": 150,        // 宽度
+            "height": 300,       // 高度
+            "hOffset": 30,       // 距离右侧的偏移量
+            "vOffset": -20       // 距离底部的偏移量
+        },
+        "mobile": {
+            "show": true,        // 手机端是否显示
+            "scale": 0.5         // 手机端显示缩小一半
+        },
+        "react": {
+            "opacityDefault": 0.9, // 默认透明度
+            "opacityOnHover": 1.0  // 鼠标悬浮时的透明度
+        },
+        "dialog": {
+            "enable": true,      // 开启互动对话框
+            "script": {
+                // 配置点击互动的台词
+                'tap body': '哎呀！别随便碰人家啦！',
+                'tap face': '欢迎来到测试页面哦，我是你的专属看板娘～'
+            }
+        }
+    });
+</script>
+</body>
+</html>
