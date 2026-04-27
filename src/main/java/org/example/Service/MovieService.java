@@ -1,9 +1,12 @@
 package org.example.Service;
 
 import org.example.DAO.MovieDAO;
+import org.example.DAO.Movie_ResourceDAO;
+import org.example.DAO.Movie_ScoreDAO;
 import org.example.Entity.Movie_details;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -13,6 +16,12 @@ public class MovieService
 
     @Autowired
     MovieDAO movieDAO;
+
+    @Autowired
+    Movie_ResourceDAO movieResourceDAO;
+
+    @Autowired
+    Movie_ScoreDAO movieScoreDAO;
 
     // 所有电影
     public List<Movie_details> get_all() {
@@ -48,8 +57,20 @@ public class MovieService
     }
 
     // ✅ 删除电影
+    @Transactional
     public boolean delete_movie(int id) {
+
+        // 1️⃣ 删除资源（movie_resource）
+        movieResourceDAO.findByMovieId((long) id)
+                .forEach(r -> movieResourceDAO.deleteById(r.getId()));
+
+        // 2️⃣ 删除评分（movie_score）
+        movieScoreDAO.findByMovieId((long) id)
+                .forEach(s -> movieScoreDAO.deleteById(s.getId()));
+
+        // 3️⃣ 删除电影（movie）
         int rows = movieDAO.Delete_movie(id);
+
         return rows > 0;
     }
 

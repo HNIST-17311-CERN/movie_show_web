@@ -39,7 +39,7 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
-    // 安全过滤链配置
+    // 安全过滤链配置0
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception
     {
