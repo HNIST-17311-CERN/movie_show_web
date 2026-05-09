@@ -45,9 +45,11 @@ public class MovieController
 
     @GetMapping("/ONEP")//返回一页电影
     @CrossOrigin // 允许跨域
-    public List<Movie_details> get_onep_filmes()
+    public List<Movie_details> get_onep_filmes(
+            @RequestParam(value = "page", defaultValue = "1") Integer page,
+            @RequestParam(value = "pageSize", defaultValue = "60") Integer pageSize)
     {
-        return movieService.get_one_p(1,60);
+        return movieService.get_one_p(page, pageSize);
     }
 
     @GetMapping("/ONEID")//根据id查询电影

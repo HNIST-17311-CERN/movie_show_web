@@ -16,7 +16,7 @@ public class OperationLogAspect {
     @Autowired
     private OperationLogDAO logDAO;
 
-    // 🎯 拦截 Service 层所有方法
+    //  拦截 Service 层所有方法
     @Pointcut("execution(* org.example.Service.*.*(..))")
     public void serviceMethods() {}
 
@@ -27,10 +27,10 @@ public class OperationLogAspect {
 
         String methodName = joinPoint.getSignature().toShortString();
 
-        // 📌 参数转字符串
+        //  参数转字符串
         String params = Arrays.toString(joinPoint.getArgs());
 
-        // 📌 获取用户名（JWT / Spring Security）
+        //  获取用户名（JWT / Spring Security）
         String username = "anonymous";
         try {
             username = SecurityContextHolder.getContext()
@@ -38,7 +38,7 @@ public class OperationLogAspect {
                     .getName();
         } catch (Exception ignored) {}
 
-        // 📌 自动识别操作类型
+        //  自动识别操作类型
         String operation = getOperationType(methodName);
 
         String result = "SUCCESS";
@@ -55,7 +55,7 @@ public class OperationLogAspect {
         } finally {
             long time = System.currentTimeMillis() - start;
 
-            // 🚀 入库
+            // 入库
             logDAO.insertLog(
                     username,
                     methodName,

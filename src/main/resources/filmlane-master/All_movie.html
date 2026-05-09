@@ -6,6 +6,73 @@
   <title>电影 - 观影 GYING</title>
   <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .pagination-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-top: 32px;
+      flex-wrap: wrap;
+    }
+
+    .pagination-btn,
+    .pagination-input,
+    .pagination-jump {
+      height: 42px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      color: #374151;
+      font-size: 16px;
+    }
+
+    .pagination-btn {
+      min-width: 40px;
+      padding: 0 14px;
+      margin-left: -1px;
+      cursor: pointer;
+    }
+
+    .pagination-btn.active {
+      background: #60a5fa;
+      color: #fff;
+      border-color: #60a5fa;
+    }
+
+    .pagination-btn:disabled {
+      color: #9ca3af;
+      background: #f9fafb;
+      cursor: not-allowed;
+    }
+
+    .pagination-ellipsis {
+      height: 42px;
+      line-height: 42px;
+      padding: 0 14px;
+      border: 1px solid #e5e7eb;
+      margin-left: -1px;
+      background: #fff;
+      color: #6b7280;
+    }
+
+    .pagination-input {
+      width: 86px;
+      margin-left: 12px;
+      padding: 0 10px;
+      outline: none;
+    }
+
+    .pagination-jump {
+      padding: 0 14px;
+      margin-left: -1px;
+      cursor: pointer;
+    }
+
+    .pagination-jump:hover,
+    .pagination-btn:not(:disabled):hover {
+      background: #f3f4f6;
+    }
+  </style>
 </head>
 <body id="top">
 
@@ -92,6 +159,7 @@
     <div id="loading" class="loading-state">加载中...</div>
     <div id="error" class="error-state" style="display:none;">加载失败，请检查网络或接口地址后重试</div>
     <ul class="movies-list" id="movies-list"></ul>
+    <div class="pagination-bar" id="pagination-bar" style="display:none;"></div>
   </div>
 </main>
 
@@ -103,6 +171,9 @@
     var API_URL = 'http://localhost:8080/FILMES/ONEP';
     var LOGIN_URL = '../adminkit-web-ui-kit-dashboard-template/static/pages-sign-in.html';
     var DEFAULT_COVER_URL = './assets/images/movie-1.png';
+    var PAGE_SIZE = 60;
+    var currentPage = 1;
+    var hasNextPage = true;
 
     function getCoverUrl(cover) {
       if (!cover) return DEFAULT_COVER_URL;
@@ -125,7 +196,9 @@
     function needLogin() {
       var loadingEl = document.getElementById('loading');
       var listEl = document.getElementById('movies-list');
+      var bar = document.getElementById('pagination-bar');
       loadingEl.style.display = 'none';
+      bar.style.display = 'none';
       listEl.innerHTML = '<li class="empty-state">请先 <a href="' + LOGIN_URL + '">登录</a> 后访问</li>';
     }
 
@@ -140,7 +213,7 @@
         '<img alt="' + (movie.name || '').replace(/"/g, '&quot;') + '">' +
         '<span class="card-badge">HD</span>' +
         '<div class="card-overlay">' +
-        '<span class="star-count">☆ ' + (movie.duration ? movie.duration + 'min' : '--') + '</span>' +
+        '<span class="star-count">★ ' + (movie.duration ? movie.duration + 'min' : '--') + '</span>' +
         '<span class="rating">--</span>' +
         '</div>' +
         '</figure>' +
@@ -167,18 +240,90 @@
         .catch(function() {});
     }
 
-    function loadMovies() {
+    function createPageBtn(label, page, active) {
+      var btn = document.createElement('button');
+      btn.className = 'pagination-btn' + (active ? ' active' : '');
+      btn.textContent = label;
+      btn.addEventListener('click', function() {
+        loadMovies(page);
+      });
+      return btn;
+    }
+
+    function renderPagination() {
+      var bar = document.getElementById('pagination-bar');
+      var startPage = Math.floor((currentPage - 1) / 10) * 10 + 1;
+      var endPage = startPage + 9;
+
+      bar.innerHTML = '';
+      bar.style.display = 'flex';
+
+      var prevBtn = document.createElement('button');
+      prevBtn.className = 'pagination-btn';
+      prevBtn.textContent = '上一页';
+      prevBtn.disabled = currentPage <= 1;
+      prevBtn.addEventListener('click', function() {
+        if (currentPage > 1) loadMovies(currentPage - 1);
+      });
+      bar.appendChild(prevBtn);
+
+      for (var page = startPage; page <= endPage; page++) {
+        bar.appendChild(createPageBtn(String(page), page, page === currentPage));
+      }
+
+      if (hasNextPage) {
+        var ellipsis = document.createElement('span');
+        ellipsis.className = 'pagination-ellipsis';
+        ellipsis.textContent = '...';
+        bar.appendChild(ellipsis);
+      }
+
+      var nextBtn = document.createElement('button');
+      nextBtn.className = 'pagination-btn';
+      nextBtn.textContent = '下一页';
+      nextBtn.disabled = !hasNextPage;
+      nextBtn.addEventListener('click', function() {
+        if (hasNextPage) loadMovies(currentPage + 1);
+      });
+      bar.appendChild(nextBtn);
+
+      var input = document.createElement('input');
+      input.className = 'pagination-input';
+      input.type = 'number';
+      input.min = '1';
+      input.placeholder = '输入页码';
+      bar.appendChild(input);
+
+      var jumpBtn = document.createElement('button');
+      jumpBtn.className = 'pagination-jump';
+      jumpBtn.textContent = '跳转';
+      jumpBtn.addEventListener('click', function() {
+        var page = parseInt(input.value, 10);
+        if (!page || page < 1) return;
+        loadMovies(page);
+      });
+      bar.appendChild(jumpBtn);
+    }
+
+    function loadMovies(page) {
       var token = localStorage.getItem('token');
       var listEl = document.getElementById('movies-list');
       var loadingEl = document.getElementById('loading');
       var errorEl = document.getElementById('error');
+      var bar = document.getElementById('pagination-bar');
 
       if (!token) {
         needLogin();
         return;
       }
 
-      fetch(API_URL, {
+      currentPage = page;
+      loadingEl.style.display = 'block';
+      errorEl.style.display = 'none';
+      listEl.innerHTML = '';
+      bar.style.display = 'none';
+
+      fetch(API_URL + '?page=' + encodeURIComponent(page) + '&pageSize=' + encodeURIComponent(PAGE_SIZE), {
         headers: {
           token: token,
           'Content-Type': 'application/json'
@@ -201,21 +346,26 @@
           loadingEl.style.display = 'none';
           errorEl.style.display = 'none';
           listEl.innerHTML = '';
+          hasNextPage = movies.length === PAGE_SIZE;
 
           if (movies.length > 0) {
             movies.forEach(renderMovie);
           } else {
             listEl.innerHTML = '<li class="empty-state">暂无电影</li>';
+            hasNextPage = false;
           }
+
+          renderPagination();
         })
         .catch(function(err) {
           if (err.message === 'Unauthorized') return;
           loadingEl.style.display = 'none';
           errorEl.style.display = 'block';
+          bar.style.display = 'none';
         });
     }
 
-    loadMovies();
+    loadMovies(1);
   })();
 </script>
 </body>
