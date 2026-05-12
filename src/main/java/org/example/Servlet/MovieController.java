@@ -11,6 +11,7 @@ import org.example.Service.Movie_Resource_Service;
 import org.example.Service.Movie_Score_Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.AccessType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,6 +39,7 @@ public class MovieController
 
     @GetMapping("/ALL")//返回所有电影
     @CrossOrigin // 允许跨域
+    @PreAuthorize("hasAuthority('movie:view')")
     public List<Movie_details> get_all_filmes()
     {
         return movieService.get_all();
@@ -45,6 +47,7 @@ public class MovieController
 
     @GetMapping("/ONEP")//返回一页电影
     @CrossOrigin // 允许跨域
+    @PreAuthorize("hasAuthority('movie:view')")
     public List<Movie_details> get_onep_filmes(
             @RequestParam(value = "page", defaultValue = "1") Integer page,
             @RequestParam(value = "pageSize", defaultValue = "60") Integer pageSize)
@@ -54,6 +57,7 @@ public class MovieController
 
     @GetMapping("/ONEID")//根据id查询电影
     @CrossOrigin // 允许跨域
+    @PreAuthorize("hasAuthority('movie:view')")
     public Movie_details ger_one_details_by_id(@RequestParam("id")int id)
     {
         return movieService.get_one_details(id);
@@ -61,6 +65,7 @@ public class MovieController
 
     @GetMapping("/ONENAME")//根据id查询电影
     @CrossOrigin // 允许跨域
+    @PreAuthorize("hasAuthority('movie:view')")
     public List<Movie_details> search_movie(@RequestParam("name") String name)
     {
         return movieService.search_by_name(name);
@@ -68,6 +73,7 @@ public class MovieController
 
     @PostMapping("/ADD")//添加电影
     @CrossOrigin // 允许跨域
+    @PreAuthorize("hasAuthority('movie:manage')")
     public String add_movie(@RequestPart("movie") Movie_details movie,@RequestPart("file") MultipartFile file) throws IOException//前端传的JSON，前端上传的图片
     {
             // 1. 上传图片 -> 得到 URL
@@ -81,6 +87,7 @@ public class MovieController
 
     @PostMapping("/UPDATE")//更新电影
     @CrossOrigin // 允许跨域
+    @PreAuthorize("hasAuthority('movie:manage')")
     public String update_movie(@RequestPart("movie") Movie_details movie,@RequestPart(value = "file", required = false) MultipartFile file) throws IOException
     {
         if(movie.getCover()==null)
@@ -95,6 +102,7 @@ public class MovieController
 
     @PostMapping("/DELETE")//删除电影
     @CrossOrigin // 允许跨域
+    @PreAuthorize("hasAuthority('movie:manage')")
     public String delete_movie(@RequestParam("id") int id)
     {
         boolean result = movieService.delete_movie(id);
@@ -107,6 +115,7 @@ public class MovieController
 
     @GetMapping("/SCORE/ONE")//根据id查询电影分数
     @CrossOrigin // 允许跨域
+    @PreAuthorize("hasAuthority('score:view')")
     public List<Movie_Score> get_score_by_id(@RequestParam("id")Long id)
     {
         return movieScoreService.get_score_by_id(id);
@@ -117,6 +126,7 @@ public class MovieController
 
     @GetMapping("/RESOURCE/ONE")//根据id查询电影资源
     @CrossOrigin // 允许跨域
+    @PreAuthorize("hasAuthority('resource:view')")
     public List<Movie_Resource> get_resource_by_id(@RequestParam("id")Long id)
     {
         return movieResourceService.get_resource_by_id(id);
@@ -125,6 +135,7 @@ public class MovieController
 
     @PostMapping("/RESOURCE/ADD")
     @CrossOrigin // 允许跨域
+    @PreAuthorize("hasAuthority('resource:manage')")
     public String add_resource(@RequestBody Movie_Resource resource)
     {
         int result = movieResourceService.insert(resource);
@@ -134,6 +145,7 @@ public class MovieController
 
     @PostMapping("/RESOURCE/UPDATE")
     @CrossOrigin // 允许跨域
+    @PreAuthorize("hasAuthority('resource:manage')")
     public String update_resource(@RequestBody Movie_Resource resource)
     {
         int result = movieResourceService.update(resource);
@@ -142,6 +154,7 @@ public class MovieController
 
     @PostMapping("/RESOURCE/DELETE")
     @CrossOrigin // 允许跨域
+    @PreAuthorize("hasAuthority('resource:manage')")
     public String delete_resource(@RequestParam("id")Long id)
     {
         int result = movieResourceService.deleteById(id);

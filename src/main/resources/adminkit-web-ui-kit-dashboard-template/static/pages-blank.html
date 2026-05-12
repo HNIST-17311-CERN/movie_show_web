@@ -304,7 +304,7 @@
                     <button class="btn btn-primary" onclick="openAddModal()">添加电影</button>
                     <input type="text" id="searchName" class="form-control w-auto" placeholder="输入名称查询">
                     <button class="btn btn-secondary" onclick="searchMovies()">查询</button>
-                    <button class="btn btn-light" onclick="fetchMovies()">重置</button>
+                    <button class="btn btn-light" onclick="fetchMovies(1)">重置</button>
                 </div>
 
                 <div class="card">
@@ -328,6 +328,7 @@
                             </thead>
                             <tbody></tbody>
                         </table>
+                        <div id="paginationBar" class="d-flex flex-wrap align-items-center justify-content-center gap-2 mt-3"></div>
                     </div>
                 </div>
             </div>
@@ -517,10 +518,13 @@
     let previewObjectUrl = null;
     let resourceMovieId = null;
     let resourceMovies = {};
+    let currentPage = 1;
+    let hasNextPage = true;
 
     const API_BASE = "http://localhost:8080/FILMES";
     const LOGIN_URL = "pages-sign-in.html";
     const DEFAULT_COVER_URL = "../../filmlane-master/assets/images/movie-1.png";
+    const PAGE_SIZE = 60;
 
     function getToken() {
         return localStorage.getItem("token") || "";
@@ -957,7 +961,7 @@
             }
 
             bootstrap.Modal.getInstance(document.getElementById("movieModal")).hide();
-            await fetchMovies();
+            await fetchMovies(currentPage);
         } catch (err) {
             console.error("保存电影失败:", err);
             alert("保存失败：" + err.message);
@@ -977,7 +981,7 @@
             if (!res.ok) throw new Error(text || ("HTTP " + res.status));
 
             alert("删除成功");
-            await fetchMovies();
+            await fetchMovies(currentPage);
         } catch (err) {
             console.error("删除电影失败:", err);
             alert("删除失败：" + err.message);
@@ -987,7 +991,7 @@
     async function searchMovies() {
         const keyword = document.getElementById("searchName").value.trim();
         if (!keyword) {
-            await fetchMovies();
+            await fetchMovies(1);
             return;
         }
 
@@ -1031,15 +1035,67 @@
         }
     }
 
-    async function fetchMovies() {
+    function renderPagination() {
+        const bar = document.getElementById("paginationBar");
+        if (!bar) return;
+
+        bar.innerHTML = "";
+
+        const prevBtn = document.createElement("button");
+        prevBtn.className = "btn btn-outline-secondary btn-sm";
+        prevBtn.textContent = "上一页";
+        prevBtn.disabled = currentPage <= 1;
+        prevBtn.addEventListener("click", () => {
+            if (currentPage > 1) fetchMovies(currentPage - 1);
+        });
+        bar.appendChild(prevBtn);
+
+        const pageText = document.createElement("span");
+        pageText.className = "text-muted small px-2";
+        pageText.textContent = `第 ${currentPage} 页`;
+        bar.appendChild(pageText);
+
+        const nextBtn = document.createElement("button");
+        nextBtn.className = "btn btn-outline-secondary btn-sm";
+        nextBtn.textContent = "下一页";
+        nextBtn.disabled = !hasNextPage;
+        nextBtn.addEventListener("click", () => {
+            if (hasNextPage) fetchMovies(currentPage + 1);
+        });
+        bar.appendChild(nextBtn);
+
+        const input = document.createElement("input");
+        input.className = "form-control form-control-sm";
+        input.type = "number";
+        input.min = "1";
+        input.placeholder = "页码";
+        input.style.width = "90px";
+        bar.appendChild(input);
+
+        const jumpBtn = document.createElement("button");
+        jumpBtn.className = "btn btn-primary btn-sm";
+        jumpBtn.textContent = "跳转";
+        jumpBtn.addEventListener("click", () => {
+            const page = parseInt(input.value, 10);
+            if (page && page > 0) fetchMovies(page);
+        });
+        bar.appendChild(jumpBtn);
+    }
+
+    async function fetchMovies(page = 1) {
         const token = getToken();
         if (!token) {
             showTableMessage(`请先<a href="${LOGIN_URL}">登录</a>后再访问`);
+            document.getElementById("paginationBar").innerHTML = "";
             return;
         }
 
+        currentPage = page;
+        showTableMessage("正在加载电影数据...");
+        document.getElementById("paginationBar").innerHTML = "";
+
         try {
-            const res = await fetch(`${API_BASE}/ALL`, {
+            const res = await fetch(`${API_BASE}/ONEP?page=${encodeURIComponent(page)}&pageSize=${encodeURIComponent(PAGE_SIZE)}`, {
                 headers: {
                     token: token,
                     "Content-Type": "application/json"
@@ -1049,6 +1105,7 @@
             if (res.status === 401) {
                 localStorage.removeItem("token");
                 showTableMessage(`登录已过期，请重新<a href="${LOGIN_URL}">登录</a>`);
+                document.getElementById("paginationBar").innerHTML = "";
                 return;
             }
 
@@ -1056,6 +1113,7 @@
 
             const data = await res.json();
             const movieList = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : []);
+            hasNextPage = movieList.length === PAGE_SIZE;
             movies = movieList.map(m => ({
                 id: m.id,
                 name: m.name || m.movieName,
@@ -1074,15 +1132,18 @@
                 renderTable();
             } else {
                 showTableMessage("暂无电影数据");
+                hasNextPage = false;
             }
+            renderPagination();
         } catch (err) {
             console.error("获取电影列表失败:", err);
             showTableMessage("获取电影列表失败，请检查后端接口是否可用");
+            document.getElementById("paginationBar").innerHTML = "";
         }
     }
 
     window.addEventListener("beforeunload", revokePreviewObjectUrl);
-    fetchMovies();
+    fetchMovies(1);
 </script>
 </body>
 </html>

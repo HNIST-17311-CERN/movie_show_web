@@ -3,6 +3,7 @@ package org.example.Servlet;
 import org.example.Entity.Movie_details;
 import org.example.Mapper.MovieMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +22,7 @@ public class MapperController
     MovieMapper movieMapper;
 
     @GetMapping("/findlast12")
+    @PreAuthorize("hasAuthority('movie:view')")
     public List<Movie_details> findlast12()
     {
 

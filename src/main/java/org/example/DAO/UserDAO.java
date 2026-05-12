@@ -5,15 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 
-import java.sql.PreparedStatement;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Repository
 public class UserDAO
@@ -44,6 +37,17 @@ public class UserDAO
         return jdbcTemplate.queryForObject(sql,new Object[]{name},rowMapper);
     }
 
+    public List<String> Find_Permissions_By_UserId(Long userId)
+    {
+        String sql = """
+                SELECT DISTINCT p.name
+                FROM user_roles ur
+                JOIN role_permissions rp ON ur.role_id = rp.role_id
+                JOIN permissions p ON rp.permission_id = p.id
+                WHERE ur.user_id = ?
+                """;
+        return jdbcTemplate.queryForList(sql, String.class, userId);
+    }
 
 
 }

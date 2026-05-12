@@ -4,6 +4,7 @@ package org.example.Servlet;
 import org.example.DAO.UserDAO;
 import org.example.Entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +22,7 @@ public class selectController
     public UserDAO userDAO;
 
     @GetMapping("/find/all")
+    @PreAuthorize("hasAuthority('user:manage')")
     public List<User> get()
     {
         return userDAO.Find_All();
