@@ -103,11 +103,11 @@
         </dependency>
 
         <!-- Oracle JDBC -->
-        <dependency>
-            <groupId>com.oracle.database.jdbc</groupId>
-            <artifactId>ojdbc11</artifactId>
-            <version>23.3.0.23.09</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.oracle.database.jdbc</groupId>-->
+<!--            <artifactId>ojdbc11</artifactId>-->
+<!--            <version>23.3.0.23.09</version>-->
+<!--        </dependency>-->
 
         <!-- JWT -->
 
@@ -141,6 +141,18 @@
             <artifactId>commons-pool2</artifactId>
         </dependency>
 
+        <!-- LangChain4j JDBC -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-open-ai</artifactId>
+            <version>1.0.0-beta3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j</artifactId>
+            <version>1.0.0-beta3</version>
+        </dependency>
 
 
     </dependencies>
