@@ -12,18 +12,8 @@ public class LangChain4j
 {
     public ChatResponse Langcain()
     {
-        String apiKey = "sk-2f4d5816aead4dc4a6eaa1b68a5bc116";
 
-        OpenAiChatModel aiChatModel = OpenAiChatModel.builder()
-                .baseUrl("https://dashscope.aliyuncs.com/compatible-mode/v1")
-                .apiKey(apiKey)
-                .modelName("qwen-vl-plus")
-                .build();
 
-        UserMessage userMessage = UserMessage.from(
-                TextContent.from("这是什么"),
-                ImageContent.from("https://dashscope.oss-cn-beijing.aliyuncs.com/images/dog_and_girl.jpeg")
-        );
         return aiChatModel.chat(userMessage);
     }
 }

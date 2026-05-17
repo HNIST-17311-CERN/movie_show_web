@@ -5,7 +5,6 @@
 
 <mapper namespace="org.example.Mapper.MovieMapper">
 
-    <!-- 结果映射 -->
     <resultMap id="MovieMap" type="org.example.Entity.Movie_details">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
@@ -21,12 +20,65 @@
         <result property="createTime" column="create_time"/>
     </resultMap>
 
-    <!--最近更新的电影-->
-    <select id="findlast12"  resultMap="MovieMap">
-            SELECT *
-            FROM movie
-            ORDER BY create_time DESC
-            LIMIT 12
+    <resultMap id="MovieCascadeScoreMap" type="org.example.Entity.MovieCascadeDetails" extends="MovieMap">
+        <association property="score" javaType="org.example.Entity.Movie_Score">
+            <id property="id" column="score_id"/>
+            <result property="movieId" column="score_movie_id"/>
+            <result property="source" column="score_source"/>
+            <result property="score" column="score_value"/>
+            <result property="count" column="score_count"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="MovieCascadeResourcesMap" type="org.example.Entity.MovieCascadeDetails" extends="MovieMap">
+        <collection property="resources" ofType="org.example.Entity.Movie_Resource">
+            <id property="id" column="resource_id"/>
+            <result property="movieId" column="resource_movie_id"/>
+            <result property="name" column="resource_name"/>
+            <result property="quality" column="resource_quality"/>
+            <result property="size" column="resource_size"/>
+            <result property="type" column="resource_type"/>
+            <result property="url" column="resource_url"/>
+            <result property="createTime" column="resource_create_time"/>
+            <result property="subtitle" column="resource_subtitle"/>
+        </collection>
+    </resultMap>
+
+    <select id="findlast12" resultMap="MovieMap">
+        SELECT *
+        FROM movie
+        ORDER BY create_time DESC
+        LIMIT 12
+    </select>
+
+    <select id="findMovieWithScoreById" resultMap="MovieCascadeScoreMap">
+        SELECT
+            m.*,
+            s.id AS score_id,
+            s.movie_id AS score_movie_id,
+            s.source AS score_source,
+            s.score AS score_value,
+            s.count AS score_count
+        FROM movie m
+        LEFT JOIN movie_score s ON m.id = s.movie_id
+        WHERE m.id = #{id}
+    </select>
+
+    <select id="findMovieWithResourcesById" resultMap="MovieCascadeResourcesMap">
+        SELECT
+            m.*,
+            r.id AS resource_id,
+            r.movie_id AS resource_movie_id,
+            r.name AS resource_name,
+            r.quality AS resource_quality,
+            r.size AS resource_size,
+            r.type AS resource_type,
+            r.url AS resource_url,
+            r.create_time AS resource_create_time,
+            r.subtitle AS resource_subtitle
+        FROM movie m
+        LEFT JOIN movie_resource r ON m.id = r.movie_id
+        WHERE m.id = #{id}
     </select>
 
 </mapper>

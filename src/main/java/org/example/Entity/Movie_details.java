@@ -4,24 +4,22 @@ import java.util.Date;
 
 public class Movie_details {
 
-    private Long id;                    // 电影ID
-    private String name;                // 电影名称
-    private String cover;               // 封面图片地址
-    private String director;            // 导演
-    private String actors;              // 主演（多个用逗号分隔）
-    private String type;                // 类型（剧情/科幻等）
-    private String region;              // 地区（大陆/美国等）
-    private String language;            // 语言（国语/英语等）
-    private Date releaseDate;           // 上映时间
-    private Integer duration;           // 片长（分钟）
-    private String description;         // 电影简介
-    private Date createTime;            // 创建时间
+    private Long id;                    // 鐢靛奖ID
+    private String name;                // 鐢靛奖鍚嶇О
+    private String cover;               // 灏侀潰鍥剧墖鍦板潃
+    private String director;            // 瀵兼紨
+    private String actors;              // 涓绘紨锛堝涓敤閫楀彿鍒嗛殧锛?
+    private String type;                // 绫诲瀷锛堝墽鎯?绉戝够绛夛級
+    private String region;              // 鍦板尯锛堝ぇ闄?缇庡浗绛夛級
+    private String language;            // 璇█锛堝浗璇?鑻辫绛夛級
+    private Date releaseDate;           // 涓婃槧鏃堕棿
+    private Integer duration;           // 鐗囬暱锛堝垎閽燂級
+    private String description;         // 鐢靛奖绠€浠?
+    private Date createTime;            // 鍒涘缓鏃堕棿
 
-    // 无参构造方法
     public Movie_details() {
     }
 
-    // 全参构造方法
     public Movie_details(Long id, String name, String cover, String director,
             String actors, String type, String region, String language,
             Date releaseDate, Integer duration, String description, Date createTime) {
@@ -39,7 +37,6 @@ public class Movie_details {
         this.createTime = createTime;
     }
 
-    // Getter 和 Setter 方法
     public Long getId() {
         return id;
     }
@@ -136,7 +133,6 @@ public class Movie_details {
         this.createTime = createTime;
     }
 
-    // toString 方法（可选）
     @Override
     public String toString() {
         return "Movie_details{" +
