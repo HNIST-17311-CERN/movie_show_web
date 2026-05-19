@@ -43,6 +43,18 @@ public class MovieDAOTest {
         assertNotNull(list);
     }
 
+    @Test
+    public void testFindAnimationMovie() {
+        List<Movie_details> list = movieDAO.Find_animation(1, 60);
+
+        System.out.println("===== testFindOneMovie =====");
+        for (Movie_details movie : list) {
+            System.out.println(movie);
+        }
+
+        assertNotNull(list);
+    }
+
     // ✅ 测试：根据ID查询
     @Test
     public void testFindById() {

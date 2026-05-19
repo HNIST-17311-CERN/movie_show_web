@@ -47,8 +47,8 @@
     <select id="findlast12" resultMap="MovieMap">
         SELECT *
         FROM movie
-        ORDER BY create_time DESC
-        LIMIT 12
+        WHERE id IN (50, 67, 52, 4555, 96, 104, 1177, 23, 59, 27, 64, 29)
+        ORDER BY FIELD(id, 50, 67, 52, 4555, 96, 104, 1177, 23, 59, 27, 64, 29)
     </select>
 
     <select id="findMovieWithScoreById" resultMap="MovieCascadeScoreMap">

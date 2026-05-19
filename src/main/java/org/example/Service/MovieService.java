@@ -79,4 +79,14 @@ public class MovieService
         int rows = movieDAO.Update_movie(movie);
         return rows > 0;
     }
+
+
+    /*---------------------------------------------------------------------------------*/
+    //类型查找
+    //查找动画标签（1页）
+    public List<Movie_details> Find_animation(int page, int size)
+    {
+        return movieDAO.Find_animation(page, size);
+    }
+
 }

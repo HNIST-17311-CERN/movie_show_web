@@ -63,7 +63,7 @@ public class MovieController
         return movieService.get_one_details(id);
     }
 
-    @GetMapping("/ONENAME")//根据id查询电影
+    @GetMapping("/ONENAME")//根据名字查询电影
     @CrossOrigin // 允许跨域
     @PreAuthorize("hasAuthority('movie:view')")
     public List<Movie_details> search_movie(@RequestParam("name") String name)
@@ -160,6 +160,20 @@ public class MovieController
         int result = movieResourceService.deleteById(id);
         return result > 0 ? "资源删除成功" : "资源删除失败";
     }
+    /*---------------------------------------------------------------------------------*/
+    //类型查找
+    //查找动画标签（1页）
+    @GetMapping("/animation/ONEP")//返回一页电影
+    @CrossOrigin // 允许跨域
+    @PreAuthorize("hasAuthority('movie:view')")
+    public List<Movie_details> Find_animation(
+            @RequestParam(value = "page", defaultValue = "1") Integer page,
+            @RequestParam(value = "pageSize", defaultValue = "60") Integer pageSize)
+    {
+        return movieService.get_one_p(page, pageSize);
+    }
+
+
 }
 
 

@@ -137,4 +137,17 @@ public class MovieDAO
                 movie.getId()
         );
     }
+
+    /*---------------------------------------------------------------------------------*/
+    //类型查找
+    //查找动画标签（1页）
+    public List<Movie_details> Find_animation(int page, int size)
+    {
+        if (page < 1) page = 1;
+
+        int offset = (page - 1) * size;
+
+        String sql ="select * from movie where locate('动画', description) > 0 LIMIT ?, ?";
+        return jdbcTemplate.query(sql, new Object[]{offset, size}, movieRowMapper);
+    }
 }
