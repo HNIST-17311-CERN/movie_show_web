@@ -6,7 +6,17 @@
       "Bash(taskkill *)",
       "Bash(tasklist /FI \"PID eq 35020\")",
       "Bash(cmd.exe *)",
-      "Bash(powershell *)"
+      "Bash(powershell *)",
+      "Bash(docker --version)",
+      "Bash(mkdir -p __TRACKED_VAR__/milvus)",
+      "Bash(curl -o docker-compose.yml https://raw.githubusercontent.com/milvus-io/milvus/refs/heads/master/deployments/docker/standalone/docker-compose.yml)",
+      "Bash(docker compose *)",
+      "Bash(docker pull *)",
+      "Bash(docker tag *)",
+      "Bash(jar tf *)",
+      "Bash(grep -E \"\\(FieldType|CreateCollectionParam|CreateIndexParam|LoadCollectionParam|HasCollectionParam|ShowCollectionsParam\\)\\\\.class$\")",
+      "Bash(docker start milvus-standalone *)",
+      "Bash(docker update *)"
     ]
   }
 }
