@@ -12,8 +12,8 @@ public class LangChain4j
 {
     public ChatResponse Langcain()
     {
-        //String apiKey = "sk-2f4d5816aead4dc4a6eaa1b68a5bc116";
-        String apiKey = "sk-48a98e4a66c341378f6abbc46628c63e";
+        String apiKey = System.getenv("DEEPSEEK_API_KEY");
+        System.out.println("DEEPSEEK_API_KEY = " + (apiKey != null ? "***已读取到***" : "!!!为null!!! 请重启IDE"));
 //        OpenAiChatModel aiChatModel = OpenAiChatModel.builder()
 //                .baseUrl("https://dashscope.aliyuncs.com/compatible-mode/v1")
 //                .apiKey(apiKey)
