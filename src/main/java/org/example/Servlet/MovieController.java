@@ -71,6 +71,21 @@ public class MovieController
         return movieService.search_by_name(name);
     }
 
+    @GetMapping("/FILTER")
+    @CrossOrigin
+    @PreAuthorize("hasAuthority('movie:view')")
+    public List<Movie_details> filter_movies(
+            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "year", required = false) String year,
+            @RequestParam(value = "region", required = false) String region,
+            @RequestParam(value = "language", required = false) String language,
+            @RequestParam(value = "sort", required = false) String sort,
+            @RequestParam(value = "page", defaultValue = "1") Integer page,
+            @RequestParam(value = "pageSize", defaultValue = "60") Integer pageSize)
+    {
+        return movieService.filter_movies(type, year, region, language, sort, page, pageSize);
+    }
+
     @PostMapping("/ADD")//添加电影
     @CrossOrigin // 允许跨域
     @PreAuthorize("hasAuthority('movie:manage')")

@@ -7,11 +7,25 @@
   <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./assets/css/style.css">
   <style>
+    main .container {
+      max-width: 1200px;
+      padding: 14px 24px 32px;
+    }
+
+    main .section {
+      padding: 0 0 40px;
+    }
+
+    main .section-header {
+      margin-bottom: 16px;
+    }
+
     #home-movies-list {
       margin: 0;
       padding: 0;
       list-style: none;
       grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 24px 20px;
       align-items: start;
     }
 
@@ -23,7 +37,7 @@
 
     #home-movies-list .card-banner {
       width: 100%;
-      height: 320px;
+      height: 275px;
       overflow: hidden;
     }
 
@@ -41,23 +55,37 @@
 
     .hero-banner {
       align-items: stretch;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+      height: 400px;
+      margin-bottom: 26px;
     }
 
     #hero-featured-link {
       height: 100%;
       min-height: 100%;
+      aspect-ratio: auto;
+      display: block;
     }
 
     #hero-sidebar {
       height: 100%;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      gap: 16px;
+      justify-content: flex-start;
     }
 
     #hero-sidebar .hero-side-card {
-      flex: 1;
+      flex: 0 0 calc((400px - 32px) / 3);
       min-height: 0;
+      padding: 10px 12px;
+      overflow: hidden;
+    }
+
+    #hero-sidebar .hero-side-card img {
+      width: 72px;
+      height: 102px;
     }
   </style>
 </head>

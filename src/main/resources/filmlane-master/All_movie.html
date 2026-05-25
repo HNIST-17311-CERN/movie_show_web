@@ -72,6 +72,69 @@
     .pagination-btn:not(:disabled):hover {
       background: #f3f4f6;
     }
+
+    .filter-section {
+      padding: 8px 0 14px;
+      border: 0;
+      box-shadow: none;
+    }
+
+    .filter-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      padding: 7px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .filter-label {
+      flex: 0 0 42px;
+      line-height: 24px;
+      font-size: 14px;
+      color: #111827;
+      white-space: nowrap;
+    }
+
+    .filter-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 10px;
+      line-height: 24px;
+    }
+
+    .filter-pill {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: #111827;
+      line-height: 24px;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .filter-pill.active {
+      padding: 0 4px;
+      border-radius: 4px;
+      background: #2f80ff;
+      color: #fff;
+    }
+
+    .filter-toolbar {
+      padding-top: 10px;
+      gap: 14px;
+      font-size: 14px;
+    }
+
+    .filter-toolbar select {
+      height: 28px;
+      padding: 2px 26px 2px 8px;
+      font-size: 13px;
+    }
+
+    .filter-checkbox {
+      line-height: 28px;
+    }
   </style>
 </head>
 <body id="top">
@@ -106,51 +169,138 @@
         <span class="filter-label">类型</span>
         <div class="filter-pills">
           <button class="filter-pill active">全部</button>
-          <button class="filter-pill">电影</button>
-          <button class="filter-pill">电视剧</button>
-          <button class="filter-pill">综艺</button>
-          <button class="filter-pill">动漫</button>
-          <button class="filter-pill">纪录片</button>
+          <button class="filter-pill">剧情</button>
+          <button class="filter-pill">科幻</button>
+          <button class="filter-pill">动作</button>
+          <button class="filter-pill">喜剧</button>
+          <button class="filter-pill">爱情</button>
+          <button class="filter-pill">冒险</button>
+          <button class="filter-pill">儿童</button>
+          <button class="filter-pill">歌舞</button>
+          <button class="filter-pill">音乐</button>
+          <button class="filter-pill">奇幻</button>
+          <button class="filter-pill">动画</button>
+          <button class="filter-pill">恐怖</button>
+          <button class="filter-pill">惊悚</button>
+          <button class="filter-pill">丧尸</button>
+          <button class="filter-pill">战争</button>
+          <button class="filter-pill">传记</button>
+          <button class="filter-pill">纪录</button>
+          <button class="filter-pill">犯罪</button>
+          <button class="filter-pill">悬疑</button>
+          <button class="filter-pill">西部</button>
+          <button class="filter-pill">灾难</button>
+          <button class="filter-pill">古装</button>
+          <button class="filter-pill">武侠</button>
+          <button class="filter-pill">家庭</button>
+          <button class="filter-pill">短片</button>
+          <button class="filter-pill">校园</button>
+          <button class="filter-pill">文艺</button>
+          <button class="filter-pill">运动</button>
+          <button class="filter-pill">青春</button>
+          <button class="filter-pill">同性</button>
+          <button class="filter-pill">励志</button>
+          <button class="filter-pill">人性</button>
+          <button class="filter-pill">美食</button>
+          <button class="filter-pill">女性</button>
+          <button class="filter-pill">治愈</button>
+          <button class="filter-pill">历史</button>
+          <button class="filter-pill">真人秀</button>
+          <button class="filter-pill">脱口秀</button>
+          <button class="filter-pill">多选</button>
         </div>
       </div>
       <div class="filter-row">
         <span class="filter-label">年代</span>
         <div class="filter-pills">
           <button class="filter-pill active">全部</button>
+          <button class="filter-pill">近三年</button>
+          <button class="filter-pill">2026</button>
+          <button class="filter-pill">2025</button>
           <button class="filter-pill">2024</button>
           <button class="filter-pill">2023</button>
           <button class="filter-pill">2022</button>
           <button class="filter-pill">2021</button>
+          <button class="filter-pill">2020</button>
+          <button class="filter-pill">2019</button>
+          <button class="filter-pill">2018</button>
+          <button class="filter-pill">2017</button>
+          <button class="filter-pill">20年代</button>
+          <button class="filter-pill">10年代</button>
+          <button class="filter-pill">00年代</button>
+          <button class="filter-pill">90年代</button>
+          <button class="filter-pill">80年代</button>
+          <button class="filter-pill">70年代</button>
+          <button class="filter-pill">60年代</button>
+          <button class="filter-pill">更早</button>
+          <button class="filter-pill">&gt;&gt;</button>
         </div>
       </div>
       <div class="filter-row">
         <span class="filter-label">地区</span>
         <div class="filter-pills">
           <button class="filter-pill active">全部</button>
-          <button class="filter-pill">大陆</button>
+          <button class="filter-pill">海外</button>
+          <button class="filter-pill">欧美</button>
+          <button class="filter-pill">亚洲</button>
           <button class="filter-pill">美国</button>
-          <button class="filter-pill">韩国</button>
           <button class="filter-pill">日本</button>
-          <button class="filter-pill">其他</button>
+          <button class="filter-pill">韩国</button>
+          <button class="filter-pill">英国</button>
+          <button class="filter-pill">法国</button>
+          <button class="filter-pill">德国</button>
+          <button class="filter-pill">印度</button>
+          <button class="filter-pill">泰国</button>
+          <button class="filter-pill">瑞典</button>
+          <button class="filter-pill">巴西</button>
+          <button class="filter-pill">大陆</button>
+          <button class="filter-pill">香港</button>
+          <button class="filter-pill">台湾</button>
+          <button class="filter-pill">加拿大</button>
+          <button class="filter-pill">俄罗斯</button>
+          <button class="filter-pill">意大利</button>
+          <button class="filter-pill">西班牙</button>
+          <button class="filter-pill">澳大利亚</button>
+          <button class="filter-pill">&gt;&gt;</button>
         </div>
       </div>
       <div class="filter-row">
         <span class="filter-label">语言</span>
         <div class="filter-pills">
           <button class="filter-pill active">全部</button>
-          <button class="filter-pill">国语</button>
           <button class="filter-pill">英语</button>
+          <button class="filter-pill">法语</button>
+          <button class="filter-pill">国语</button>
           <button class="filter-pill">粤语</button>
-          <button class="filter-pill">其他</button>
+          <button class="filter-pill">日语</button>
+          <button class="filter-pill">韩语</button>
+          <button class="filter-pill">泰语</button>
+          <button class="filter-pill">德语</button>
+          <button class="filter-pill">俄语</button>
+          <button class="filter-pill">闽南语</button>
+          <button class="filter-pill">丹麦语</button>
+          <button class="filter-pill">波兰语</button>
+          <button class="filter-pill">瑞典语</button>
+          <button class="filter-pill">印地语</button>
+          <button class="filter-pill">挪威语</button>
+          <button class="filter-pill">意大利语</button>
+          <button class="filter-pill">西班牙语</button>
+          <button class="filter-pill">无对白</button>
+          <button class="filter-pill">&gt;&gt;</button>
         </div>
       </div>
       <div class="filter-toolbar">
         <select>
-          <option>按添加时间</option>
-          <option>按评分</option>
+          <option>添加时间</option>
+          <option>更新时间</option>
+          <option>上映时间</option>
+          <option>评分最高</option>
+          <option>评分人数</option>
+          <option>评分总人数</option>
+          <option>综合评分</option>
         </select>
-        <select><option>类型</option></select>
-        <select><option>状态</option></select>
+        <select><option>全部</option></select>
+        <select><option>默认</option></select>
         <label class="filter-checkbox"><input type="checkbox"> IMDB评分</label>
         <label class="filter-checkbox"><input type="checkbox"> 可播放</label>
       </div>
@@ -169,11 +319,19 @@
 <script>
   (function() {
     var API_URL = 'http://localhost:8080/FILMES/ONEP';
+    var FILTER_API_URL = 'http://localhost:8080/FILMES/FILTER';
     var LOGIN_URL = '../adminkit-web-ui-kit-dashboard-template/static/pages-sign-in.html';
     var DEFAULT_COVER_URL = './assets/images/movie-1.png';
     var PAGE_SIZE = 60;
     var currentPage = 1;
     var hasNextPage = true;
+    var filters = {
+      type: '全部',
+      year: '全部',
+      region: '全部',
+      language: '全部',
+      sort: ''
+    };
 
     function getCoverUrl(cover) {
       if (!cover) return DEFAULT_COVER_URL;
@@ -193,6 +351,74 @@
       };
     }
 
+    function isAll(value) {
+      return !value || value === '全部';
+    }
+
+    function hasActiveFilters() {
+      return !isAll(filters.type) ||
+        !isAll(filters.year) ||
+        !isAll(filters.region) ||
+        !isAll(filters.language) ||
+        !!filters.sort;
+    }
+
+    function getFilterKey(label) {
+      if (label === '类型') return 'type';
+      if (label === '年代') return 'year';
+      if (label === '地区') return 'region';
+      if (label === '语言') return 'language';
+      return '';
+    }
+
+    function getSortValue(text) {
+      if (text === '添加时间' || text === '更新时间') return 'create_time';
+      if (text === '上映时间') return 'releaseDate';
+      if (text === '评分最高' || text === '评分人数' || text === '评分总人数' || text === '综合评分') return 'create_time';
+      return '';
+    }
+
+    function buildMoviesUrl(page) {
+      var params = new URLSearchParams();
+      params.set('page', page);
+      params.set('pageSize', PAGE_SIZE);
+
+      if (!isAll(filters.type)) params.set('type', filters.type);
+      if (!isAll(filters.year)) params.set('year', filters.year);
+      if (!isAll(filters.region)) params.set('region', filters.region);
+      if (!isAll(filters.language)) params.set('language', filters.language);
+      if (filters.sort) params.set('sort', filters.sort);
+
+      return (hasActiveFilters() ? FILTER_API_URL : API_URL) + '?' + params.toString();
+    }
+
+    function bindFilters() {
+      document.querySelectorAll('.filter-row').forEach(function(row) {
+        var labelEl = row.querySelector('.filter-label');
+        var key = labelEl ? getFilterKey(labelEl.textContent.trim()) : '';
+        if (!key) return;
+
+        row.querySelectorAll('.filter-pill').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            row.querySelectorAll('.filter-pill').forEach(function(item) {
+              item.classList.remove('active');
+            });
+            btn.classList.add('active');
+            filters[key] = btn.textContent.trim();
+            loadMovies(1);
+          });
+        });
+      });
+
+      var sortSelect = document.querySelector('.filter-toolbar select');
+      if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+          filters.sort = getSortValue(sortSelect.options[sortSelect.selectedIndex].textContent.trim());
+          loadMovies(1);
+        });
+      }
+    }
+
     function needLogin() {
       var loadingEl = document.getElementById('loading');
       var listEl = document.getElementById('movies-list');
@@ -208,7 +434,7 @@
       li.className = 'movie-card-wrapper';
       li.innerHTML =
         '<div class="movie-card">' +
-        '<a href="./movie-details.html?id=' + movie.id + '">' +
+        '<a href="./movie-details.html?id=' + movie.id + '" target="_blank" rel="noopener noreferrer">' +
         '<figure class="card-banner">' +
         '<img alt="' + (movie.name || '').replace(/"/g, '&quot;') + '">' +
         '<span class="card-badge">HD</span>' +
@@ -323,7 +549,7 @@
       listEl.innerHTML = '';
       bar.style.display = 'none';
 
-      fetch(API_URL + '?page=' + encodeURIComponent(page) + '&pageSize=' + encodeURIComponent(PAGE_SIZE), {
+      fetch(buildMoviesUrl(page), {
         headers: {
           token: token,
           'Content-Type': 'application/json'
@@ -365,6 +591,7 @@
         });
     }
 
+    bindFilters();
     loadMovies(1);
   })();
 </script>

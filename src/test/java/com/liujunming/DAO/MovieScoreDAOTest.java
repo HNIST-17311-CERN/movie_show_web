@@ -36,7 +36,7 @@ public class MovieScoreDAOTest
     @Test
     public void testFindByMovieId()
     {
-        List<Movie_Score> list = dao.findByMovieId(1L);
+        List<Movie_Score> list = dao.findByMovieId(23L);
 
         System.out.println("====== 电影评分查询 ======");
         for (Movie_Score s : list)

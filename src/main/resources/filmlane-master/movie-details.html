@@ -173,6 +173,44 @@
       setText('imdb-count', imdb && imdb.count ? imdb.count + '人评价' : '');
     }
 
+    function renderScoresFromApi(scores) {
+      if (!Array.isArray(scores) || !scores.length) {
+        setText('douban-score', '--');
+        setText('douban-count', '');
+        setText('imdb-score', '--');
+        setText('imdb-count', '');
+        return;
+      }
+
+      function sourceOf(score) {
+        return String(score && score.source ? score.source : '').trim().toLowerCase();
+      }
+
+      function formatScore(score) {
+        var value = Number(score);
+        return Number.isFinite(value) ? value.toFixed(1) : '--';
+      }
+
+      function formatCount(count) {
+        var value = Number(count);
+        return Number.isFinite(value) && value > 0 ? value + '人评价' : '';
+      }
+
+      var douban = scores.find(function(score) {
+        var source = sourceOf(score);
+        return source === 'douban' || source === '豆瓣';
+      });
+      var imdb = scores.find(function(score) {
+        return sourceOf(score) === 'imdb';
+      });
+      var fallback = scores[0];
+
+      setText('douban-score', douban ? formatScore(douban.score) : (fallback ? formatScore(fallback.score) : '--'));
+      setText('douban-count', douban ? formatCount(douban.count) : (fallback ? formatCount(fallback.count) : ''));
+      setText('imdb-score', imdb ? formatScore(imdb.score) : '--');
+      setText('imdb-count', imdb ? formatCount(imdb.count) : '');
+    }
+
     function renderResources(resources) {
       var tbody = document.getElementById('resource-tbody');
       var tabsContainer = document.getElementById('resource-tabs');
@@ -220,9 +258,12 @@
       .then(renderMovieDetails)
       .catch(function(err) { console.error('获取电影详情失败', err); });
 
-    fetch('http://localhost:8080/FILMES/SCORE/ONE?id=' + movieId, { headers: { token: token || '' } })
-      .then(function(res) { return res.json(); })
-      .then(renderScores)
+    fetch('http://localhost:8080/FILMES/SCORE/ONE?id=' + encodeURIComponent(movieId), { headers: { token: token || '' } })
+      .then(function(res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(renderScoresFromApi)
       .catch(function(err) { console.error('获取评分失败', err); });
 
     fetch('http://localhost:8080/FILMES/RESOURCE/ONE?id=' + movieId, { headers: { token: token || '' } })
