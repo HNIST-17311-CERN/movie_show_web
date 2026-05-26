@@ -1,29 +1,35 @@
 package org.example.AI;
 
-import dev.langchain4j.data.message.TextContent;
+import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.openai.OpenAiChatModel;
-import org.springframework.stereotype.Component;
+import jakarta.annotation.PostConstruct;
+import org.springframework.stereotype.Service;
 
-@Component
-public class LangChain4j
-{
-    public ChatResponse Langcain()
-    {
+@Service
+public class LangChain4j {
+
+    private OpenAiChatModel chatModel;
+
+    @PostConstruct
+    public void init() {
         String apiKey = System.getenv("DEEPSEEK_API_KEY");
-        System.out.println("DEEPSEEK_API_KEY = " + (apiKey != null ? "***已读取到***" : "!!!为null!!! 请重启IDE"));
-
-                OpenAiChatModel aiChatModel = OpenAiChatModel.builder()
+        this.chatModel = OpenAiChatModel.builder()
                 .baseUrl("https://api.deepseek.com")
                 .apiKey(apiKey)
                 .modelName("deepseek-v4-pro")
                 .build();
+    }
 
-        UserMessage userMessage = UserMessage.from(
-                TextContent.from("h")
-        );
+    public String chat(String userMessage) {
+        return chatModel.chat(UserMessage.from(userMessage)).aiMessage().text();
+    }
 
-        return aiChatModel.chat(userMessage);
+    public String chatWithSystem(String systemPrompt, String userMessage) {
+        return chatModel.chat(
+                SystemMessage.from(systemPrompt),
+                UserMessage.from(userMessage)
+        ).aiMessage().text();
     }
 }

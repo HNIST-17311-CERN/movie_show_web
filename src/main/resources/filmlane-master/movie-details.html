@@ -101,6 +101,7 @@
 
 <a href="#top" class="go-top" data-go-top>↑</a>
 
+<script src="./assets/js/script.js"></script>
 <script>
   (function() {
     var params = new URLSearchParams(window.location.search);
@@ -165,50 +166,28 @@
 
     function renderScores(scores) {
       if (!scores || !scores.length) return;
-      var douban = scores.find(function(s) { return s.source === 'douban'; });
-      var imdb = scores.find(function(s) { return s.source === 'imdb'; });
-      setText('douban-score', douban ? douban.score.toFixed(1) : '--');
-      setText('douban-count', douban && douban.count ? douban.count + '人评价' : '');
-      setText('imdb-score', imdb ? imdb.score.toFixed(1) : '--');
-      setText('imdb-count', imdb && imdb.count ? imdb.count + '人评价' : '');
+      var s = scores[0];
+      setText('douban-score', s.score.toFixed(1));
+      setText('douban-count', s.count ? s.count + '人评价' : '');
+      setText('imdb-score', s.score.toFixed(1));
+      setText('imdb-count', s.count ? s.count + '人评价' : '');
     }
 
     function renderScoresFromApi(scores) {
       if (!Array.isArray(scores) || !scores.length) {
-        setText('douban-score', '--');
-        setText('douban-count', '');
-        setText('imdb-score', '--');
-        setText('imdb-count', '');
+        setText('douban-score', '--'); setText('douban-count', '');
+        setText('imdb-score', '--'); setText('imdb-count', '');
         return;
       }
 
-      function sourceOf(score) {
-        return String(score && score.source ? score.source : '').trim().toLowerCase();
-      }
+      var s = scores[0];
+      var fmt = function(v) { v = Number(v); return Number.isFinite(v) ? v.toFixed(1) : '--'; };
+      var cnt = function(v) { v = Number(v); return Number.isFinite(v) && v > 0 ? v + '人评价' : ''; };
 
-      function formatScore(score) {
-        var value = Number(score);
-        return Number.isFinite(value) ? value.toFixed(1) : '--';
-      }
-
-      function formatCount(count) {
-        var value = Number(count);
-        return Number.isFinite(value) && value > 0 ? value + '人评价' : '';
-      }
-
-      var douban = scores.find(function(score) {
-        var source = sourceOf(score);
-        return source === 'douban' || source === '豆瓣';
-      });
-      var imdb = scores.find(function(score) {
-        return sourceOf(score) === 'imdb';
-      });
-      var fallback = scores[0];
-
-      setText('douban-score', douban ? formatScore(douban.score) : (fallback ? formatScore(fallback.score) : '--'));
-      setText('douban-count', douban ? formatCount(douban.count) : (fallback ? formatCount(fallback.count) : ''));
-      setText('imdb-score', imdb ? formatScore(imdb.score) : '--');
-      setText('imdb-count', imdb ? formatCount(imdb.count) : '');
+      setText('douban-score', fmt(s.score));
+      setText('douban-count', cnt(s.count));
+      setText('imdb-score', fmt(s.score));
+      setText('imdb-count', cnt(s.count));
     }
 
     function renderResources(resources) {

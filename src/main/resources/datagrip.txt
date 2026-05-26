@@ -1,0 +1,27 @@
+/*原电影的三个表*/
+-- auto-generated definition
+create table movie
+(
+    id           bigint auto_increment comment '电影ID'
+        primary key,
+    name         varchar(255) null comment '电影名称',
+    cover        varchar(500) null comment '封面图片地址',
+    director     varchar(255) null comment '导演',
+    actors       text         null comment '主演（多个用逗号分隔）',
+    type         varchar(100) null comment '类型（剧情/科幻等）',
+    region       varchar(100) null comment '地区（大陆/美国等）',
+    language     varchar(100) null comment '语言（国语/英语等）',
+    release_date date         null comment '上映时间',
+    duration     int          null comment '片长（分钟）',
+    description  text         null comment '电影简介',
+    create_time  datetime     null comment '创建时间'
+)
+    comment '电影基本信息表';
+
+
+/*新增电视剧三个表*/
+要求在电影表的基础上添加总集数和更新状态(周几更新、已完结)两个属性
+
+
+/*新增动漫三个表*/
+要求在电影表的基础上添加总集数和更新状态(周几更新、已完结)两个属性

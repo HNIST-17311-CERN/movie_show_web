@@ -18,7 +18,7 @@ public class LangChain4jController
     @CrossOrigin
     public String LangChainHello()
     {
-        return  langChain4j.Langcain().aiMessage().text();
+        return langChain4j.chat("你好");
     }
 
 }

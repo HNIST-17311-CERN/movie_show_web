@@ -11,6 +11,14 @@
   --transition: 0.2s ease;
 }
 
+[data-theme="dark"] {
+  --white: #1a1a2e;
+  --bg: #16213e;
+  --text: #e0e0e0;
+  --text-muted: #a0a0a0;
+  --border: #333;
+}
+
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
@@ -293,6 +301,13 @@ img { max-width: 100%; display: block; }
 }
 
 .movie-card:hover .card-title { color: var(--primary); }
+
+.card-score {
+  float: right;
+  font-size: 13px;
+  font-weight: bold;
+  color: #f97316;
+}
 
 .card-meta {
   font-size: 12px;

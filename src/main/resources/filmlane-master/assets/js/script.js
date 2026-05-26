@@ -1,5 +1,11 @@
 'use strict';
 
+(function() {
+  if (localStorage.getItem('darkMode') === 'true') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+})();
+
 var goTopBtn = document.querySelector('[data-go-top]');
 if (goTopBtn) {
   window.addEventListener('scroll', function() {

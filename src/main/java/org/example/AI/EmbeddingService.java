@@ -4,14 +4,12 @@ import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EmbeddingService {
 
-    @Value("${QWEN_API_KEY:#{systemEnvironment['QWEN_API_KEY']}}")
-    private String apiKey;
+    private String apiKey = System.getenv("QWEN_API_KEY");
 
     private EmbeddingModel embeddingModel;
 

@@ -371,10 +371,15 @@
       return '';
     }
 
+    var pendingScores = [];
+    var scoreSortActive = false;
+
     function getSortValue(text) {
-      if (text === '添加时间' || text === '更新时间') return 'create_time';
-      if (text === '上映时间') return 'releaseDate';
-      if (text === '评分最高' || text === '评分人数' || text === '评分总人数' || text === '综合评分') return 'create_time';
+      if (text === '添加时间' || text === '更新时间') { scoreSortActive = false; return 'create_time'; }
+      if (text === '上映时间') { scoreSortActive = false; return 'releaseDate'; }
+      if (text === '评分最高') { scoreSortActive = true; return 'create_time'; }
+      if (text === '评分人数' || text === '评分总人数' || text === '综合评分') { scoreSortActive = true; return 'create_time'; }
+      scoreSortActive = false;
       return '';
     }
 
@@ -444,7 +449,7 @@
         '</div>' +
         '</figure>' +
         '</a>' +
-        '<h3 class="card-title">' + (movie.name || '未知').replace(/</g, '&lt;') + '</h3>' +
+        '<h3 class="card-title">' + (movie.name || '未知').replace(/</g, '&lt;') + '<span class="card-score"></span></h3>' +
         '<p class="card-meta">' + (meta || '--') + '</p>' +
         '</div>';
 
@@ -457,13 +462,27 @@
       })
         .then(function(res) { return res.json(); })
         .then(function(scores) {
-          var douban = Array.isArray(scores) ? scores.find(function(s) { return s.source === 'douban'; }) : null;
-          if (douban) {
-            var ratingEl = li.querySelector('.rating');
-            if (ratingEl) ratingEl.textContent = '★ ' + douban.score.toFixed(1);
+          var score = Array.isArray(scores) && scores.length ? scores[0] : null;
+          if (score) {
+            var scoreEl = li.querySelector('.card-score');
+            var scoreValue = Number(score.score) || 0;
+            if (scoreEl) scoreEl.textContent = scoreValue.toFixed(1);
+            pendingScores.push({ li: li, score: scoreValue });
+            var cards = document.querySelectorAll('#movies-list .movie-card-wrapper');
+            if (scoreSortActive && pendingScores.length === cards.length) {
+              reorderByScore();
+            }
           }
         })
         .catch(function() {});
+    }
+
+    function reorderByScore() {
+      pendingScores.sort(function(a, b) { return b.score - a.score; });
+      var listEl = document.getElementById('movies-list');
+      pendingScores.forEach(function(item) {
+        listEl.appendChild(item.li);
+      });
     }
 
     function createPageBtn(label, page, active) {
@@ -575,6 +594,7 @@
           hasNextPage = movies.length === PAGE_SIZE;
 
           if (movies.length > 0) {
+            pendingScores = [];
             movies.forEach(renderMovie);
           } else {
             listEl.innerHTML = '<li class="empty-state">暂无电影</li>';
