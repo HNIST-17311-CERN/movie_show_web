@@ -432,16 +432,71 @@
     function loadHeroBanner() {
       var token = localStorage.getItem('token');
       if (!token) return;
+
       fetch('http://localhost:8080/BIGMOVIE/TOP3', {
         headers: { token: token }
       })
         .then(function(res) { return res.json(); })
         .then(function(heroMovies) {
           if (Array.isArray(heroMovies) && heroMovies.length) {
-            renderHero(heroMovies);
+            updateHeroFeatured(heroMovies[0]);
+
+            var ids = heroMovies.map(function(m) { return m.id; }).join(',');
+            fetch('http://localhost:8080/FILMES/ALL', {
+              headers: { token: token }
+            })
+              .then(function(r) { return r.json(); })
+              .then(function(allMovies) {
+                var sidebarMovies = [];
+                if (Array.isArray(allMovies)) {
+                  heroMovies.forEach(function(hm) {
+                    var found = allMovies.find(function(m) { return m.id === hm.id; });
+                    if (found) sidebarMovies.push(found);
+                  });
+                }
+                if (!sidebarMovies.length) sidebarMovies = heroMovies;
+                renderHeroSidebar(sidebarMovies, heroMovies);
+              })
+              .catch(function() { renderHeroSidebar(heroMovies, heroMovies); });
           }
         })
         .catch(function() {});
+    }
+
+    function renderHeroSidebar(sidebarMovies, heroMovies) {
+      var heroSidebar = document.getElementById('hero-sidebar');
+      if (!heroSidebar || !sidebarMovies.length) return;
+
+      var picks = sidebarMovies.slice(0, 3);
+      heroSidebar.innerHTML = '';
+
+      picks.forEach(function(movie, index) {
+        var heroMovie = (heroMovies && heroMovies[index]) ? heroMovies[index] : movie;
+        var link = document.createElement('a');
+        link.href = './movie-details.html?id=' + encodeURIComponent(movie.id || '');
+        link.className = 'hero-side-card' + (index === 0 ? ' active' : '');
+        link.innerHTML =
+          '<img src="' + escapeHtml(getCoverUrl(movie.cover)) + '" alt="' + escapeHtml(movie.name || 'movie') + '">' +
+          '<div class="hero-side-card-info">' +
+            '<h3 class="hero-side-card-title">' + escapeHtml(movie.name || 'Unknown') + '</h3>' +
+            '<p class="hero-side-card-meta">' + escapeHtml(getHeroMeta(movie) || '--') + '</p>' +
+          '</div>';
+
+        var img = link.querySelector('img');
+        if (img) {
+          img.onerror = function() { this.onerror = null; this.src = DEFAULT_COVER_URL; };
+        }
+
+        link.addEventListener('mouseenter', function() {
+          heroSidebar.querySelectorAll('.hero-side-card').forEach(function(card) {
+            card.classList.remove('active');
+          });
+          link.classList.add('active');
+          updateHeroFeatured(heroMovie);
+        });
+
+        heroSidebar.appendChild(link);
+      });
     }
 
     function loadTv() {

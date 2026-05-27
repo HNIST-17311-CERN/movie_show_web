@@ -86,7 +86,7 @@ img { max-width: 100%; display: block; }
   width: 100%;
   padding: 8px 40px 8px 16px;
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 3px;
   font-size: 13px;
   background: var(--bg);
   outline: none;
@@ -143,7 +143,7 @@ img { max-width: 100%; display: block; }
   background: var(--white);
   padding: 24px;
   margin-bottom: 24px;
-  border-radius: 8px;
+  border-radius: 2px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 
@@ -176,7 +176,7 @@ img { max-width: 100%; display: block; }
   background: transparent;
   font-size: 13px;
   color: var(--text-muted);
-  border-radius: 20px;
+  border-radius: 3px;
   cursor: pointer;
   transition: all var(--transition);
 }
@@ -201,7 +201,7 @@ img { max-width: 100%; display: block; }
 .filter-toolbar select {
   padding: 8px 12px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 3px;
   font-size: 13px;
   background: var(--white);
   color: var(--text);
@@ -252,7 +252,7 @@ img { max-width: 100%; display: block; }
 .card-banner {
   position: relative;
   aspect-ratio: 2 / 3;
-  border-radius: 8px;
+  border-radius: 2px;
   overflow: hidden;
   margin-bottom: 10px;
   background: var(--bg);
@@ -272,7 +272,7 @@ img { max-width: 100%; display: block; }
   padding: 2px 8px;
   background: rgba(0,0,0,0.6);
   color: var(--white);
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
 .card-overlay {
@@ -325,7 +325,7 @@ img { max-width: 100%; display: block; }
 .hero-featured {
   position: relative;
   aspect-ratio: 16 / 9;
-  border-radius: 12px;
+  border-radius: 2px;
   overflow: hidden;
   background: var(--bg);
 }
@@ -376,7 +376,7 @@ img { max-width: 100%; display: block; }
   padding: 12px;
   background: var(--white);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 2px;
   transition: all var(--transition);
 }
 
@@ -389,7 +389,7 @@ img { max-width: 100%; display: block; }
   width: 70px;
   height: 100px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 3px;
   flex-shrink: 0;
 }
 
@@ -430,7 +430,7 @@ img { max-width: 100%; display: block; }
   color: var(--primary);
   padding: 6px 16px;
   border: 1px solid var(--primary);
-  border-radius: 20px;
+  border-radius: 3px;
   transition: all var(--transition);
 }
 
@@ -528,7 +528,7 @@ img { max-width: 100%; display: block; }
   gap: 40px;
   background: var(--white);
   padding: 32px;
-  border-radius: 8px;
+  border-radius: 2px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   margin-bottom: 24px;
 }
@@ -543,7 +543,7 @@ img { max-width: 100%; display: block; }
   aspect-ratio: 2 / 3;
   height: auto;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 2px;
   overflow: hidden;
   background: var(--bg);
   box-shadow: 0 8px 24px rgba(0,0,0,0.12);
@@ -564,7 +564,7 @@ img { max-width: 100%; display: block; }
   color: var(--primary);
   font-size: 12px;
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: 3px;
   margin-bottom: 16px;
 }
 
@@ -575,7 +575,7 @@ img { max-width: 100%; display: block; }
 
 .ratings-card {
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 2px;
   padding: 20px;
   width: 200px;
   flex-shrink: 0;
@@ -595,7 +595,7 @@ img { max-width: 100%; display: block; }
 .detail-section {
   background: var(--white);
   padding: 24px 32px;
-  border-radius: 8px;
+  border-radius: 2px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   margin-bottom: 24px;
 }
@@ -625,7 +625,7 @@ img { max-width: 100%; display: block; }
   font-size: 13px;
   color: var(--text-muted);
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 3px;
   transition: all var(--transition);
 }
 
@@ -637,7 +637,7 @@ img { max-width: 100%; display: block; }
 .quality-tag {
   padding: 6px 12px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 3px;
   font-size: 12px;
   color: var(--text-muted);
   cursor: pointer;
@@ -654,7 +654,7 @@ img { max-width: 100%; display: block; }
 .detail-toolbar select {
   padding: 8px 12px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 3px;
   font-size: 13px;
 }
 
