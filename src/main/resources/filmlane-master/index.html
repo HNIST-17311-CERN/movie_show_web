@@ -412,7 +412,6 @@
               return;
             }
 
-            renderHero(movies);
             movies.forEach(renderMovie);
           })
           .catch(function(err) {
@@ -425,9 +424,25 @@
           });
       }
 
+      loadHeroBanner();
       loadLastMovies();
       loadAnime();
       loadTv();
+
+    function loadHeroBanner() {
+      var token = localStorage.getItem('token');
+      if (!token) return;
+      fetch('http://localhost:8080/BIGMOVIE/TOP3', {
+        headers: { token: token }
+      })
+        .then(function(res) { return res.json(); })
+        .then(function(heroMovies) {
+          if (Array.isArray(heroMovies) && heroMovies.length) {
+            renderHero(heroMovies);
+          }
+        })
+        .catch(function() {});
+    }
 
     function loadTv() {
       var token = localStorage.getItem('token');
