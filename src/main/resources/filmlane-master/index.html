@@ -177,6 +177,24 @@
         <div id="home-error" class="error-state" style="display:none;">加载失败，请检查网络或 token 是否有效</div>
         <ul class="movies-list home-movies" id="home-movies-list"></ul>
       </section>
+
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">最近更新的剧集</h2>
+          <a href="./TV_series.html" class="section-more">更多 &gt;</a>
+        </div>
+        <div id="tv-loading" class="loading-state">加载中...</div>
+        <ul class="movies-list home-movies" id="tv-list"></ul>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">最近更新的动漫</h2>
+          <a href="./Net_movie.html" class="section-more">更多 &gt;</a>
+        </div>
+        <div id="anime-loading" class="loading-state">加载中...</div>
+        <ul class="movies-list home-movies" id="anime-list"></ul>
+      </section>
     </div>
   </main>
 
@@ -190,6 +208,12 @@
   <script src="./assets/js/script.js"></script>
   <script>
     (function() {
+      var token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '../adminkit-web-ui-kit-dashboard-template/static/pages-sign-in.html';
+        return;
+      }
+
       var API_URL = 'http://localhost:8080/Mapper/findlast12';
       var LOGIN_URL = '../adminkit-web-ui-kit-dashboard-template/static/pages-sign-in.html';
       var DEFAULT_COVER_URL = './assets/images/movie-1.png';
@@ -402,8 +426,184 @@
       }
 
       loadLastMovies();
-    })();
+      loadAnime();
+      loadTv();
 
+    function loadTv() {
+      var token = localStorage.getItem('token');
+      var list = document.getElementById('tv-list');
+      var loading = document.getElementById('tv-loading');
+      if (!token || !list) return;
+
+      fetch('http://localhost:8080/TV/ONEP?page=1&pageSize=12', {
+        headers: { token: token }
+      })
+        .then(function(res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function(tvList) {
+          loading.style.display = 'none';
+          if (!Array.isArray(tvList) || !tvList.length) {
+            list.innerHTML = '<li class="empty-state">暂无剧集数据</li>';
+            return;
+          }
+          tvList.forEach(function(item) { renderTvCard(item, list); });
+        })
+        .catch(function() {
+          loading.style.display = 'none';
+        });
+    }
+
+    function loadAnime() {
+      var token = localStorage.getItem('token');
+      var list = document.getElementById('anime-list');
+      var loading = document.getElementById('anime-loading');
+      if (!token || !list) return;
+
+      fetch('http://localhost:8080/ANIME/ONEP?page=1&pageSize=12', {
+        headers: { token: token }
+      })
+        .then(function(res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function(animeList) {
+          loading.style.display = 'none';
+          if (!Array.isArray(animeList) || !animeList.length) {
+            list.innerHTML = '<li class="empty-state">暂无动漫数据</li>';
+            return;
+          }
+          animeList.forEach(function(item) { renderCard(item, list); });
+        })
+        .catch(function() {
+          loading.style.display = 'none';
+        });
+    }
+
+    function renderCard(item, list) {
+      var meta = [
+        item.releaseDate ? String(item.releaseDate).substring(0, 4) : '',
+        item.region || '',
+        item.type || ''
+      ].filter(Boolean).join(' / ');
+
+      var li = document.createElement('li');
+      li.className = 'movie-card-wrapper';
+      li.innerHTML =
+        '<div class="movie-card">' +
+          '<a href="./movie-details.html?id=' + encodeURIComponent(item.id || '') + '">' +
+            '<figure class="card-banner">' +
+              '<img src="' + escapeHtml(getCoverUrl(item.cover)) + '" alt="' + escapeHtml(item.name || '') + '">' +
+              '<span class="card-badge">HD</span>' +
+              '<div class="card-overlay">' +
+                '<span class="episode-count">--</span>' +
+                '<span class="episode-status">--</span>' +
+              '</div>' +
+            '</figure>' +
+          '</a>' +
+          '<h3 class="card-title">' + escapeHtml(item.name || 'Unknown') + '<span class="card-score"></span></h3>' +
+          '<p class="card-meta">' + escapeHtml(meta || '--') + '</p>' +
+        '</div>';
+
+      var img = li.querySelector('img');
+      if (img) {
+        img.onerror = function() { this.onerror = null; this.src = DEFAULT_COVER_URL; };
+      }
+
+      list.appendChild(li);
+
+      fetch('http://localhost:8080/FILMES/SCORE/ONE?id=' + encodeURIComponent(item.id || ''), {
+        headers: { token: localStorage.getItem('token') || '' }
+      })
+        .then(function(res) { return res.json(); })
+        .then(function(scores) {
+          var score = Array.isArray(scores) && scores.length ? scores[0] : null;
+          if (score) {
+            var el = li.querySelector('.card-score');
+            if (el) el.textContent = Number(score.score).toFixed(1);
+          }
+        })
+        .catch(function() {});
+
+      fetch('http://localhost:8080/ANIME/EPISODES/ANIME?id=' + encodeURIComponent(item.id || ''), {
+        headers: { token: localStorage.getItem('token') || '' }
+      })
+        .then(function(res) { return res.json(); })
+        .then(function(ep) {
+          if (ep) {
+            var cntEl = li.querySelector('.episode-count');
+            var stEl = li.querySelector('.episode-status');
+            if (cntEl && ep.totalEpisodes) cntEl.textContent = '全' + ep.totalEpisodes + '集';
+            if (stEl && ep.updateStatus) stEl.textContent = ep.updateStatus;
+          }
+        })
+        .catch(function() {});
+    }
+
+    function renderTvCard(item, list) {
+      var meta = [
+        item.releaseDate ? String(item.releaseDate).substring(0, 4) : '',
+        item.region || '',
+        item.type || ''
+      ].filter(Boolean).join(' / ');
+
+      var li = document.createElement('li');
+      li.className = 'movie-card-wrapper';
+      li.innerHTML =
+        '<div class="movie-card">' +
+          '<a href="./movie-details.html?id=' + encodeURIComponent(item.id || '') + '">' +
+            '<figure class="card-banner">' +
+              '<img src="' + escapeHtml(getCoverUrl(item.cover)) + '" alt="' + escapeHtml(item.name || '') + '">' +
+              '<span class="card-badge">HD</span>' +
+              '<div class="card-overlay">' +
+                '<span class="episode-count">--</span>' +
+                '<span class="episode-status">--</span>' +
+              '</div>' +
+            '</figure>' +
+          '</a>' +
+          '<h3 class="card-title">' + escapeHtml(item.name || 'Unknown') + '<span class="card-score"></span></h3>' +
+          '<p class="card-meta">' + escapeHtml(meta || '--') + '</p>' +
+        '</div>';
+
+      var img = li.querySelector('img');
+      if (img) {
+        img.onerror = function() { this.onerror = null; this.src = DEFAULT_COVER_URL; };
+      }
+
+      list.appendChild(li);
+
+      fetch('http://localhost:8080/FILMES/SCORE/ONE?id=' + encodeURIComponent(item.id || ''), {
+        headers: { token: localStorage.getItem('token') || '' }
+      })
+        .then(function(res) { return res.json(); })
+        .then(function(scores) {
+          var score = Array.isArray(scores) && scores.length ? scores[0] : null;
+          if (score) {
+            var el = li.querySelector('.card-score');
+            if (el) el.textContent = Number(score.score).toFixed(1);
+          }
+        })
+        .catch(function() {});
+
+      fetch('http://localhost:8080/TV/EPISODES/TV?id=' + encodeURIComponent(item.id || ''), {
+        headers: { token: localStorage.getItem('token') || '' }
+      })
+        .then(function(res) { return res.json(); })
+        .then(function(ep) {
+          if (ep) {
+            var cntEl = li.querySelector('.episode-count');
+            var stEl = li.querySelector('.episode-status');
+            if (cntEl && ep.totalEpisodes) cntEl.textContent = '全' + ep.totalEpisodes + '集';
+            if (stEl && ep.updateStatus) stEl.textContent = ep.updateStatus;
+          }
+        })
+        .catch(function() {});
+    }
+    })();
+  </script>
+
+  <script>
     (function initUserMenu() {
       var username = localStorage.getItem('username') || '用户';
       document.getElementById('avatarText').textContent = username.charAt(0).toUpperCase();

@@ -6,95 +6,427 @@
   <title>动漫 - 观影 GYING</title>
   <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .pagination-bar { display: flex; align-items: center; justify-content: center; gap: 0; margin-top: 32px; flex-wrap: wrap; }
+    .pagination-btn, .pagination-input, .pagination-jump { height: 42px; border: 1px solid #e5e7eb; background: #fff; color: #374151; font-size: 16px; }
+    .pagination-btn { min-width: 40px; padding: 0 14px; margin-left: -1px; cursor: pointer; }
+    .pagination-btn.active { background: #60a5fa; color: #fff; border-color: #60a5fa; }
+    .pagination-btn:disabled { color: #9ca3af; background: #f9fafb; cursor: not-allowed; }
+    .pagination-ellipsis { height: 42px; line-height: 42px; padding: 0 14px; border: 1px solid #e5e7eb; margin-left: -1px; background: #fff; color: #6b7280; }
+    .pagination-input { width: 86px; margin-left: 12px; padding: 0 10px; outline: none; }
+    .pagination-jump { padding: 0 14px; margin-left: -1px; cursor: pointer; }
+    .pagination-jump:hover, .pagination-btn:not(:disabled):hover { background: #f3f4f6; }
+    .filter-section { padding: 8px 0 14px; border: 0; box-shadow: none; }
+    .filter-row { display: flex; align-items: flex-start; gap: 6px; padding: 7px 0; border-bottom: 1px solid #e5e7eb; }
+    .filter-label { flex: 0 0 42px; line-height: 24px; font-size: 14px; color: #111827; white-space: nowrap; }
+    .filter-pills { display: flex; flex-wrap: wrap; gap: 4px 10px; line-height: 24px; }
+    .filter-pill { padding: 0; border: 0; background: transparent; color: #111827; line-height: 24px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+    .filter-pill.active { padding: 0 4px; border-radius: 4px; background: #2f80ff; color: #fff; }
+    .filter-toolbar { padding-top: 10px; gap: 14px; font-size: 14px; }
+    .filter-toolbar select { height: 28px; padding: 2px 26px 2px 8px; font-size: 13px; }
+    .user-menu { position: relative; }
+    .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary, #007bff); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; user-select: none; }
+    .user-dropdown { position: absolute; top: 44px; right: 0; width: 180px; background: #fff; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 1000; overflow: hidden; }
+    .user-info { padding: 14px 16px; border-bottom: 1px solid #eee; font-size: 14px; color: #333; text-align: center; }
+    .user-dropdown-menu { list-style: none; margin: 0; padding: 4px 0; }
+    .user-dropdown-menu li a { display: block; padding: 10px 16px; font-size: 13px; color: #333; text-decoration: none; transition: background 0.2s; }
+    .user-dropdown-menu li a:hover { background: #f5f5f5; color: #e74c3c; }
+  </style>
 </head>
 <body id="top">
 
-  <header class="header">
-    <div class="header-inner">
-      <a href="./index.html" class="logo"><span class="logo-cn">观影</span> <span class="logo-en">GYING</span></a>
-      <nav class="nav-links">
-        <a href="./index.html">首页</a>
-        <a href="./All_movie.html">电影</a>
-        <a href="./TV_series.html">剧集</a>
-        <a href="./Net_movie.html" class="active">动漫</a>
-        <a href="#">热门</a>
-        <a href="#">解析</a>
-        <a href="./Setting.html">设置</a>
-      </nav>
-      <div class="search-box">
-        <input type="text" placeholder="搜索影片">
-      </div>
-      <div class="header-actions">
-        <a href="#">收藏</a>
-        <a href="#">观看历史</a>
-        <div class="user-avatar">用</div>
+<header class="header">
+  <div class="header-inner">
+    <a href="./index.html" class="logo"><span class="logo-cn">观影</span> <span class="logo-en">GYING</span></a>
+    <nav class="nav-links">
+      <a href="./index.html">首页</a>
+      <a href="./All_movie.html">电影</a>
+      <a href="./TV_series.html">剧集</a>
+      <a href="./Net_movie.html" class="active">动漫</a>
+      <a href="#">热门</a>
+      <a href="#">解析</a>
+      <a href="./Setting.html">设置</a>
+    </nav>
+    <div class="search-box">
+      <input type="text" placeholder="搜索动漫">
+    </div>
+    <div class="header-actions">
+      <div class="user-menu" id="userMenu">
+        <div class="user-avatar" onclick="toggleUserDropdown()">
+          <span id="avatarText">用</span>
+        </div>
+        <div class="user-dropdown" id="userDropdown" style="display:none;">
+          <div class="user-info"><b id="displayUsername">--</b></div>
+          <ul class="user-dropdown-menu">
+            <li><a href="#" onclick="doLogout()">退出登录</a></li>
+          </ul>
+        </div>
       </div>
     </div>
-  </header>
+  </div>
+</header>
 
-  <main>
-    <div class="container">
-      <div class="filter-section">
-        <div class="filter-row">
-          <span class="filter-label">类型</span>
-          <div class="filter-pills">
-            <button class="filter-pill">全部</button>
-            <button class="filter-pill active">动漫</button>
-            <button class="filter-pill">动画电影</button>
-          </div>
-        </div>
-        <div class="filter-row">
-          <span class="filter-label">地区</span>
-          <div class="filter-pills">
-            <button class="filter-pill active">全部</button>
-            <button class="filter-pill">日本</button>
-            <button class="filter-pill">美国</button>
-            <button class="filter-pill">国产</button>
-          </div>
-        </div>
-        <div class="filter-toolbar">
-          <select><option>按添加时间</option></select>
+<main>
+  <div class="container">
+    <div class="filter-section">
+      <div class="filter-row">
+        <span class="filter-label">类型</span>
+        <div class="filter-pills">
+          <button class="filter-pill active">全部</button>
+          <button class="filter-pill">剧情</button>
+          <button class="filter-pill">萌系</button>
+          <button class="filter-pill">科幻</button>
+          <button class="filter-pill">日常</button>
+          <button class="filter-pill">战斗</button>
+          <button class="filter-pill">战争</button>
+          <button class="filter-pill">热血</button>
+          <button class="filter-pill">机战</button>
+          <button class="filter-pill">游戏</button>
+          <button class="filter-pill">搞笑</button>
+          <button class="filter-pill">恋爱</button>
+          <button class="filter-pill">后宫</button>
+          <button class="filter-pill">百合</button>
+          <button class="filter-pill">基腐</button>
+          <button class="filter-pill">冒险</button>
+          <button class="filter-pill">儿童</button>
+          <button class="filter-pill">歌舞</button>
+          <button class="filter-pill">音乐</button>
+          <button class="filter-pill">奇幻</button>
+          <button class="filter-pill">恐怖</button>
+          <button class="filter-pill">惊悚</button>
+          <button class="filter-pill">犯罪</button>
+          <button class="filter-pill">悬疑</button>
+          <button class="filter-pill">西部</button>
+          <button class="filter-pill">灾难</button>
+          <button class="filter-pill">古装</button>
+          <button class="filter-pill">武侠</button>
+          <button class="filter-pill">泡面</button>
+          <button class="filter-pill">校园</button>
+          <button class="filter-pill">运动</button>
+          <button class="filter-pill">青春</button>
+          <button class="filter-pill">美食</button>
+          <button class="filter-pill">治愈</button>
+          <button class="filter-pill">致郁</button>
+          <button class="filter-pill">励志</button>
+          <button class="filter-pill">历史</button>
+          <button class="filter-pill">纪录</button>
+          <button class="filter-pill">异世界</button>
+          <button class="filter-pill">多选</button>
         </div>
       </div>
-
-      <ul class="movies-list">
-        <li>
-          <div class="movie-card">
-            <a href="./movie-details.html">
-              <figure class="card-banner">
-                <img src="./assets/images/upcoming-1.png" alt="示例动漫">
-                <span class="card-badge">HD</span>
-                <div class="card-overlay">
-                  <span class="star-count">★ 156</span>
-                  <span class="rating">8.2</span>
-                </div>
-              </figure>
-            </a>
-            <h3 class="card-title">示例动漫 1</h3>
-            <p class="card-meta">2023 / 日本 / 动漫</p>
-          </div>
-        </li>
-        <li>
-          <div class="movie-card">
-            <a href="./movie-details.html">
-              <figure class="card-banner">
-                <img src="./assets/images/upcoming-2.png" alt="示例动漫">
-                <span class="card-badge">2K</span>
-                <div class="card-overlay">
-                  <span class="star-count">★ 234</span>
-                  <span class="rating">9.0</span>
-                </div>
-              </figure>
-            </a>
-            <h3 class="card-title">示例动漫 2</h3>
-            <p class="card-meta">2023 / 日本 / 动漫</p>
-          </div>
-        </li>
-      </ul>
+      <div class="filter-row">
+        <span class="filter-label">年代</span>
+        <div class="filter-pills">
+          <button class="filter-pill active">全部</button>
+          <button class="filter-pill">近三年</button>
+          <button class="filter-pill">2026</button>
+          <button class="filter-pill">2025</button>
+          <button class="filter-pill">2024</button>
+          <button class="filter-pill">2023</button>
+          <button class="filter-pill">2022</button>
+          <button class="filter-pill">2021</button>
+          <button class="filter-pill">2020</button>
+          <button class="filter-pill">2019</button>
+          <button class="filter-pill">90年代</button>
+          <button class="filter-pill">80年代</button>
+          <button class="filter-pill">更早</button>
+        </div>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">地区</span>
+        <div class="filter-pills">
+          <button class="filter-pill active">全部</button>
+          <button class="filter-pill">中国</button>
+          <button class="filter-pill">日本</button>
+          <button class="filter-pill">韩国</button>
+          <button class="filter-pill">欧美</button>
+        </div>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">语言</span>
+        <div class="filter-pills">
+          <button class="filter-pill active">全部</button>
+          <button class="filter-pill">中文</button>
+          <button class="filter-pill">日语</button>
+          <button class="filter-pill">韩语</button>
+        </div>
+      </div>
+      <div class="filter-toolbar">
+        <select>
+          <option>上映时间</option>
+          <option>添加时间</option>
+          <option>评分最高</option>
+        </select>
+      </div>
     </div>
-  </main>
 
-  <a href="#top" class="go-top" data-go-top>↑</a>
-  <script src="./assets/js/script.js"></script>
+    <div id="loading" class="loading-state">加载中...</div>
+    <div id="error" class="error-state" style="display:none;">加载失败，请检查网络或接口地址后重试</div>
+    <ul class="movies-list" id="movies-list"></ul>
+    <div class="pagination-bar" id="pagination-bar" style="display:none;"></div>
+  </div>
+</main>
+
+<a href="#top" class="go-top" data-go-top>↑</a>
+
+<script src="./assets/js/script.js"></script>
+<script>
+  (function() {
+    var API_URL = 'http://localhost:8080/ANIME/ONEP';
+    var FILTER_API_URL = 'http://localhost:8080/ANIME/FILTER';
+    var LOGIN_URL = '../adminkit-web-ui-kit-dashboard-template/static/pages-sign-in.html';
+    var DEFAULT_COVER_URL = './assets/images/movie-1.png';
+    var PAGE_SIZE = 60;
+    var currentPage = 1;
+    var hasNextPage = true;
+    var filters = { type: '全部', year: '全部', region: '全部', sort: 'releaseDate' };
+
+    function getCoverUrl(cover) {
+      if (!cover) return DEFAULT_COVER_URL;
+      if (/^https?:\/\//i.test(cover)) return cover;
+      var normalized = String(cover).replace(/\\/g, '/');
+      if (normalized.indexOf('assets/images/') !== -1) return './' + normalized.substring(normalized.indexOf('assets/images/'));
+      if (normalized.indexOf('resource/cover/') !== -1) return './' + normalized.substring(normalized.indexOf('resource/cover/'));
+      if (normalized.startsWith('/')) return '.' + normalized;
+      return normalized;
+    }
+
+    function setLocalImage(imgEl, cover) {
+      imgEl.src = getCoverUrl(cover);
+      imgEl.onerror = function() { this.onerror = null; this.src = DEFAULT_COVER_URL; };
+    }
+
+    function isAll(value) { return !value || value === '全部'; }
+    function hasActiveFilters() { return !isAll(filters.type) || !isAll(filters.year) || !isAll(filters.region) || !!filters.sort; }
+
+    function getFilterKey(label) {
+      if (label === '类型') return 'type';
+      if (label === '年代') return 'year';
+      if (label === '地区') return 'region';
+      return '';
+    }
+
+    var pendingScores = [];
+    var scoreSortActive = false;
+
+    function getSortValue(text) {
+      if (text === '上映时间') { scoreSortActive = false; return 'releaseDate'; }
+      if (text === '添加时间') { scoreSortActive = false; return 'create_time'; }
+      if (text === '评分最高') { scoreSortActive = true; return 'releaseDate'; }
+      scoreSortActive = false;
+      return 'releaseDate';
+    }
+
+    function buildUrl(page) {
+      var params = new URLSearchParams();
+      params.set('page', page);
+      params.set('pageSize', PAGE_SIZE);
+      if (!isAll(filters.type)) params.set('type', filters.type);
+      if (!isAll(filters.year)) params.set('year', filters.year);
+      if (!isAll(filters.region)) params.set('region', filters.region);
+      if (filters.sort) params.set('sort', filters.sort);
+      return (hasActiveFilters() ? FILTER_API_URL : API_URL) + '?' + params.toString();
+    }
+
+    function bindFilters() {
+      document.querySelectorAll('.filter-row').forEach(function(row) {
+        var labelEl = row.querySelector('.filter-label');
+        var key = labelEl ? getFilterKey(labelEl.textContent.trim()) : '';
+        if (!key) return;
+        row.querySelectorAll('.filter-pill').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            row.querySelectorAll('.filter-pill').forEach(function(item) { item.classList.remove('active'); });
+            btn.classList.add('active');
+            filters[key] = btn.textContent.trim();
+            loadMovies(1);
+          });
+        });
+      });
+      var sortSelect = document.querySelector('.filter-toolbar select');
+      if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+          filters.sort = getSortValue(sortSelect.options[sortSelect.selectedIndex].textContent.trim());
+          loadMovies(1);
+        });
+      }
+    }
+
+    function needLogin() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('pagination-bar').style.display = 'none';
+      document.getElementById('movies-list').innerHTML = '<li class="empty-state">请先 <a href="' + LOGIN_URL + '">登录</a> 后访问</li>';
+    }
+
+    function renderMovie(movie) {
+      var meta = [movie.releaseDate ? String(movie.releaseDate).substring(0, 4) : '', movie.region || '', movie.type || ''].filter(Boolean).join(' / ');
+      var li = document.createElement('li');
+      li.className = 'movie-card-wrapper';
+      li.innerHTML =
+        '<div class="movie-card">' +
+        '<a href="./movie-details.html?id=' + movie.id + '" target="_blank" rel="noopener noreferrer">' +
+        '<figure class="card-banner">' +
+        '<img alt="' + (movie.name || '').replace(/"/g, '&quot;') + '">' +
+        '<span class="card-badge">HD</span>' +
+        '<div class="card-overlay">' +
+        '<span class="episode-count">--</span>' +
+        '<span class="episode-status">--</span>' +
+        '</div>' +
+        '</figure>' +
+        '</a>' +
+        '<h3 class="card-title">' + (movie.name || '未知').replace(/</g, '&lt;') + '<span class="card-score"></span></h3>' +
+        '<p class="card-meta">' + (meta || '--') + '</p>' +
+        '</div>';
+
+      document.getElementById('movies-list').appendChild(li);
+      var coverImg = li.querySelector('.card-banner img');
+      if (coverImg) setLocalImage(coverImg, movie.cover);
+
+      fetch('http://localhost:8080/FILMES/SCORE/ONE?id=' + movie.id, {
+        headers: { token: localStorage.getItem('token') || '' }
+      })
+        .then(function(res) { return res.json(); })
+        .then(function(scores) {
+          var score = Array.isArray(scores) && scores.length ? scores[0] : null;
+          if (score) {
+            var scoreEl = li.querySelector('.card-score');
+            var scoreValue = Number(score.score) || 0;
+            if (scoreEl) scoreEl.textContent = scoreValue.toFixed(1);
+            pendingScores.push({ li: li, score: scoreValue });
+            var cards = document.querySelectorAll('#movies-list .movie-card-wrapper');
+            if (scoreSortActive && pendingScores.length === cards.length) reorderByScore();
+          }
+        })
+        .catch(function() {});
+
+      fetch('http://localhost:8080/ANIME/EPISODES/ANIME?id=' + movie.id, {
+        headers: { token: localStorage.getItem('token') || '' }
+      })
+        .then(function(res) { return res.json(); })
+        .then(function(ep) {
+          if (ep) {
+            var cntEl = li.querySelector('.episode-count');
+            var stEl = li.querySelector('.episode-status');
+            if (cntEl && ep.totalEpisodes) cntEl.textContent = '全' + ep.totalEpisodes + '集';
+            if (stEl && ep.updateStatus) stEl.textContent = ep.updateStatus;
+          }
+        })
+        .catch(function() {});
+    }
+
+    function reorderByScore() {
+      pendingScores.sort(function(a, b) { return b.score - a.score; });
+      var listEl = document.getElementById('movies-list');
+      pendingScores.forEach(function(item) { listEl.appendChild(item.li); });
+    }
+
+    function createPageBtn(label, page, active) {
+      var btn = document.createElement('button');
+      btn.className = 'pagination-btn' + (active ? ' active' : '');
+      btn.textContent = label;
+      btn.addEventListener('click', function() { loadMovies(page); });
+      return btn;
+    }
+
+    function renderPagination() {
+      var bar = document.getElementById('pagination-bar');
+      var startPage = Math.floor((currentPage - 1) / 10) * 10 + 1;
+      var endPage = startPage + 9;
+      bar.innerHTML = '';
+      bar.style.display = 'flex';
+
+      var prevBtn = document.createElement('button');
+      prevBtn.className = 'pagination-btn';
+      prevBtn.textContent = '上一页';
+      prevBtn.disabled = currentPage <= 1;
+      prevBtn.addEventListener('click', function() { if (currentPage > 1) loadMovies(currentPage - 1); });
+      bar.appendChild(prevBtn);
+
+      for (var page = startPage; page <= endPage; page++) {
+        bar.appendChild(createPageBtn(String(page), page, page === currentPage));
+      }
+      if (hasNextPage) {
+        var ellipsis = document.createElement('span');
+        ellipsis.className = 'pagination-ellipsis';
+        ellipsis.textContent = '...';
+        bar.appendChild(ellipsis);
+      }
+
+      var nextBtn = document.createElement('button');
+      nextBtn.className = 'pagination-btn';
+      nextBtn.textContent = '下一页';
+      nextBtn.disabled = !hasNextPage;
+      nextBtn.addEventListener('click', function() { if (hasNextPage) loadMovies(currentPage + 1); });
+      bar.appendChild(nextBtn);
+
+      var input = document.createElement('input');
+      input.className = 'pagination-input'; input.type = 'number'; input.min = '1'; input.placeholder = '输入页码';
+      bar.appendChild(input);
+      var jumpBtn = document.createElement('button');
+      jumpBtn.className = 'pagination-jump'; jumpBtn.textContent = '跳转';
+      jumpBtn.addEventListener('click', function() { var page = parseInt(input.value, 10); if (!page || page < 1) return; loadMovies(page); });
+      bar.appendChild(jumpBtn);
+    }
+
+    function loadMovies(page) {
+      var token = localStorage.getItem('token');
+      var listEl = document.getElementById('movies-list');
+      var loadingEl = document.getElementById('loading');
+      var errorEl = document.getElementById('error');
+      var bar = document.getElementById('pagination-bar');
+      if (!token) { needLogin(); return; }
+
+      currentPage = page;
+      loadingEl.style.display = 'block'; errorEl.style.display = 'none';
+      listEl.innerHTML = ''; bar.style.display = 'none';
+
+      fetch(buildUrl(page), {
+        headers: { token: token, 'Content-Type': 'application/json' }
+      })
+        .then(function(res) {
+          if (res.status === 401) { localStorage.removeItem('token'); needLogin(); throw new Error('Unauthorized'); }
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function(json) {
+          var movies = json;
+          if (json && typeof json.data !== 'undefined') movies = json.data;
+          if (!Array.isArray(movies)) movies = [];
+          loadingEl.style.display = 'none'; errorEl.style.display = 'none';
+          listEl.innerHTML = '';
+          hasNextPage = movies.length === PAGE_SIZE;
+          if (movies.length > 0) { pendingScores = []; movies.forEach(renderMovie); }
+          else { listEl.innerHTML = '<li class="empty-state">暂无动漫</li>'; hasNextPage = false; }
+          renderPagination();
+        })
+        .catch(function(err) {
+          if (err.message === 'Unauthorized') return;
+          loadingEl.style.display = 'none'; errorEl.style.display = 'block'; bar.style.display = 'none';
+        });
+    }
+
+    bindFilters();
+    loadMovies(1);
+  })();
+</script>
+
+<script>
+  (function initUserMenu() {
+    var username = localStorage.getItem('username') || '用户';
+    document.getElementById('avatarText').textContent = username.charAt(0).toUpperCase();
+    document.getElementById('displayUsername').textContent = username;
+  })();
+  function toggleUserDropdown() {
+    var dropdown = document.getElementById('userDropdown');
+    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+  }
+  document.addEventListener('click', function(e) {
+    var menu = document.getElementById('userMenu');
+    if (menu && !menu.contains(e.target)) document.getElementById('userDropdown').style.display = 'none';
+  });
+  function doLogout() {
+    localStorage.removeItem('token'); localStorage.removeItem('username');
+    window.location.href = '../adminkit-web-ui-kit-dashboard-template/static/pages-sign-in.html';
+  }
+</script>
 </body>
 </html>

@@ -25,3 +25,60 @@ create table movie
 
 /*新增动漫三个表*/
 要求在电影表的基础上添加总集数和更新状态(周几更新、已完结)两个属性
+
+
+//● 明白了，设计很干净：
+
+    新表一张
+
+    CREATE TABLE media_episodes (
+        id             BIGINT AUTO_INCREMENT PRIMARY KEY,
+        movie_id       BIGINT       NOT NULL COMMENT '关联movie.id',
+        total_episodes INT          NULL COMMENT '总集数',
+        update_status  VARCHAR(50)  NULL COMMENT '更新状态：已完结/周X更新'
+    );
+
+    逻辑
+
+    movie 表不动
+      ├── type = '电影'  → media_episodes 没记录
+      ├── type = '电视剧' → media_episodes 有一条（集数+更新状态）
+      └── type = '动漫'   → media_episodes 有一条
+
+    代码上只要加
+
+    ┌──────────┬───────────────────────────────────────────────────────────┐
+    │   新增   │                           文件                            │
+    ├──────────┼───────────────────────────────────────────────────────────┤
+    │ 实体     │ Entity/MediaEpisodes.java                                 │
+    ├──────────┼───────────────────────────────────────────────────────────┤
+    │ DAO      │ DAO/MediaEpisodesDAO.java                                 │
+    ├──────────┼───────────────────────────────────────────────────────────┤
+    │ 详情接口 │ 在 MovieController 里加一个根据 movie_id 查集数信息的方法 │
+    └──────────┴───────────────────────────────────────────────────────────┘
+
+    movie 表、现有 DAO、Service 全都不用动。要我写吗？
+
+  ✻ Worked for 12s
+
+  > 把movieid最好改成 电视剧id和动漫id，但是关联的是movieid
+
+  ● 一列拆两列，但都指向 movie.id：
+
+    CREATE TABLE media_episodes (
+        id             BIGINT AUTO_INCREMENT PRIMARY KEY,
+        tv_id          BIGINT       NULL COMMENT '电视剧ID，关联movie.id',
+        anime_id       BIGINT       NULL COMMENT '动漫ID，关联movie.id',
+        total_episodes INT          NULL COMMENT '总集数',
+        update_status  VARCHAR(50)  NULL COMMENT '更新状态：已完结/周X更新'
+    );
+
+    用法：
+
+    电视剧：tv_id = movie.id,  anime_id = NULL
+    动漫：   tv_id = NULL,      anime_id = movie.id
+    电影：   不插记录
+
+    查的时候根据 movie.type 决定查哪列。要我写代码吗？
+
+  ✻ Crunched for 12s
