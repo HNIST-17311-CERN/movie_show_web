@@ -5,6 +5,29 @@
 ---
 
 ## 功能概览
+前台界面：
+    1.首页
+    <img width="1912" height="948" alt="image" src="https://github.com/user-attachments/assets/e9cc2d27-dd5b-4ce2-8419-2c0dda6f8f8b" />
+    2.电影
+    <img width="1912" height="948" alt="image" src="https://github.com/user-attachments/assets/ba0f4986-16d8-4544-a1b0-553c4d46cd76" />
+    3.剧集
+    <img width="1912" height="948" alt="image" src="https://github.com/user-attachments/assets/b1be5f90-fe80-47d2-b2c0-c7201819597b" />
+    4.动漫
+    <img width="1912" height="948" alt="image" src="https://github.com/user-attachments/assets/2bdfdd7e-9f02-4c4a-8d18-108839dd7e31" />
+    5.通知
+    <img width="1912" height="948" alt="image" src="https://github.com/user-attachments/assets/10301846-c894-4d89-a6bd-48f05bbadbc6" />
+    6.电影信息
+    <img width="1912" height="948" alt="image" src="https://github.com/user-attachments/assets/b54caf0f-e36c-4795-98b9-e47b20802194" />
+    7.上传信息
+    <img width="1912" height="948" alt="image" src="https://github.com/user-attachments/assets/854f9c55-896f-4ff2-adca-5598249551de" />
+后台界面:
+    1.管理
+    <img width="1912" height="948" alt="image" src="https://github.com/user-attachments/assets/ec640b0f-9211-4ec6-802b-ad716d92d7d5" />
+    2.资源审查
+    <img width="1912" height="948" alt="image" src="https://github.com/user-attachments/assets/87fe86d9-5f81-4582-9d6d-abfa1aa50b19" />
+    3.登录
+    <img width="1912" height="948" alt="image" src="https://github.com/user-attachments/assets/13bec0bd-0618-4775-ab13-7fdb259c58e8" />
+
 
 ### 影音浏览
 - 电影、电视剧、动漫三大分类，各带完整筛选（类型/年代/地区/语言/排序）
