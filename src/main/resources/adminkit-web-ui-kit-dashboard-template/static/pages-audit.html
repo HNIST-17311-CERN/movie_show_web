@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>资源审查 — 观影 GYING</title>
+  <link href="css/app.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .audit-table { table-layout: fixed; }
+    .audit-table th, .audit-table td { vertical-align: middle; padding: 12px 10px; font-size: 13px; }
+    .audit-table tbody tr:nth-child(odd) { background-color: #f8fafc; }
+    .audit-table tbody tr:nth-child(even) { background-color: #e9eff5; }
+    .audit-table tbody tr:hover { background-color: #dbe7f3; }
+    .badge-pending { background: #f59e0b; color: #fff; font-size: 12px; }
+    .badge-approved { background: #10b981; color: #fff; font-size: 12px; }
+    .badge-rejected { background: #ef4444; color: #fff; font-size: 12px; }
+    .review-filter { display: flex; gap: 8px; align-items: center; }
+    .review-filter .btn { font-size: 13px; border-radius: 8px; }
+    .movie-link { color: #2563eb; font-weight: 600; text-decoration: none; }
+    .movie-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- ============ 侧边栏 ============ -->
+  <nav id="sidebar" class="sidebar js-sidebar">
+    <div class="sidebar-content js-simplebar">
+      <a class="sidebar-brand" href="../../filmlane-master/index.html">
+        <span class="align-middle">观影 GYING</span>
+      </a>
+      <ul class="sidebar-nav">
+        <li class="sidebar-header">管理后台</li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" href="pages-blank.html">
+            <i class="align-middle" data-feather="film"></i>
+            <span class="align-middle">电影管理</span>
+          </a>
+        </li>
+        <li class="sidebar-item active">
+          <a class="sidebar-link" href="pages-audit.html">
+            <i class="align-middle" data-feather="check-circle"></i>
+            <span class="align-middle">资源审查</span>
+          </a>
+        </li>
+        <li class="sidebar-header">账户</li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" href="index.html">
+            <i class="align-middle" data-feather="user"></i>
+            <span class="align-middle">个人资料</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" href="pages-sign-in.html">
+            <i class="align-middle" data-feather="log-in"></i>
+            <span class="align-middle">登录</span>
+          </a>
+        </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" href="../../filmlane-master/index.html">
+            <i class="align-middle" data-feather="home"></i>
+            <span class="align-middle">返回首页</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ============ 主区域 ============ -->
+  <div class="main">
+    <nav class="navbar navbar-expand navbar-light navbar-bg">
+      <a class="sidebar-toggle js-sidebar-toggle"><i class="hamburger align-self-center"></i></a>
+      <div class="ms-auto d-flex align-items-center gap-2" id="adminUser" style="font-size:14px;"></div>
+    </nav>
+
+    <main class="content">
+      <div class="container-fluid p-0">
+        <h1 class="h3 mb-3"><strong>资源审查</strong> Resource Audit</h1>
+
+        <!-- 统计卡片 -->
+        <div class="row mb-3">
+          <div class="col-md-3 col-6">
+            <div class="card text-center">
+              <div class="card-body py-3">
+                <h5 class="text-warning mb-0" id="countPending">0</h5>
+                <small class="text-muted">待审核</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="card text-center">
+              <div class="card-body py-3">
+                <h5 class="text-success mb-0" id="countApproved">0</h5>
+                <small class="text-muted">已通过</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="card text-center">
+              <div class="card-body py-3">
+                <h5 class="text-danger mb-0" id="countRejected">0</h5>
+                <small class="text-muted">已拒绝</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="card text-center">
+              <div class="card-body py-3">
+                <h5 class="text-primary mb-0" id="countTotal">0</h5>
+                <small class="text-muted">总计</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 筛选按钮 -->
+        <div class="mb-3 review-filter">
+          <button class="btn btn-sm btn-outline-warning active" data-filter="pending" onclick="setFilter('pending', this)">待审核</button>
+          <button class="btn btn-sm btn-outline-success" data-filter="approved" onclick="setFilter('approved', this)">已通过</button>
+          <button class="btn btn-sm btn-outline-danger" data-filter="rejected" onclick="setFilter('rejected', this)">已拒绝</button>
+          <button class="btn btn-sm btn-outline-secondary" data-filter="all" onclick="setFilter('all', this)">全部</button>
+          <button class="btn btn-sm btn-outline-dark ms-auto" onclick="refreshAudit()">🔄 刷新</button>
+        </div>
+
+        <!-- 审查表格 -->
+        <div class="card">
+          <div class="card-body p-0">
+            <table class="table audit-table mb-0" id="auditTable">
+              <thead>
+              <tr>
+                <th style="width:50px;">ID</th>
+                <th style="width:100px;">电影</th>
+                <th>资源名称</th>
+                <th style="width:70px;">画质</th>
+                <th style="width:70px;">大小</th>
+                <th style="width:200px;">下载地址</th>
+                <th style="width:80px;">提交者</th>
+                <th style="width:60px;">备注</th>
+                <th style="width:80px;">状态</th>
+                <th style="width:80px;">审核备注</th>
+                <th style="width:100px;">提交时间</th>
+                <th style="width:150px;">操作</th>
+              </tr>
+              </thead>
+              <tbody id="auditTableBody">
+              <tr><td colspan="12" class="text-center text-muted py-5">加载中...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 拒绝理由弹窗 -->
+        <div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">拒绝资源</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <label class="form-label">拒绝理由（可选）</label>
+                <textarea class="form-control" id="rejectReason" rows="3" placeholder="如：广告链接 / 重复资源 / 内容违规"></textarea>
+                <input type="hidden" id="rejectId">
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button class="btn btn-danger" onclick="confirmReject()">确认拒绝</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/app.js"></script>
+<script>
+  const API_BASE = "http://localhost:8080";
+  let currentFilter = "pending";
+
+  function getToken() { return localStorage.getItem("token") || ""; }
+
+  function setFilter(filter, btn) {
+    currentFilter = filter;
+    document.querySelectorAll(".review-filter .btn").forEach(function(b) { b.classList.remove("active"); });
+    btn.classList.add("active");
+    refreshAudit();
+  }
+
+  function renderStatusBadge(status) {
+    var map = {
+      approved: '<span class="badge badge-approved">已通过</span>',
+      rejected: '<span class="badge badge-rejected">已拒绝</span>',
+      pending: '<span class="badge badge-pending">待审核</span>'
+    };
+    return map[status] || map.pending;
+  }
+
+  function fetchAudit() {
+    var tbody = document.getElementById("auditTableBody");
+    tbody.innerHTML = '<tr><td colspan="12" class="text-center text-muted py-5">加载中...</td></tr>';
+
+    fetch(API_BASE + "/AUDIT/ALL", {
+      headers: { token: getToken() }
+    })
+      .then(function(res) { return res.json(); })
+      .then(function(list) {
+        if (!Array.isArray(list)) list = [];
+        var filtered = currentFilter === "all" ? list : list.filter(function(item) { return item.status === currentFilter; });
+
+        document.getElementById("countTotal").textContent = list.length;
+        document.getElementById("countPending").textContent = list.filter(function(i) { return i.status === "pending"; }).length;
+        document.getElementById("countApproved").textContent = list.filter(function(i) { return i.status === "approved"; }).length;
+        document.getElementById("countRejected").textContent = list.filter(function(i) { return i.status === "rejected"; }).length;
+
+        if (!filtered.length) {
+          tbody.innerHTML = '<tr><td colspan="12" class="text-center text-muted py-5">暂无 ' + (currentFilter === "all" ? "" : currentFilter) + ' 记录</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = filtered.map(function(item) {
+          return '<tr>' +
+            '<td>' + (item.id || "") + '</td>' +
+            '<td><a href="../../filmlane-master/movie-details.html?id=' + (item.movie_id || "") + '" class="movie-link" target="_blank">📽️ #' + (item.movie_id || "-") + ' ' + (item.movie_name || "") + '</a></td>' +
+            '<td>' + (item.resouce_name || "") + '</td>' +
+            '<td>' + (item.quality || "-") + '</td>' +
+            '<td>' + (item.size || "-") + '</td>' +
+            '<td style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + (item.url || "") + '">' + (item.url || "-") + '</td>' +
+            '<td><a href="#" onclick="showSubmitter(\'' + (item.submitter || "") + '\', ' + (item.submitter_id || 0) + ');return false;">' + (item.submitter || "-") + '</a></td>' +
+            '<td>' + (item.note ? '<a href="#" onclick="showNote(\'' + String(item.note).replace(/'/g, "\\'").replace(/"/g, '&quot;') + '\');return false;">查看</a>' : '-') + '</td>' +
+            '<td>' + renderStatusBadge(item.status) + '</td>' +
+            '<td>' + (item.review_msg || '-') + '</td>' +
+            '<td>' + (item.createTime ? String(item.createTime).substring(0, 10) : "-") + '</td>' +
+            '<td class="text-nowrap">' +
+              (item.status === "pending"
+                ? '<button class="btn btn-sm btn-success me-1" style="font-size:12px;padding:2px 8px;" onclick="approveSubmission(' + item.id + ')">通过</button>' +
+                  '<button class="btn btn-sm btn-danger" style="font-size:12px;padding:2px 8px;" onclick="openReject(' + item.id + ')">拒绝</button>'
+                : '<span class="text-muted small">已处理</span>') +
+            '</td>' +
+          '</tr>';
+        }).join("");
+      })
+      .catch(function() {
+        tbody.innerHTML = '<tr><td colspan="12" class="text-center text-muted py-5">加载失败 — 后端 /AUDIT/PENDING 尚未部署，这是前端演示模板</td></tr>';
+      });
+  }
+
+  function approveSubmission(id) {
+    if (!confirm("确认通过这条资源？")) return;
+    fetch(API_BASE + "/AUDIT/APPROVE?id=" + id, {
+      method: "POST",
+      headers: { token: getToken() }
+    })
+      .then(function(res) { return res.text(); })
+      .then(function(msg) { alert(msg); refreshAudit(); })
+      .catch(function() { alert("操作失败"); });
+  }
+
+  function openReject(id) {
+    document.getElementById("rejectId").value = id;
+    document.getElementById("rejectReason").value = "";
+    new bootstrap.Modal(document.getElementById("rejectModal")).show();
+  }
+
+  function confirmReject() {
+    var id = document.getElementById("rejectId").value;
+    var reason = document.getElementById("rejectReason").value.trim();
+    fetch(API_BASE + "/AUDIT/REJECT?id=" + id + (reason ? "&reason=" + encodeURIComponent(reason) : ""), {
+      method: "POST",
+      headers: { token: getToken() }
+    })
+      .then(function(res) { return res.text(); })
+      .then(function(msg) {
+        alert(msg);
+        bootstrap.Modal.getInstance(document.getElementById("rejectModal")).hide();
+        refreshAudit();
+      })
+      .catch(function() { alert("操作失败"); });
+  }
+
+  function showNote(text) {
+    alert('备注：\n\n' + text);
+  }
+
+  function showSubmitter(name, id) {
+    alert('提交者：' + name + '\n用户ID：' + (id || '未知'));
+  }
+
+  function refreshAudit() { fetchAudit(); }
+
+  // 管理员标识
+  (function() {
+    var username = localStorage.getItem("username") || "管理员";
+    document.getElementById("adminUser").innerHTML = '<span class="text-muted">👤</span> ' + username;
+  })();
+
+  fetchAudit();
+</script>
+</body>
+</html>

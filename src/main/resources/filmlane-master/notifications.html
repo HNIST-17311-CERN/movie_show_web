@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>官方通知 — 观影 GYING</title>
+  <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .notice-list { padding: 0; list-style: none; }
+    .notice-item {
+      padding: 20px 0; border-bottom: 1px solid #e5e7eb;
+      display: flex; gap: 16px; align-items: flex-start;
+    }
+    .notice-dot {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--primary, #007bff); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0; margin-top: 2px;
+    }
+    .notice-dot.new { background: #ef4444; }
+    .notice-content { flex: 1; }
+    .notice-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; color: #111; }
+    .notice-title .badge-new { display: inline-block; background: #ef4444; color: #fff; font-size: 11px; padding: 1px 6px; border-radius: 3px; margin-left: 8px; }
+    .notice-desc { font-size: 13px; color: #666; line-height: 1.6; }
+    .notice-time { font-size: 12px; color: #999; margin-top: 6px; }
+    .notice-empty { text-align: center; padding: 60px 20px; color: #999; font-size: 14px; }
+    .user-menu { position: relative; }
+    .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary, #007bff); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; user-select: none; }
+    .user-dropdown { position: absolute; top: 44px; right: 0; width: 180px; background: #fff; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 1000; overflow: hidden; }
+    .user-info { padding: 14px 16px; border-bottom: 1px solid #eee; font-size: 14px; color: #333; text-align: center; }
+    .user-dropdown-menu { list-style: none; margin: 0; padding: 4px 0; }
+    .user-dropdown-menu li a { display: block; padding: 10px 16px; font-size: 13px; color: #333; text-decoration: none; transition: background 0.2s; }
+    .user-dropdown-menu li a:hover { background: #f5f5f5; color: #e74c3c; }
+  </style>
+</head>
+<body id="top">
+
+<header class="header">
+  <div class="header-inner">
+    <a href="./index.html" class="logo"><span class="logo-cn">观影</span> <span class="logo-en">GYING</span></a>
+    <nav class="nav-links">
+      <a href="./index.html">首页</a>
+      <a href="./All_movie.html">电影</a>
+      <a href="./TV_series.html">剧集</a>
+      <a href="./Net_movie.html">动漫</a>
+      <a href="#">热门</a>
+      <a href="#">解析</a>
+      <a href="./Setting.html">设置</a>
+    </nav>
+    <div class="search-box">
+      <input type="text" placeholder="搜索影片">
+    </div>
+    <div class="header-actions">
+      <div class="user-menu" id="userMenu">
+        <div class="user-avatar" onclick="toggleUserDropdown()">
+          <span id="avatarText">用</span>
+        </div>
+        <div class="user-dropdown" id="userDropdown" style="display:none;">
+          <div class="user-info"><b id="displayUsername">--</b></div>
+          <ul class="user-dropdown-menu">
+            <li><a href="../adminkit-web-ui-kit-dashboard-template/static/pages-blank.html">后台管理</a></li>
+            <li><a href="#" onclick="doLogout()">退出登录</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+    <section class="section">
+      <h2 class="section-title">📢 官方通知</h2>
+      <ul class="notice-list" id="noticeList">
+        <li class="notice-item">
+          <div class="notice-dot new">新</div>
+          <div class="notice-content">
+            <div class="notice-title">观影 GYING 2.0 上线 <span class="badge-new">NEW</span></div>
+            <div class="notice-desc">
+              全新 XP 风格桌面、AI 智能问答、资源审核系统正式上线。
+              现在你可以上传电影资源，经过管理员审核后即可公开展示。
+              如有任何问题，欢迎通过反馈渠道联系我们。
+            </div>
+            <div class="notice-time">2026-05-30</div>
+          </div>
+        </li>
+        <li class="notice-item">
+          <div class="notice-dot">通</div>
+          <div class="notice-content">
+            <div class="notice-title">系统维护通知</div>
+            <div class="notice-desc">
+              我们将于近期对服务器进行升级维护，届时网站可能出现短暂无法访问的情况。
+              维护期间电影数据不受影响，请放心使用。
+              具体维护时间将另行通知。
+            </div>
+            <div class="notice-time">2026-05-28</div>
+          </div>
+        </li>
+        <li class="notice-item">
+          <div class="notice-dot">通</div>
+          <div class="notice-content">
+            <div class="notice-title">新增动漫频道</div>
+            <div class="notice-desc">
+              动漫频道现已独立上线，支持按类型、地区、年代筛选，并接入剧集信息查询。
+              目前收录日本、欧美动漫数千部，更多内容持续更新中。
+            </div>
+            <div class="notice-time">2026-05-25</div>
+          </div>
+        </li>
+        <li class="notice-item">
+          <div class="notice-dot">通</div>
+          <div class="notice-content">
+            <div class="notice-title">资源上传功能开放</div>
+            <div class="notice-desc">
+              普通用户现在可以在电影详情页点击「+ 上传资源」提交资源链接。
+              所有提交将经过管理员审核，审核通过后自动出现在下载列表中。
+              注意：请勿上传违规内容，违规者将被封禁。
+            </div>
+            <div class="notice-time">2026-05-20</div>
+          </div>
+        </li>
+      </ul>
+    </section>
+  </div>
+</main>
+
+<a href="#top" class="go-top" data-go-top>↑</a>
+
+<script src="./assets/js/script.js"></script>
+<script>
+  (function initUserMenu() {
+    var username = localStorage.getItem('username') || '用户';
+    document.getElementById('avatarText').textContent = username.charAt(0).toUpperCase();
+    document.getElementById('displayUsername').textContent = username;
+  })();
+  function toggleUserDropdown() {
+    var d = document.getElementById('userDropdown');
+    d.style.display = d.style.display === 'none' ? 'block' : 'none';
+  }
+  document.addEventListener('click', function(e) {
+    var m = document.getElementById('userMenu');
+    if (m && !m.contains(e.target)) document.getElementById('userDropdown').style.display = 'none';
+  });
+  function doLogout() {
+    localStorage.removeItem('token'); localStorage.removeItem('username');
+    window.location.href = '../adminkit-web-ui-kit-dashboard-template/static/pages-sign-in.html';
+  }
+</script>
+</body>
+</html>

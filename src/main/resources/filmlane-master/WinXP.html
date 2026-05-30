@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>观影 GYING — Windows XP 风格</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Tahoma', 'SimSun', sans-serif;
+      font-size: 12px;
+      background: #3A6EA5;
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* ===== 桌面 ===== */
+    .desktop {
+      width: 100%; height: calc(100% - 40px);
+      background: #3A6EA5 url('./assets/images/windows-xp-bliss-4k-lu-3840x2160.jpg') center/cover no-repeat;
+      position: relative;
+      padding: 16px;
+      display: flex; flex-direction: column;
+    }
+
+    .desktop-icons {
+      display: flex; flex-direction: column; gap: 16px;
+      width: 80px;
+    }
+
+    .desktop-icon {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 2px; cursor: pointer; padding: 6px; border-radius: 4px;
+      border: 1px solid transparent; width: 76px;
+    }
+    .desktop-icon:hover {
+      background: rgba(255,255,255,0.15);
+      border-color: rgba(255,255,255,0.3);
+    }
+    .desktop-icon img {
+      width: 32px; height: 32px; image-rendering: pixelated;
+    }
+    .desktop-icon span {
+      color: #fff; font-size: 11px; text-align: center;
+      text-shadow: 1px 1px 1px rgba(0,0,0,0.6);
+      line-height: 1.2;
+    }
+    .desktop-icon.selected {
+      background: rgba(49,106,197,0.5);
+      border-color: rgba(49,106,197,0.8);
+    }
+
+    /* XP 选择框 */
+    #selectionBox {
+      position: absolute; border: 1px dotted #fff;
+      background: rgba(49,106,197,0.3);
+      pointer-events: none; display: none; z-index: 999;
+    }
+
+    /* ===== XP 窗口 ===== */
+    .xp-window {
+      position: absolute; top: 40px; left: 80px;
+      width: 1000px; height: 600px;
+      background: #ECE9D8;
+      border: 2px solid #0054E3;
+      border-radius: 8px 8px 0 0;
+      box-shadow: 2px 2px 12px rgba(0,0,0,0.4);
+      display: flex; flex-direction: column;
+      resize: both; overflow: hidden;
+    }
+
+    .xp-titlebar {
+      background: linear-gradient(180deg,
+        #0A246A 0%, #A6CAF0 4%, #0058EE 4%, #3D95FF 45%,
+        #1C6EDC 50%, #004DCF 55%, #0054E3 100%);
+      padding: 4px 6px;
+      display: flex; align-items: center; gap: 4px;
+      border-radius: 6px 6px 0 0;
+      cursor: default;
+    }
+    .xp-titlebar .icon { width: 16px; height: 16px; }
+    .xp-titlebar .title {
+      color: #fff; font-size: 12px; font-weight: bold;
+      text-shadow: 1px 1px 1px rgba(0,0,0,0.5); flex: 1;
+    }
+    .xp-titlebar .btns { display: flex; gap: 2px; }
+    .xp-titlebar .btns button {
+      width: 21px; height: 21px; border: none; cursor: pointer;
+      border-radius: 3px; font-size: 11px; font-weight: bold;
+      color: #fff; line-height: 1;
+    }
+    .btn-min {
+      background: linear-gradient(180deg, #3C98FF, #2156B3);
+      border: 1px solid #1450A0 !important;
+    }
+    .btn-max {
+      background: linear-gradient(180deg, #3C98FF, #2156B3);
+      border: 1px solid #1450A0 !important;
+    }
+    .btn-close {
+      background: linear-gradient(180deg, #E4864A, #C0461E);
+      border: 1px solid #A03A14 !important;
+      margin-left: 4px;
+    }
+
+    .xp-menubar {
+      background: #ECE9D8;
+      border-bottom: 1px solid #ACA899;
+      padding: 2px 6px;
+      display: flex; gap: 14px;
+      font-size: 12px; color: #000;
+    }
+    .xp-menubar span { cursor: pointer; padding: 0 2px; }
+    .xp-menubar span:hover { background: #FFE8A0; border: 1px solid #FFC448; margin: -1px; }
+
+    .xp-toolbar {
+      background: linear-gradient(180deg, #FAF8F4, #E5DFCE);
+      border-bottom: 1px solid #ACA899;
+      padding: 4px 6px; display: flex; gap: 4px;
+    }
+    .xp-toolbar button {
+      height: 24px; padding: 0 10px; font-size: 11px;
+      background: transparent; border: 1px solid transparent;
+      cursor: pointer; border-radius: 2px; display: flex;
+      align-items: center; gap: 4px; color: #000;
+    }
+    .xp-toolbar button:hover {
+      border-color: #FFC448;
+      background: linear-gradient(180deg, #FFEFCD, #FFE490);
+    }
+    .xp-toolbar .sep {
+      width: 1px; background: #ACA899; margin: 2px 2px;
+    }
+
+    .xp-addressbar {
+      background: #ECE9D8; padding: 4px 6px;
+      display: flex; align-items: center; gap: 6px;
+      border-bottom: 1px solid #ACA899;
+      font-size: 12px;
+    }
+    .xp-addressbar label { white-space: nowrap; }
+    .xp-addressbar input {
+      flex: 1; height: 22px; border: 1px solid #7F9DB9;
+      padding: 0 4px; font-size: 12px;
+    }
+    .xp-addressbar button {
+      height: 22px; padding: 0 12px;
+      background: linear-gradient(180deg, #fff, #E0E0E0);
+      border: 1px solid #7F9DB9; border-radius: 3px;
+      cursor: pointer; font-size: 12px;
+    }
+
+    .xp-content {
+      flex: 1; background: #fff;
+      overflow: auto; padding: 16px;
+    }
+
+    .xp-content h1 { font-size: 18px; margin-bottom: 4px; color: #0054E3; }
+    .xp-content .subtitle { color: #888; margin-bottom: 16px; font-size: 12px; }
+
+    .xp-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 16px;
+    }
+    .xp-card {
+      background: #FFF; border: 1px solid #D5D1C8;
+      border-radius: 3px; overflow: hidden; cursor: pointer;
+    }
+    .xp-card:hover { border-color: #FFC448; box-shadow: 0 0 4px rgba(0,0,0,0.15); }
+    .xp-card img {
+      width: 100%; height: 200px; object-fit: cover; display: block;
+    }
+    .xp-card .info { padding: 8px; }
+    .xp-card .info h3 { font-size: 13px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .xp-card .info .meta { font-size: 11px; color: #666; }
+    .xp-card .info .score { float: right; font-weight: bold; color: #f97316; font-size: 14px; }
+
+    /* ===== 状态栏 ===== */
+    .xp-statusbar {
+      background: #ECE9D8; border-top: 1px solid #C0BEB8;
+      padding: 3px 8px; font-size: 11px; display: flex; gap: 12px;
+    }
+
+    /* ===== 任务栏 ===== */
+    .taskbar {
+      height: 40px; background: linear-gradient(180deg,
+        #245EDC 0%, #3C8CF0 3%, #296BDB 5%,
+        #2C6FD6 50%, #1E5DBE 97%, #1A4FA8 100%);
+      display: flex; align-items: center; padding: 0 8px; gap: 4px;
+      position: fixed; bottom: 0; width: 100%; z-index: 1000;
+    }
+    .taskbar .start-btn {
+      height: 28px; padding: 0 10px;
+      background: linear-gradient(180deg, #3D9A3D 0%, #1C7A1C 50%, #0D5E0D 100%);
+      border: none; border-radius: 0 8px 8px 0;
+      color: #fff; font-weight: bold; font-size: 12px;
+      cursor: pointer; display: flex; align-items: center; gap: 4px;
+      text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+    }
+    .taskbar .start-btn:hover {
+      background: linear-gradient(180deg, #4DAF4D, #2C8E2C);
+    }
+    .taskbar .task-btn {
+      height: 26px; padding: 0 14px;
+      background: linear-gradient(180deg, #3D95FF 0%, #1C6EDC 50%, #1A5BB4 100%);
+      border: none; border-radius: 3px;
+      color: #fff; font-size: 11px; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .taskbar .tray {
+      margin-left: auto; display: flex; align-items: center; gap: 6px;
+      background: rgba(30,120,255,0.15);
+      border-left: 1px solid rgba(255,255,255,0.15);
+      border-right: 1px solid rgba(255,255,255,0.15);
+      padding: 2px 10px 2px 8px; height: 28px; border-radius: 2px;
+    }
+    .taskbar .tray .time {
+      color: #fff; font-size: 11px; text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+    }
+
+    /* ===== XP 按钮 ===== */
+    .xp-btn {
+      height: 24px; padding: 0 16px;
+      background: linear-gradient(180deg, #fff 0%, #ECE9D8 85%, #D5D1C8 100%);
+      border: 1px solid #7F9DB9; border-radius: 3px;
+      cursor: pointer; font-size: 12px; font-family: 'Tahoma'; color: #000;
+    }
+    .xp-btn:hover {
+      border-color: #FFC448;
+      background: linear-gradient(180deg, #FFEFCD, #FFE490);
+    }
+    .xp-btn:active {
+      background: linear-gradient(180deg, #E5DFCE, #C0BEB8);
+    }
+    .xp-btn.primary {
+      background: linear-gradient(180deg, #fff 0%, #E8F0F8 50%, #D0E0F0 100%);
+      border-color: #3C7FB1;
+    }
+
+    .loading { text-align: center; padding: 40px; color: #999; font-size: 14px; }
+    .empty { text-align: center; padding: 40px; color: #999; }
+
+    /* XP 弹窗 */
+    .xp-modal {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); z-index: 2000;
+      display: none; justify-content: center; align-items: center;
+    }
+    .xp-modal.show { display: flex; }
+    .xp-modal .dialog {
+      background: #ECE9D8; border: 2px solid #0054E3;
+      border-radius: 8px 8px 0 0; width: 420px;
+      box-shadow: 4px 4px 16px rgba(0,0,0,0.5);
+    }
+    .xp-modal .dialog-title {
+      background: linear-gradient(180deg, #0A246A, #3D95FF 45%, #1C6EDC 50%, #004DCF);
+      padding: 6px 8px; color: #fff; font-weight: bold; font-size: 12px;
+      display: flex; align-items: center; gap: 6px;
+      border-radius: 6px 6px 0 0;
+    }
+    .xp-modal .dialog-body { padding: 20px; display: flex; gap: 12px; }
+    .xp-modal .dialog-body img { width: 32px; height: 32px; }
+    .xp-modal .dialog-body .msg { flex: 1; font-size: 12px; line-height: 1.6; }
+    .xp-modal .dialog-btns { padding: 12px 16px; text-align: right; border-top: 1px solid #C0BEB8; }
+    .xp-modal .dialog-btns button { margin-left: 8px; }
+
+    .login-form { display: flex; flex-direction: column; gap: 10px; padding: 10px 0; }
+    .login-form label { font-size: 12px; }
+    .login-form input {
+      height: 24px; border: 1px solid #7F9DB9; padding: 0 6px; font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="desktop" id="desktop">
+  <div id="selectionBox"></div>
+  <!-- 桌面图标 -->
+  <div class="desktop-icons">
+    <div class="desktop-icon" ondblclick="openWindow()">
+      <svg width="32" height="32" viewBox="0 0 32 32"><rect x="2" y="4" width="28" height="22" rx="2" fill="#FFD700" stroke="#C0A000" stroke-width="1"/><text x="16" y="20" text-anchor="middle" font-size="14" fill="#333" font-weight="bold">G</text></svg>
+      <span>观影 GYING</span>
+    </div>
+    <div class="desktop-icon" onclick="openLogin()">
+      <svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="12" r="6" fill="#4A90D9"/><ellipse cx="16" cy="28" rx="12" ry="6" fill="#4A90D9"/></svg>
+      <span>登录账户</span>
+    </div>
+    <div class="desktop-icon" ondblclick="openIE()">
+      <svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#4A90D9" stroke="#2E6AB0" stroke-width="1"/><path d="M12 7a9 9 0 011 18" stroke="#fff" stroke-width="2" fill="none" opacity="0.6"/><path d="M10 10h4l2 6-2 6h-4l2-7z" fill="#fff" opacity="0.8"/></svg>
+      <span>Internet<br>Explorer</span>
+    </div>
+    <div class="desktop-icon" onclick="alert('回收站是空的')">
+      <svg width="32" height="32" viewBox="0 0 32 32"><path d="M8 6l2-2h12l2 2h5v3H3V6h5z M5 10h22l-2 18a2 2 0 01-2 2H9a2 2 0 01-2-2L5 10z" fill="#A0A0A0"/></svg>
+      <span>回收站</span>
+    </div>
+  </div>
+
+  <!-- XP 主窗口 -->
+  <div class="xp-window" id="mainWindow">
+    <div class="xp-titlebar" id="titlebar">
+      <svg width="16" height="16" viewBox="0 0 16 16"><rect width="14" height="12" x="1" y="2" rx="1" fill="#FFD700"/></svg>
+      <span class="title">观影 GYING — 电影 / 剧集 / 动漫</span>
+      <div class="btns">
+        <button class="btn-min" title="最小化" onclick="minWindow()">–</button>
+        <button class="btn-max" title="最大化" onclick="maxWindow()">□</button>
+        <button class="btn-close" title="关闭" onclick="closeWindow()">✕</button>
+      </div>
+    </div>
+    <div class="xp-menubar">
+      <span>文件(F)</span><span>编辑(E)</span><span>查看(V)</span>
+      <span>收藏(A)</span><span>工具(T)</span><span>帮助(H)</span>
+    </div>
+    <div class="xp-toolbar">
+      <button title="后退">◀</button>
+      <button title="前进">▶</button>
+      <span class="sep"></span>
+      <button>🏠 首页</button>
+      <button>🎬 电影</button>
+      <button>📺 剧集</button>
+      <button>🐱 动漫</button>
+      <span class="sep"></span>
+      <button onclick="refreshMovies()">🔄 刷新</button>
+    </div>
+    <div class="xp-addressbar">
+      <label>地址(D):</label>
+      <input type="text" value="http://localhost:8080/FILMES/ONEP" readonly>
+      <button onclick="refreshMovies()">转到</button>
+    </div>
+    <div class="xp-content" id="movieContent">
+      <h1>🎬 最近更新的电影</h1>
+      <p class="subtitle">观影 GYING — 海量电影与剧集</p>
+      <div class="xp-grid" id="movieGrid">
+        <div class="loading">正在从 Internet 加载... ⏳</div>
+      </div>
+    </div>
+    <div class="xp-statusbar">
+      <span id="statusText">就绪</span>
+      <span style="margin-left:auto;" id="movieCount">0 个对象</span>
+    </div>
+  </div>
+</div>
+
+<!-- IE 窗口模板 -->
+<template id="ieTemplate">
+  <div class="xp-window ie-window" style="position:absolute;top:50px;left:60px;width:800px;height:520px;z-index:100;">
+    <div class="xp-titlebar ie-drag">
+      <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="#4A90D9"/></svg>
+      <span class="title ie-title">Internet Explorer</span>
+      <div class="btns">
+        <button class="btn-min" onclick="this.closest('.ie-window').style.display='none';updateTaskbar()">–</button>
+        <button class="btn-max" onclick="var w=this.closest('.ie-window');w.style.width=w.style.width==='100%'?'800px':'100%';w.style.height=w.style.height==='100%'?'520px':'100%';w.style.top=w.style.width==='100%'?'0':'50px';w.style.left=w.style.width==='100%'?'0':'60px';">□</button>
+        <button class="btn-close" onclick="this.closest('.ie-window').remove();updateTaskbar()">✕</button>
+      </div>
+    </div>
+    <div class="xp-menubar">
+      <span>文件(F)</span><span>编辑(E)</span><span>查看(V)</span>
+      <span>收藏(A)</span><span>工具(T)</span><span>帮助(H)</span>
+    </div>
+    <div class="xp-toolbar">
+      <button title="后退" class="ie-back">◀</button>
+      <button title="前进" class="ie-fwd">▶</button>
+      <span class="sep"></span>
+      <button title="刷新" class="ie-refresh">🔄</button>
+      <button title="主页" class="ie-home">🏠</button>
+      <span class="sep"></span>
+    </div>
+    <div class="xp-addressbar">
+      <label>地址(D):</label>
+      <input type="text" class="ie-url" value="about:blank" onkeydown="if(event.key==='Enter')navigateIE(this)">
+      <button onclick="navigateIE(this.previousElementSibling)">转到</button>
+    </div>
+    <iframe class="ie-frame" style="flex:1;width:100%;border:none;background:#fff;" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
+    <div class="xp-statusbar"><span>就绪</span></div>
+  </div>
+</template>
+
+<!-- XP 登录弹窗 -->
+<div class="xp-modal" id="loginModal">
+  <div class="dialog">
+    <div class="dialog-title">🪟 登录 — 观影 GYING</div>
+    <div class="dialog-body">
+      <svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="12" r="8" fill="#4A90D9"/><ellipse cx="16" cy="30" rx="14" ry="7" fill="#4A90D9"/></svg>
+      <div class="msg">
+        <b>请输入您的用户名和密码</b>
+        <form class="login-form" onsubmit="doLogin(event)">
+          <label>用户名:</label>
+          <input type="text" id="loginUser" placeholder="用户名" required>
+          <label>密码:</label>
+          <input type="password" id="loginPass" placeholder="密码" required>
+          <div style="margin-top:4px">
+            <button type="submit" class="xp-btn primary">确定</button>
+            <button type="button" class="xp-btn" onclick="closeLogin()">取消</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 任务栏 -->
+<div class="taskbar">
+  <button class="start-btn" onclick="openWindow()">
+    <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" fill="#fff"/><rect x="9" y="1" width="6" height="6" fill="#fff"/><rect x="1" y="9" width="6" height="6" fill="#fff"/><rect x="9" y="9" width="6" height="6" fill="#fff"/></svg>
+    开始
+  </button>
+  <button class="task-btn" onclick="openWindow()">
+    <svg width="16" height="16" viewBox="0 0 16 16"><rect width="14" height="12" x="1" y="2" rx="1" fill="#FFD700"/></svg>
+    观影 GYING
+  </button>
+  <div class="tray">
+    <span class="time" id="clock"></span>
+  </div>
+</div>
+
+<script>
+  var token = '';
+
+  // ===== 窗口控制 =====
+  function openWindow() {
+    document.getElementById('mainWindow').style.display = 'flex';
+    refreshMovies();
+  }
+  function minWindow() {
+    document.getElementById('mainWindow').style.display = 'none';
+  }
+  function maxWindow() {
+    var win = document.getElementById('mainWindow');
+    if (win.style.width === '100%') {
+      win.style.width = '1000px'; win.style.height = '600px';
+      win.style.top = '40px'; win.style.left = '80px';
+    } else {
+      win.style.width = '100%'; win.style.height = 'calc(100% - 40px)';
+      win.style.top = '0'; win.style.left = '0'; win.style.borderRadius = '0';
+    }
+  }
+  function closeWindow() {
+    document.getElementById('mainWindow').style.display = 'none';
+    document.getElementById('statusText').textContent = '窗口已关闭';
+  }
+
+  // ===== 登录 =====
+  function openLogin() {
+    document.getElementById('loginModal').classList.add('show');
+  }
+  function closeLogin() {
+    document.getElementById('loginModal').classList.remove('show');
+  }
+  function doLogin(e) {
+    e.preventDefault();
+    var u = document.getElementById('loginUser').value;
+    var p = document.getElementById('loginPass').value;
+    fetch('http://localhost:8080/api/user/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: u, password: p })
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d.code === 200) {
+          token = d.data.token;
+          localStorage.setItem('token', token);
+          localStorage.setItem('username', u);
+          closeLogin();
+          document.getElementById('statusText').textContent = '欢迎, ' + u + ' ✓';
+          refreshMovies();
+        } else {
+          alert('登录失败: ' + d.msg);
+        }
+      })
+      .catch(function() { alert('连接失败'); });
+  }
+
+  // ===== 加载电影 =====
+  function refreshMovies() {
+    var grid = document.getElementById('movieGrid');
+    grid.innerHTML = '<div class="loading">正在从 Internet 加载... ⏳</div>';
+    document.getElementById('statusText').textContent = '加载中...';
+
+    token = token || localStorage.getItem('token') || '';
+    if (!token) {
+      grid.innerHTML = '<div class="empty">请先双击桌面 <b>登录账户</b> 图标进行登录</div>';
+      document.getElementById('statusText').textContent = '未登录';
+      return;
+    }
+
+    fetch('http://localhost:8080/FILMES/ONEP?page=1&pageSize=24', {
+      headers: { token: token }
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(movies) {
+        if (!Array.isArray(movies) || !movies.length) {
+          grid.innerHTML = '<div class="empty">(空) — 此文件夹为空</div>';
+          document.getElementById('movieCount').textContent = '0 个对象';
+          document.getElementById('statusText').textContent = '就绪';
+          return;
+        }
+        grid.innerHTML = '';
+        movies.forEach(function(m) { grid.appendChild(buildCard(m)); });
+        document.getElementById('movieCount').textContent = movies.length + ' 个对象';
+        document.getElementById('statusText').textContent = '就绪';
+      })
+      .catch(function() {
+        grid.innerHTML = '<div class="empty">连接失败，请检查服务器是否启动</div>';
+        document.getElementById('statusText').textContent = '错误';
+      });
+  }
+
+  function buildCard(m) {
+    var div = document.createElement('div');
+    div.className = 'xp-card';
+    var cover = m.cover || '';
+    if (cover && !/^https?:\/\//i.test(cover)) cover = './assets/images/movie-1.png';
+    var year = m.releaseDate ? String(m.releaseDate).substring(0, 4) : '';
+    var meta = [year, m.region || '', m.type || ''].filter(Boolean).join(' / ');
+    div.innerHTML =
+      '<a href="./movie-details.html?id=' + (m.id||'') + '" target="_blank" style="color:inherit;text-decoration:none">' +
+      '<img src="' + escapeHtml(cover) + '" alt="' + escapeHtml(m.name||'') + '" onerror="this.src=\'./assets/images/movie-1.png\'">' +
+      '<div class="info"><h3>' + escapeHtml(m.name||'未知') + '</h3>' +
+      '<span class="score" id="s' + m.id + '">--</span>' +
+      '<p class="meta">' + escapeHtml(meta||'--') + '</p></div></a>';
+    fetch('http://localhost:8080/FILMES/SCORE/ONE?id=' + m.id, {
+      headers: { token: token }
+    }).then(function(r) { return r.json(); }).then(function(s) {
+      if (Array.isArray(s) && s.length) {
+        var el = document.getElementById('s' + m.id);
+        if (el) el.textContent = Number(s[0].score).toFixed(1);
+      }
+    }).catch(function() {});
+    return div;
+  }
+
+  function escapeHtml(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ===== 时钟 =====
+  function updateClock() {
+    var now = new Date();
+    var h = now.getHours(), m = String(now.getMinutes()).padStart(2,'0');
+    document.getElementById('clock').textContent = (h>12?h-12:h||12) + ':' + m + (h>=12?' PM':' AM');
+  }
+  setInterval(updateClock, 30000);
+  updateClock();
+
+  // ===== IE 浏览器 =====
+  function openIE(url) {
+    var tpl = document.getElementById('ieTemplate');
+    var clone = tpl.content.firstElementChild.cloneNode(true);
+    document.getElementById('desktop').appendChild(clone);
+
+    var win = document.querySelector('.ie-window:last-of-type');
+    if (url) {
+      win.querySelector('.ie-url').value = url;
+      win.querySelector('.ie-frame').src = url;
+      win.querySelector('.ie-title').textContent = url.split('/').pop() || url;
+    }
+    focusWindow(win);
+    makeDraggable(win);
+  }
+
+  function navigateIE(input) {
+    var win = input.closest('.ie-window');
+    var url = input.value.trim();
+    if (!url) return;
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    input.value = url;
+    win.querySelector('.ie-frame').src = url;
+    win.querySelector('.ie-title').textContent = new URL(url).hostname || url;
+    win.querySelector('.xp-statusbar span').textContent = '正在加载 ' + url + '...';
+  }
+
+  function focusWindow(win) {
+    document.querySelectorAll('.xp-window,.ie-window').forEach(function(w) { w.style.zIndex = 100; });
+    win.style.zIndex = 200;
+  }
+
+  function makeDraggable(win) {
+    var bar = win.querySelector('.ie-drag') || win.querySelector('.xp-titlebar');
+    if (!bar || bar._dragInit) return;
+    bar._dragInit = true;
+    var isDrag = false, ox = 0, oy = 0;
+    bar.addEventListener('mousedown', function(e) {
+      if (e.target.tagName === 'BUTTON') return;
+      isDrag = true; ox = e.clientX - win.offsetLeft; oy = e.clientY - win.offsetTop;
+      focusWindow(win);
+    });
+    document.addEventListener('mousemove', function(e) {
+      if (!isDrag) return;
+      win.style.left = Math.max(0, e.clientX - ox) + 'px';
+      win.style.top = Math.max(0, e.clientY - oy) + 'px';
+    });
+    document.addEventListener('mouseup', function() { isDrag = false; });
+  }
+
+  // 主窗口也支持拖动
+  window.addEventListener('DOMContentLoaded', function() {
+    makeDraggable(document.getElementById('mainWindow'));
+  });
+
+  // ===== 桌面框选 =====
+  (function() {
+    var desktop = document.getElementById('desktop');
+    var box = document.getElementById('selectionBox');
+    var selecting = false, sx = 0, sy = 0;
+
+    desktop.addEventListener('mousedown', function(e) {
+      if (e.target !== desktop && e.target.id !== 'selectionBox') return;
+      e.preventDefault();
+      selecting = true;
+      sx = e.clientX - desktop.offsetLeft + desktop.scrollLeft;
+      sy = e.clientY - desktop.offsetTop + desktop.scrollTop;
+      box.style.display = 'block';
+      box.style.left = sx + 'px';
+      box.style.top = sy + 'px';
+      box.style.width = '0px';
+      box.style.height = '0px';
+      clearSelection();
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (!selecting) return;
+      var cx = e.clientX - desktop.offsetLeft + desktop.scrollLeft;
+      var cy = e.clientY - desktop.offsetTop + desktop.scrollTop;
+      var l = Math.min(sx, cx), t = Math.min(sy, cy);
+      var w = Math.abs(cx - sx), h = Math.abs(cy - sy);
+      box.style.left = l + 'px'; box.style.top = t + 'px';
+      box.style.width = w + 'px'; box.style.height = h + 'px';
+
+      var icons = desktop.querySelectorAll('.desktop-icon');
+      icons.forEach(function(icon) {
+        var ir = icon.getBoundingClientRect();
+        var dr = desktop.getBoundingClientRect();
+        var ix = ir.left - dr.left + desktop.scrollLeft;
+        var iy = ir.top - dr.top + desktop.scrollTop;
+        if (ix + ir.width > l && ix < l + w && iy + ir.height > t && iy < t + h) {
+          icon.classList.add('selected');
+        } else {
+          icon.classList.remove('selected');
+        }
+      });
+    });
+
+    document.addEventListener('mouseup', function() {
+      selecting = false;
+      box.style.display = 'none';
+    });
+
+    function clearSelection() {
+      desktop.querySelectorAll('.desktop-icon').forEach(function(i) { i.classList.remove('selected'); });
+    }
+  })();
+
+  // ===== 窗口拖动 =====
+  (function() {
+    var win = document.getElementById('mainWindow');
+    var bar = document.getElementById('titlebar');
+    var isDragging = false, offsetX = 0, offsetY = 0;
+
+    bar.addEventListener('mousedown', function(e) {
+      if (e.target.tagName === 'BUTTON') return;
+      isDragging = true;
+      offsetX = e.clientX - win.offsetLeft;
+      offsetY = e.clientY - win.offsetTop;
+      win.style.cursor = 'move';
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (!isDragging) return;
+      win.style.left = Math.max(0, e.clientX - offsetX) + 'px';
+      win.style.top = Math.max(0, e.clientY - offsetY) + 'px';
+    });
+
+    document.addEventListener('mouseup', function() {
+      isDragging = false;
+      win.style.cursor = '';
+    });
+  })();
+
+  // 点击窗口置顶
+  document.addEventListener('mousedown', function(e) {
+    var win = e.target.closest('.xp-window,.ie-window');
+    if (win) focusWindow(win);
+  });
+
+  // 初始化
+  window.onload = function() {
+    token = localStorage.getItem('token') || '';
+    if (token) { openWindow(); }
+  };
+</script>
+</body>
+</html>

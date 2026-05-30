@@ -19,7 +19,8 @@ public class MovieDAO
     @Autowired
     JdbcTemplate jdbcTemplate;
 
-    private final RowMapper<Movie_details> movieRowMapper = (rs, rowNum) -> {
+    private final RowMapper<Movie_details> movieRowMapper = (rs, rowNum) ->
+    {
         Movie_details movie = new Movie_details();
 
         movie.setId(rs.getLong("id"));

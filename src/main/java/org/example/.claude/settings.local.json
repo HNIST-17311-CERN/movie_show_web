@@ -19,7 +19,9 @@
       "Bash(docker update *)",
       "Bash(javap -public -classpath __TRACKED_VAR__/.m2/repository/io/milvus/milvus-sdk-java/2.4.1/milvus-sdk-java-2.4.1.jar io.milvus.response.SearchResultsWrapper)",
       "Bash(javap -public -classpath __TRACKED_VAR__/.m2/repository/io/milvus/milvus-sdk-java/2.4.1/milvus-sdk-java-2.4.1.jar io.milvus.grpc.SearchResults)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(python3 *)",
+      "Bash(python *)"
     ]
   }
 }
