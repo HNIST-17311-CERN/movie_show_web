@@ -36,3 +36,6 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Video files ###
+src/main/resources/Movie_Online/
