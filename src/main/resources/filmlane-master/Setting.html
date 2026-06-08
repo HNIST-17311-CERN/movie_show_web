@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>设置 - 观影 GYING</title>
+  <title>设置 - 电影俱乐部 Movie Club</title>
   <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./assets/css/style.css">
   <style>
@@ -20,13 +20,13 @@
 
   <header class="header">
     <div class="header-inner">
-      <a href="./index.html" class="logo"><span class="logo-cn">观影</span> <span class="logo-en">GYING</span></a>
+      <a href="./index.html" class="logo"><span class="logo-cn">电影俱乐部</span> <span class="logo-en">Movie Club</span></a>
       <nav class="nav-links">
         <a href="./index.html">首页</a>
         <a href="./All_movie.html">电影</a>
         <a href="./TV_series.html">剧集</a>
         <a href="./Net_movie.html">动漫</a>
-        <a href="#">热门</a>
+        <a href="./Online.html">在线</a>
         <a href="#">解析</a>
         <a href="./Setting.html" class="active">设置</a>
       </nav>
@@ -56,9 +56,39 @@
         <h2 class="section-title">设置</h2>
         <div class="detail-section">
           <p class="intro-text" style="margin-bottom: 20px;">这里是设置页面，后续可以接入用户偏好、主题切换、账号管理等功能。</p>
-          <div class="filter-toolbar">
-            <label class="filter-checkbox"><input type="checkbox"> 深色模式</label>
-            <label class="filter-checkbox"><input type="checkbox"> 自动播放下一集</label>
+
+          <h3 style="font-size:15px; font-weight:600; margin-bottom:14px; color: var(--text);">外观</h3>
+          <div class="plugin-toggle">
+            <div class="plugin-toggle-left">
+              <span class="plugin-toggle-label">深色模式</span>
+              <span class="plugin-toggle-desc">切换深色/浅色主题外观</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggleDarkMode">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <h3 style="font-size:15px; font-weight:600; margin: 24px 0 14px; color: var(--text);">插件</h3>
+          <div class="plugin-toggle">
+            <div class="plugin-toggle-left">
+              <span class="plugin-toggle-label">相似电影推荐</span>
+              <span class="plugin-toggle-desc">在电影详情页展示相关电影推荐</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggleSimilarMovies" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="plugin-toggle">
+            <div class="plugin-toggle-left">
+              <span class="plugin-toggle-label">自动播放下一集</span>
+              <span class="plugin-toggle-desc">剧集播放完成后自动跳转下一集</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggleAutoPlay">
+              <span class="toggle-slider"></span>
+            </label>
           </div>
         </div>
       </section>
@@ -91,19 +121,38 @@
       var isDark = localStorage.getItem('darkMode') === 'true';
       if (isDark) document.documentElement.setAttribute('data-theme', 'dark');
 
-      var checkbox = document.querySelector('.filter-checkbox input[type="checkbox"]');
-      if (!checkbox) return;
-      checkbox.checked = isDark;
+      var darkToggle = document.getElementById('toggleDarkMode');
+      var similarToggle = document.getElementById('toggleSimilarMovies');
+      var autoPlayToggle = document.getElementById('toggleAutoPlay');
 
-      checkbox.addEventListener('change', function() {
-        if (this.checked) {
-          document.documentElement.setAttribute('data-theme', 'dark');
-          localStorage.setItem('darkMode', 'true');
-        } else {
-          document.documentElement.removeAttribute('data-theme');
-          localStorage.setItem('darkMode', 'false');
-        }
-      });
+      if (darkToggle) {
+        darkToggle.checked = isDark;
+        darkToggle.addEventListener('change', function() {
+          if (this.checked) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('darkMode', 'true');
+          } else {
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.setItem('darkMode', 'false');
+          }
+        });
+      }
+
+      if (similarToggle) {
+        var similarEnabled = localStorage.getItem('similarMoviesEnabled');
+        similarToggle.checked = similarEnabled !== 'false';
+        similarToggle.addEventListener('change', function() {
+          localStorage.setItem('similarMoviesEnabled', this.checked ? 'true' : 'false');
+        });
+      }
+
+      if (autoPlayToggle) {
+        var autoPlay = localStorage.getItem('autoPlayNext') === 'true';
+        autoPlayToggle.checked = autoPlay;
+        autoPlayToggle.addEventListener('change', function() {
+          localStorage.setItem('autoPlayNext', this.checked ? 'true' : 'false');
+        });
+      }
     })();
   </script>
 </body>

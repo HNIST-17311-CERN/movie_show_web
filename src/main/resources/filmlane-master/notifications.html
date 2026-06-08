@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>官方通知 — 观影 GYING</title>
+  <title>官方通知 — 电影俱乐部 Movie Club</title>
   <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./assets/css/style.css">
   <style>
@@ -25,6 +25,22 @@
     .notice-desc { font-size: 13px; color: #666; line-height: 1.6; }
     .notice-time { font-size: 12px; color: #999; margin-top: 6px; }
     .notice-empty { text-align: center; padding: 60px 20px; color: #999; font-size: 14px; }
+    .notice-pinned {
+      background: linear-gradient(135deg, #fff9e6 0%, #fff3cc 100%);
+      border: 1px solid #f0c040; border-radius: 10px;
+      padding: 20px 24px; margin-bottom: 16px;
+      box-shadow: 0 2px 12px rgba(240,192,64,0.2);
+      position: relative;
+    }
+    .notice-pinned::before {
+      content: '📌 置顶';
+      position: absolute; top: -10px; left: 20px;
+      background: #f0c040; color: #fff; font-size: 11px;
+      padding: 2px 10px; border-radius: 10px; font-weight: 600;
+    }
+    .notice-pinned .pin-title { font-size: 18px; font-weight: 700; color: #8b6914; margin-bottom: 10px; }
+    .notice-pinned .pin-desc { font-size: 13px; color: #666; line-height: 1.8; }
+    .notice-pinned .pin-desc .en { color: #999; font-style: italic; }
     .user-menu { position: relative; }
     .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary, #007bff); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; user-select: none; }
     .user-dropdown { position: absolute; top: 44px; right: 0; width: 180px; background: #fff; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 1000; overflow: hidden; }
@@ -38,13 +54,13 @@
 
 <header class="header">
   <div class="header-inner">
-    <a href="./index.html" class="logo"><span class="logo-cn">观影</span> <span class="logo-en">GYING</span></a>
+    <a href="./index.html" class="logo"><span class="logo-cn">电影俱乐部</span> <span class="logo-en">Movie Club</span></a>
     <nav class="nav-links">
       <a href="./index.html">首页</a>
       <a href="./All_movie.html">电影</a>
       <a href="./TV_series.html">剧集</a>
       <a href="./Net_movie.html">动漫</a>
-      <a href="#">热门</a>
+      <a href="./Online.html">在线</a>
       <a href="#">解析</a>
       <a href="./Setting.html">设置</a>
     </nav>
@@ -73,10 +89,73 @@
     <section class="section">
       <h2 class="section-title">📢 官方通知</h2>
       <ul class="notice-list" id="noticeList">
+        <li class="notice-pinned">
+          <div class="pin-title">🎬 The Rule of Movie Club / 电影俱乐部规则</div>
+          <div class="pin-desc">
+            第一条：禁止讨论电影俱乐部。<br>
+            第二条：<strong>禁止</strong>讨论电影俱乐部。<br>
+            第三条：当有人喊「停」、去厕所、或者其它紧急情况时，观影暂停。<br>
+            第四条：一个人看、一群人看都可以，最好拉上亲朋好友一起分享。<br>
+            第五条：一次只看一部电影。<br>
+            第六条：不玩手机、不回消息。<br>
+            第七条：电影想放多久就放多久。<br>
+            第八条：如果这是你第一次来电影俱乐部，你必须看一部电影。<br>
+            <span class="en">
+              The first rule of Movie Club is:&nbsp;&nbsp;&nbsp;You do not talk about Movie Club.<br><br>
+              The second rule of Movie Club is:&nbsp;&nbsp;&nbsp;You DO NOT talk about Movie Club.<br><br>
+              The third rule of Movie Club is:&nbsp;&nbsp;&nbsp;If someone yells "stop", goes to the bathroom, or there's another emergency, the movie is paused.<br><br>
+              The fourth rule of Movie Club is:&nbsp;&nbsp;&nbsp;Watching alone or with a crowd — both are fine. Better yet, share it with friends and family.<br><br>
+              The fifth rule of Movie Club is:&nbsp;&nbsp;&nbsp;One movie at a time.<br><br>
+              The sixth rule of Movie Club is:&nbsp;&nbsp;&nbsp;No phones, no messages.<br><br>
+              The seventh rule of Movie Club is:&nbsp;&nbsp;&nbsp;Movies will go on as long as they have to.<br><br>
+              The eighth and final rule of Movie Club is:&nbsp;&nbsp;&nbsp;If this is your first night at Movie Club, you have to watch a movie.
+            </span>
+            <hr style="border: none; border-top: 1px dashed #d4a017; margin: 16px 0;">
+            <div class="pin-title" style="font-size: 16px; margin-bottom: 8px;">📋 用户告示 / User Notice</div>
+            1、莫谈国事<br>
+            2、莫谈国事<br>
+            3、莫谈国事<br>
+            4、莫谈国事<br>
+            5、本站用于学习和分享，禁止一切交易、广告等利润相关行为<br>
+            6、提防诈骗、病毒链接，注重网络安全，如遇到请举报<br>
+            7、侵权必删，联系邮箱 l2440539709@163.com<br>
+            8、严禁上传违法内容（涉恐、涉毒、涉暴等），违者封号并保留证据<br>
+            9、本站所有资源来自用户分享，仅供学习交流，请于下载后 24 小时内删除<br>
+            10、本站对用户行为不承担连带责任<br>
+            11、禁止剧透未标注（<em>spoiler warning</em>），发现直接隐藏<br>
+            12、禁止人身攻击、引战、刷屏<br>
+            13、转载资源请注明出处<br>
+            14、禁止上传与标题不符的资源（标题党）<br>
+            15、禁止上传病毒、捆绑软件、挖矿脚本<br>
+            16、画质、大小请如实标注，虚标下架<br>
+            17、看烂片也是一种修行，但不要连续看三部<br>
+            18、IMDb 低于 5 分慎点，本站不赔精神损失<br>
+            <span class="en">
+              1. Do not discuss politics.<br>
+              2. Do not discuss politics.<br>
+              3. Do not discuss politics.<br>
+              4. Do not discuss politics.<br>
+              5. This site is for learning and sharing only. All transactions, advertisements, and profit-related activities are prohibited.<br>
+              6. Beware of scams and malicious links. Stay safe online. Report anything suspicious.<br>
+              7. Infringing content will be removed upon request. Contact: l2440539709@163.com<br>
+              8. Illegal content (terrorism, drugs, violence, etc.) is strictly prohibited. Violators will be banned and evidence preserved.<br>
+              9. All resources are user-submitted for learning purposes only. Please delete within 24 hours of downloading.<br>
+              10. This site assumes no liability for user behavior.<br>
+              11. No unmarked spoilers. Violations will be hidden on sight.<br>
+              12. No personal attacks, trolling, or spamming.<br>
+              13. Reposted resources must credit the original source.<br>
+              14. No clickbait or misleading resource titles.<br>
+              15. No viruses, bundled software, or mining scripts.<br>
+              16. Label quality and file size truthfully. Falsified listings will be removed.<br>
+              17. Watching a bad movie builds character — but don't watch three in a row.<br>
+              18. IMDb under 5? Click at your own risk. We don't cover emotional damages.
+            </span>
+          </div>
+        </li>
         <li class="notice-item">
           <div class="notice-dot new">新</div>
           <div class="notice-content">
-            <div class="notice-title">观影 GYING 2.0 上线 <span class="badge-new">NEW</span></div>
+            <div class="notice-title">电影俱乐部 Movie Club 2.0 上线 <span class="badge-new">NEW</span></div>
             <div class="notice-desc">
               全新 XP 风格桌面、AI 智能问答、资源审核系统正式上线。
               现在你可以上传电影资源，经过管理员审核后即可公开展示。

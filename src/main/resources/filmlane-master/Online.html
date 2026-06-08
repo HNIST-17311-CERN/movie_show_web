@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>在线播放 - 电影俱乐部 Movie Club</title>
+  <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .user-menu { position: relative; }
+    .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary, #007bff); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; user-select: none; }
+    .user-dropdown { position: absolute; top: 44px; right: 0; width: 180px; background: #fff; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 1000; overflow: hidden; }
+    .user-info { padding: 14px 16px; border-bottom: 1px solid #eee; font-size: 14px; color: #333; text-align: center; }
+    .user-dropdown-menu { list-style: none; margin: 0; padding: 4px 0; }
+    .user-dropdown-menu li a { display: block; padding: 10px 16px; font-size: 13px; color: #333; text-decoration: none; transition: background 0.2s; }
+    .user-dropdown-menu li a:hover { background: #f5f5f5; color: #e74c3c; }
+
+    .centers { max-width: 1280px; margin: 0 auto; padding: 24px; }
+    .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
+    .toolbar select { padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; background: var(--white); color: var(--text); min-width: 220px; }
+    .toolbar .url-input { flex: 1; padding: 8px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: var(--bg); color: var(--text); }
+    .toolbar .btn-play { padding: 8px 24px; background: var(--primary); color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .toolbar .btn-play:hover { background: var(--primary-hover); }
+    .toolbar .btn-new { padding: 8px 20px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; font-size: 13px; cursor: pointer; }
+
+    .player-area { background: #000; border-radius: 8px; overflow: hidden; margin-bottom: 12px; }
+    .player-area video { width: 100%; height: 560px; display: block; }
+    .player-area .placeholder { width: 100%; height: 560px; display: flex; align-items: center; justify-content: center; color: #555; font-size: 16px; }
+
+    .tips { padding: 10px 0; font-size: 12px; color: var(--text-muted); }
+  </style>
+</head>
+<body id="top">
+
+<header class="header">
+  <div class="header-inner">
+    <a href="./index.html" class="logo"><span class="logo-cn">电影俱乐部</span> <span class="logo-en">Movie Club</span></a>
+    <nav class="nav-links">
+      <a href="./index.html">首页</a>
+      <a href="./All_movie.html">电影</a>
+      <a href="./TV_series.html">剧集</a>
+      <a href="./Net_movie.html">动漫</a>
+      <a href="./Online.html" class="active">在线</a>
+      <a href="#">解析</a>
+      <a href="./Setting.html">设置</a>
+    </nav>
+    <div class="search-box">
+      <input type="text" placeholder="搜索影片">
+    </div>
+    <div class="header-actions">
+      <div class="user-menu" id="userMenu">
+        <div class="user-avatar" onclick="toggleUserDropdown()">
+          <span id="avatarText">用</span>
+        </div>
+        <div class="user-dropdown" id="userDropdown" style="display:none;">
+          <div class="user-info"><b id="displayUsername">--</b></div>
+          <ul class="user-dropdown-menu">
+            <li><a href="../adminkit-web-ui-kit-dashboard-template/static/pages-blank.html">后台管理</a></li>
+            <li><a href="#" onclick="doLogout()">退出登录</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="centers">
+    <div class="toolbar">
+      <select id="videoSelect">
+        <option value="">-- 选择视频资源 --</option>
+      </select>
+      <input type="text" id="videoPath" class="url-input" placeholder="当前选中视频的文件路径" readonly>
+      <button class="btn-play" onclick="doPlay()">播放</button>
+      <button class="btn-new" onclick="openNewWin()">新窗口</button>
+    </div>
+
+    <div class="player-area" id="playerArea">
+      <div class="placeholder" id="playerPlaceholder">选择视频后点击播放</div>
+      <video id="videoPlayer" controls autoplay style="display:none;"></video>
+    </div>
+
+    <div class="tips" id="tipsBar"></div>
+  </div>
+</main>
+
+<a href="#top" class="go-top" data-go-top>↑</a>
+
+<script src="./assets/js/script.js"></script>
+<script>
+(function initUserMenu() {
+  var username = localStorage.getItem('username') || '用户';
+  document.getElementById('avatarText').textContent = username.charAt(0).toUpperCase();
+  document.getElementById('displayUsername').textContent = username;
+})();
+function toggleUserDropdown() {
+  var d = document.getElementById('userDropdown');
+  d.style.display = d.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', function(e) {
+  var m = document.getElementById('userMenu');
+  if (m && !m.contains(e.target)) document.getElementById('userDropdown').style.display = 'none';
+});
+function doLogout() {
+  localStorage.removeItem('token'); localStorage.removeItem('username');
+  window.location.href = '../adminkit-web-ui-kit-dashboard-template/static/pages-sign-in.html';
+}
+</script>
+<script>
+(function() {
+  var token = localStorage.getItem('token') || '';
+  var select = document.getElementById('videoSelect');
+  var pathInput = document.getElementById('videoPath');
+  var playerArea = document.getElementById('playerArea');
+  var placeholder = document.getElementById('playerPlaceholder');
+  var videoPlayer = document.getElementById('videoPlayer');
+  var tipsBar = document.getElementById('tipsBar');
+  var allResources = [];
+
+  fetch('http://localhost:8080/PLAY/RESOURCES', { headers: { token: token } })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      var list = Array.isArray(data) ? data : (data.data || []);
+      allResources = list;
+      if (!list.length) {
+        select.innerHTML = '<option value="">-- 暂无资源 --</option>';
+        tipsBar.textContent = '暂无本地资源，请先通过管理后台添加';
+        return;
+      }
+      select.innerHTML += list.map(function(m) {
+        return '<option value="' + m.id + '">' + (m.name || '未知') + '</option>';
+      }).join('');
+      tipsBar.textContent = '共 ' + list.length + ' 个视频资源，选择后点击播放即可在线观看';
+    })
+    .catch(function(err) {
+      console.error('获取播放资源失败', err);
+      select.innerHTML = '<option value="">-- 加载失败 --</option>';
+      tipsBar.textContent = '获取资源失败，请检查后端服务';
+    });
+
+  select.addEventListener('change', function() {
+    var id = this.value;
+    if (!id) { pathInput.value = ''; return; }
+    var res = allResources.find(function(r) { return r.id == id; });
+    pathInput.value = res ? res.url : '';
+  });
+
+  window.doPlay = function() {
+    var id = select.value;
+    if (!id) { alert('请先选择一个视频'); return; }
+    var res = allResources.find(function(r) { return r.id == id; });
+    var name = res ? res.name : '未命名';
+    placeholder.style.display = 'none';
+    videoPlayer.style.display = 'block';
+
+    // 用 fetch 带 token Header 拉视频，转成 Blob URL 给 <video>
+    var streamUrl = 'http://localhost:8080/PLAY/STREAM?id=' + id;
+    fetch(streamUrl, { headers: { token: token } })
+      .then(function(resp) { return resp.blob(); })
+      .then(function(blob) {
+        videoPlayer.src = URL.createObjectURL(blob);
+        videoPlayer.load();
+      })
+      .catch(function(err) { console.error('加载视频失败', err); });
+  };
+
+  window.openNewWin = function() {
+    var id = select.value;
+    if (!id) { alert('请先选择一个视频'); return; }
+    window.open('http://localhost:8080/PLAY/STREAM?id=' + id, '_blank');
+  };
+})();
+</script>
+</body>
+</html>

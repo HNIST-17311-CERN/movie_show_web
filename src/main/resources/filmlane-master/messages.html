@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>留言板 — 电影俱乐部 Movie Club</title>
+  <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    /* —— 富文本编辑器 —— */
+    .editor-wrapper {
+      border: 1px solid #d1d5db; border-radius: 8px;
+      overflow: hidden; background: #fff;
+    }
+    .editor-toolbar {
+      display: flex; flex-wrap: wrap; gap: 2px;
+      padding: 8px 10px; background: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .editor-toolbar button {
+      width: 32px; height: 32px; border: none; border-radius: 4px;
+      background: transparent; cursor: pointer;
+      font-size: 14px; color: #374151;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .editor-toolbar button:hover { background: #e5e7eb; }
+    .editor-toolbar button.active { background: #dbeafe; color: #2563eb; }
+    .editor-toolbar .sep {
+      width: 1px; margin: 4px 6px; background: #d1d5db; align-self: stretch;
+    }
+    .editor-area {
+      min-height: 240px; max-height: 500px; padding: 16px;
+      overflow-y: auto; outline: none; font-size: 15px;
+      line-height: 1.8; color: #1f2937;
+    }
+    .editor-area:empty::before {
+      content: '写下你想说的话...';
+      color: #9ca3af; pointer-events: none;
+    }
+    .editor-area blockquote {
+      border-left: 3px solid #2563eb; padding: 4px 12px;
+      margin: 8px 0; color: #6b7280; background: #f9fafb;
+    }
+    .editor-area pre {
+      background: #1f2937; color: #f3f4f6; padding: 12px;
+      border-radius: 6px; overflow-x: auto; font-family: 'Consolas', monospace;
+    }
+    .editor-area img { max-width: 100%; border-radius: 6px; }
+    /* —— 操作栏 —— */
+    .editor-actions {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 16px;
+    }
+    .editor-actions .hint { font-size: 13px; color: #9ca3af; }
+    .editor-actions button.primary {
+      padding: 10px 32px; background: var(--primary, #007bff);
+      color: #fff; border: none; border-radius: 6px;
+      font-size: 15px; cursor: pointer; transition: opacity 0.15s;
+    }
+    .editor-actions button.primary:hover { opacity: 0.85; }
+    /* —— 留言列表占位 —— */
+    .message-list { margin-top: 32px; }
+    .message-list .section-title { margin-bottom: 16px; }
+    .message-empty { text-align: center; padding: 48px 20px; color: #bbb; font-size: 14px; }
+    .user-menu { position: relative; }
+    .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary, #007bff); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; user-select: none; }
+    .user-dropdown { position: absolute; top: 44px; right: 0; width: 180px; background: #fff; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 1000; overflow: hidden; }
+    .user-info { padding: 14px 16px; border-bottom: 1px solid #eee; font-size: 14px; color: #333; text-align: center; }
+    .user-dropdown-menu { list-style: none; margin: 0; padding: 4px 0; }
+    .user-dropdown-menu li a { display: block; padding: 10px 16px; font-size: 13px; color: #333; text-decoration: none; transition: background 0.2s; }
+    .user-dropdown-menu li a:hover { background: #f5f5f5; color: #e74c3c; }
+  </style>
+</head>
+<body id="top">
+
+<header class="header">
+  <div class="header-inner">
+    <a href="./index.html" class="logo"><span class="logo-cn">电影俱乐部</span> <span class="logo-en">Movie Club</span></a>
+    <nav class="nav-links">
+      <a href="./index.html">首页</a>
+      <a href="./All_movie.html">电影</a>
+      <a href="./TV_series.html">剧集</a>
+      <a href="./Net_movie.html">动漫</a>
+      <a href="./Online.html">在线</a>
+      <a href="#">解析</a>
+      <a href="./Setting.html">设置</a>
+    </nav>
+    <div class="search-box">
+      <input type="text" placeholder="搜索影片">
+    </div>
+    <div class="header-actions">
+      <a href="./messages.html">留言</a>
+      <div class="user-menu" id="userMenu">
+        <div class="user-avatar" onclick="toggleUserDropdown()">
+          <span id="avatarText">用</span>
+        </div>
+        <div class="user-dropdown" id="userDropdown" style="display:none;">
+          <div class="user-info"><b id="displayUsername">--</b></div>
+          <ul class="user-dropdown-menu">
+            <li><a href="../adminkit-web-ui-kit-dashboard-template/static/pages-blank.html">后台管理</a></li>
+            <li><a href="#" onclick="doLogout()">退出登录</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+    <section class="section">
+      <h2 class="section-title">留言板</h2>
+      <div class="editor-wrapper">
+        <div class="editor-toolbar" id="toolbar">
+          <button title="粗体" data-cmd="bold"><b>B</b></button>
+          <button title="斜体" data-cmd="italic"><i>I</i></button>
+          <button title="下划线" data-cmd="underline"><u>U</u></button>
+          <button title="删除线" data-cmd="strikeThrough"><s>S</s></button>
+          <span class="sep"></span>
+          <button title="标题" data-cmd="formatBlock" data-val="h2">H</button>
+          <button title="副标题" data-cmd="formatBlock" data-val="h3">h</button>
+          <span class="sep"></span>
+          <button title="引用" data-cmd="formatBlock" data-val="blockquote">&ldquo;</button>
+          <button title="代码块" data-cmd="formatBlock" data-val="pre">&lt;/&gt;</button>
+          <span class="sep"></span>
+          <button title="有序列表" data-cmd="insertOrderedList">1.</button>
+          <button title="无序列表" data-cmd="insertUnorderedList">•</button>
+          <span class="sep"></span>
+          <button title="插入链接" data-cmd="link">🔗</button>
+          <button title="插入文件" data-cmd="file">📎</button>
+          <span class="sep"></span>
+          <button title="清除格式" data-cmd="removeFormat">✕</button>
+        </div>
+        <div class="editor-area" id="editor" contenteditable="true"></div>
+      </div>
+      <div class="editor-actions">
+        <span class="hint">支持 Markdown 语法：**粗体** *斜体* `代码` #标题 >引用 ~~删除线~~，输入后按空格自动转换</span>
+        <button class="primary" onclick="submitMessage()">发布留言</button>
+      </div>
+      <input type="file" id="fileInput" style="display:none;" multiple>
+
+      <div class="message-list">
+        <h2 class="section-title">全部留言</h2>
+        <div class="message-empty" id="messageList">
+          暂无留言，来抢个沙发吧
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<a href="#top" class="go-top" data-go-top>↑</a>
+
+<script src="./assets/js/script.js"></script>
+<script>
+  /* ============================================================
+   *  模块 1：用户菜单
+   *  读取 localStorage 中的用户名，渲染头像首字母和下拉菜单
+   * ============================================================ */
+  (function initUserMenu() {
+    var username = localStorage.getItem('username') || '用户';
+    document.getElementById('avatarText').textContent = username.charAt(0).toUpperCase();
+    document.getElementById('displayUsername').textContent = username;
+  })();
+
+  function toggleUserDropdown() {
+    var d = document.getElementById('userDropdown');
+    d.style.display = d.style.display === 'none' ? 'block' : 'none';
+  }
+
+  // 点击菜单外部自动关闭
+  document.addEventListener('click', function(e) {
+    var m = document.getElementById('userMenu');
+    if (m && !m.contains(e.target)) document.getElementById('userDropdown').style.display = 'none';
+  });
+
+  function doLogout() {
+    localStorage.removeItem('token'); localStorage.removeItem('username');
+    window.location.href = '../adminkit-web-ui-kit-dashboard-template/static/pages-sign-in.html';
+  }
+
+  /* ============================================================
+   *  模块 2：富文本编辑器 — 工具栏
+   *  点击工具栏按钮执行 execCommand，链接/文件特殊处理
+   * ============================================================ */
+  var editor = document.getElementById('editor');
+
+  document.getElementById('toolbar').addEventListener('click', function(e) {
+    var btn = e.target.closest('button');
+    if (!btn) return;
+    e.preventDefault();
+    var cmd = btn.dataset.cmd;
+    var val = btn.dataset.val || null;
+
+    if (cmd === 'link') {
+      var url = prompt('请输入链接地址：', 'https://');
+      if (url) document.execCommand('createLink', false, url);
+    } else if (cmd === 'file') {
+      document.getElementById('fileInput').click();
+      return;
+    } else if (cmd === 'formatBlock') {
+      document.execCommand(cmd, false, val);
+    } else {
+      document.execCommand(cmd, false, null);
+    }
+    editor.focus();
+    updateToolbarState();
+  });
+
+  /* ============================================================
+   *  模块 3：富文本编辑器 — 插入文件
+   *  点击 📎 触发隐藏 file input，选中文件后以标签形式插入编辑器
+   * ============================================================ */
+  document.getElementById('fileInput').addEventListener('change', function() {
+    var files = this.files;
+    if (!files.length) return;
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i];
+      var size = f.size < 1024 * 1024
+        ? (f.size / 1024).toFixed(1) + ' KB'
+        : (f.size / (1024 * 1024)).toFixed(1) + ' MB';
+      var label = '<div style="display:inline-block;padding:4px 10px;margin:2px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;">' +
+        '📄 ' + f.name + ' <span style="color:#999;">(' + size + ')</span></div>';
+      document.execCommand('insertHTML', false, label);
+    }
+    this.value = '';
+    editor.focus();
+  });
+
+  /* ============================================================
+   *  模块 4：富文本编辑器 — 粘贴图片
+   *  截图 / 复制网页图片后 Ctrl+V 自动插入为 base64 图片
+   * ============================================================ */
+  editor.addEventListener('paste', function(e) {
+    var items = e.clipboardData && e.clipboardData.items;
+    if (!items) return;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') === -1) continue;
+      e.preventDefault();
+      var blob = items[i].getAsFile();
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        document.execCommand('insertImage', false, ev.target.result);
+      };
+      reader.readAsDataURL(blob);
+      break;
+    }
+  });
+
+  /* ============================================================
+   *  模块 5：Markdown 自动转换
+   *  行内语法（**text** *text* ~~text~~ `text`）输入后按空格自动转换
+   *  块级语法（# ## ### >）行首输入后按空格自动转标题 / 引用块
+   * ============================================================ */
+  var mdPatterns = [
+    { regex: /\*\*(.+?)\*\*$/, tag: 'strong' },
+    { regex: /__(.+?)__$/,     tag: 'strong' },
+    { regex: /\*(.+?)\*$/,     tag: 'em' },
+    { regex: /_(.+?)_$/,       tag: 'em' },
+    { regex: /~~(.+?)~~$/,     tag: 'del' },
+    { regex: /`(.+?)`$/,       tag: 'code' }
+  ];
+
+  editor.addEventListener('keydown', function(e) {
+    if (e.key !== ' ') return;
+
+    var sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    var node = sel.focusNode;
+    if (!node || node.nodeType !== 3) return;
+
+    var text = node.textContent;
+    var offset = sel.focusOffset;
+    var before = text.substring(0, offset);
+
+    // —— 行内语法 ——
+    for (var i = 0; i < mdPatterns.length; i++) {
+      var m = before.match(mdPatterns[i].regex);
+      if (!m) continue;
+      e.preventDefault();
+      var inner = m[1];
+      var startIdx = before.length - m[0].length;
+      var beforeMatch = text.substring(0, startIdx);
+      var afterMatch = text.substring(offset);
+      node.textContent = beforeMatch + inner + ' ' + afterMatch;
+      sel.removeAllRanges();
+      var range = document.createRange();
+      range.setStart(node, beforeMatch.length);
+      range.setEnd(node, beforeMatch.length + inner.length);
+      sel.addRange(range);
+      document.execCommand('italic', false, null);
+      if (mdPatterns[i].tag === 'strong') {
+        document.execCommand('bold', false, null);
+      } else if (mdPatterns[i].tag === 'em') {
+        document.execCommand('italic', false, null);
+      } else if (mdPatterns[i].tag === 'del') {
+        document.execCommand('strikeThrough', false, null);
+      } else if (mdPatterns[i].tag === 'code') {
+        var codeEl = document.createElement('code');
+        codeEl.style.cssText = 'font-family:Consolas,monospace;background:#f3f4f6;padding:1px 5px;border-radius:3px;font-size:13px;';
+        codeEl.textContent = inner;
+        sel.deleteFromDocument();
+        var rg = document.createRange();
+        rg.setStart(node, beforeMatch.length);
+        rg.collapse(true);
+        rg.insertNode(codeEl);
+        rg.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(rg);
+      }
+      sel.collapseToEnd();
+      return;
+    }
+
+    // —— 块级语法 ——
+    if (offset === 0) return;
+    var lineStart = before.lastIndexOf('\n');
+    var lineContent = lineStart === -1 ? before : before.substring(lineStart + 1);
+    var lineIdx = lineStart === -1 ? 0 : lineStart + 1;
+
+    var tag = null, content = null;
+
+    if (/^###\s+(.+)$/.test(lineContent)) {
+      var m3 = lineContent.match(/^###\s+(.+)$/);
+      tag = 'h4'; content = m3[1];
+    } else if (/^##\s+(.+)$/.test(lineContent)) {
+      var m2 = lineContent.match(/^##\s+(.+)$/);
+      tag = 'h3'; content = m2[1];
+    } else if (/^#\s+(.+)$/.test(lineContent)) {
+      var m1 = lineContent.match(/^#\s+(.+)$/);
+      tag = 'h2'; content = m1[1];
+    } else if (/^>\s+(.+)$/.test(lineContent)) {
+      var mq = lineContent.match(/^>\s+(.+)$/);
+      tag = 'blockquote'; content = mq[1];
+    }
+
+    if (tag) {
+      e.preventDefault();
+      var beforeLine = text.substring(0, lineIdx);
+      var afterLine = text.substring(offset);
+      node.textContent = beforeLine + content + ' ' + afterLine;
+      sel.removeAllRanges();
+      var rr = document.createRange();
+      rr.setStart(node, beforeLine.length);
+      rr.setEnd(node, beforeLine.length + content.length);
+      sel.addRange(rr);
+      if (tag === 'blockquote') {
+        document.execCommand('formatBlock', false, 'blockquote');
+      } else {
+        document.execCommand('formatBlock', false, tag);
+      }
+      sel.collapseToEnd();
+    }
+  });
+
+  /* ============================================================
+   *  模块 6：富文本编辑器 — 工具栏状态同步
+   *  光标所在位置有对应样式时，工具栏按钮自动高亮
+   * ============================================================ */
+  editor.addEventListener('keyup', updateToolbarState);
+  editor.addEventListener('mouseup', updateToolbarState);
+
+  function updateToolbarState() {
+    var btns = document.querySelectorAll('#toolbar button[data-cmd]');
+    btns.forEach(function(btn) {
+      var cmd = btn.dataset.cmd;
+      var val = btn.dataset.val;
+      if (cmd === 'formatBlock') {
+        btn.classList.toggle('active', document.queryCommandValue(cmd) === val);
+      } else {
+        btn.classList.toggle('active', document.queryCommandState(cmd));
+      }
+    });
+  }
+
+  /* ============================================================
+   *  模块 7：提交留言（前端演示）
+   *  获取编辑器 HTML 内容，渲染留言卡片到列表顶部
+   * ============================================================ */
+  function submitMessage() {
+    var html = editor.innerHTML.trim();
+    if (!html || html === '<br>') {
+      alert('请输入留言内容');
+      return;
+    }
+    var username = localStorage.getItem('username') || '匿名用户';
+    var now = new Date();
+    var time = now.getFullYear() + '-' +
+      String(now.getMonth() + 1).padStart(2, '0') + '-' +
+      String(now.getDate()).padStart(2, '0') + ' ' +
+      String(now.getHours()).padStart(2, '0') + ':' +
+      String(now.getMinutes()).padStart(2, '0');
+
+    var card = document.createElement('div');
+    card.style.cssText = 'border-bottom:1px solid #e5e7eb;padding:20px 0;';
+    card.innerHTML =
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">' +
+        '<div style="width:36px;height:36px;border-radius:50%;background:#007bff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;">' + username.charAt(0).toUpperCase() + '</div>' +
+        '<div><b style="font-size:15px;">' + username + '</b><br><span style="font-size:12px;color:#999;">' + time + '</span></div>' +
+      '</div>' +
+      '<div style="font-size:14px;line-height:1.8;color:#333;">' + html + '</div>';
+
+    var list = document.getElementById('messageList');
+    if (list.classList.contains('message-empty')) {
+      list.classList.remove('message-empty');
+      list.innerHTML = '';
+    }
+    list.insertBefore(card, list.firstChild);
+    editor.innerHTML = '';
+  }
+</script>
+</body>
+</html>

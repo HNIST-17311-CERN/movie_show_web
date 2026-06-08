@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>电影详情 - 观影 GYING</title>
+  <title>电影详情 - 电影俱乐部 Movie Club</title>
   <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./assets/css/style.css">
   <style>
@@ -43,13 +43,13 @@
 
 <header class="header">
   <div class="header-inner">
-    <a href="./index.html" class="logo"><span class="logo-cn">观影</span> <span class="logo-en">GYING</span></a>
+    <a href="./index.html" class="logo"><span class="logo-cn">电影俱乐部</span> <span class="logo-en">Movie Club</span></a>
     <nav class="nav-links">
       <a href="./index.html">首页</a>
       <a href="./All_movie.html" class="active">电影</a>
       <a href="./TV_series.html">剧集</a>
       <a href="./Net_movie.html">动漫</a>
-      <a href="#">热门</a>
+      <a href="./Online.html">在线</a>
       <a href="#">解析</a>
       <a href="./Setting.html">设置</a>
     </nav>
@@ -128,6 +128,17 @@
       </thead>
       <tbody id="resource-tbody"></tbody>
     </table>
+  </div>
+
+  <!-- 相似电影推荐（插件） -->
+  <div class="detail-section similar-movies" id="similarMoviesSection">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <h2 class="section-title" style="margin-bottom:0;">相似电影推荐</h2>
+      <button id="similarRefreshBtn" class="tab-btn" style="font-size:12px;padding:6px 14px;">换一换</button>
+    </div>
+    <div class="similar-grid" id="similarMoviesGrid">
+      <div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-muted);">加载中...</div>
+    </div>
   </div>
 </div>
 
@@ -315,7 +326,9 @@
       .then(function(res) { return res.json(); })
       .then(renderResources)
       .catch(function(err) { console.error('获取资源失败', err); });
+
   })();
+
 </script>
 
 <script>
@@ -392,6 +405,90 @@
       })
       .catch(function() { alert('请求失败，请检查后端'); });
   }
+</script>
+
+<script>
+// 相似电影推荐（独立插件 — 不依赖 movieId 参数）
+(function() {
+  var section = document.getElementById('similarMoviesSection');
+  var grid = document.getElementById('similarMoviesGrid');
+  if (!section || !grid) return;
+
+  var enabled = localStorage.getItem('similarMoviesEnabled');
+  if (enabled === 'false') { section.style.display = 'none'; return; }
+
+  var params = new URLSearchParams(window.location.search);
+  var movieId = params.get('id');
+  var token = localStorage.getItem('token') || '';
+  var DEFAULT_COVER = './assets/images/movie-1.png';
+
+  function renderCards(list) {
+    if (!list || !list.length) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-muted);">暂无推荐</div>';
+      return;
+    }
+    grid.innerHTML = list.map(function(m) {
+      var cover = m.cover || DEFAULT_COVER;
+      if (!/^https?:\/\//i.test(cover)) {
+        if (cover.indexOf('assets/') === -1 && cover.indexOf('resource/') === -1) cover = DEFAULT_COVER;
+        if (!cover.startsWith('./') && !cover.startsWith('/')) cover = './' + cover;
+      }
+      return '<div class="similar-card" onclick="location.href=\'./movie-details.html?id=' + (m.id || '') + '\'">' +
+        '<div class="similar-card-img"><img src="' + cover + '" alt="' + (m.name || '') + '" loading="lazy" onerror="this.src=\'' + DEFAULT_COVER + '\'"></div>' +
+        '<div class="similar-card-title" title="' + (m.name || '') + '">' + (m.name || '') + '</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  if (!movieId) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-muted);">缺少电影 ID</div>';
+    return;
+  }
+
+  var PER_PAGE = 7;
+  var allMovies = [];
+  var page = 0;
+
+  function showPage() {
+    var start = page * PER_PAGE;
+    var batch = allMovies.slice(start, start + PER_PAGE);
+    renderCards(batch);
+  }
+
+  function nextPage() {
+    if (allMovies.length <= PER_PAGE) return;
+    page = (page + 1) % Math.ceil(allMovies.length / PER_PAGE);
+    showPage();
+  }
+
+  // 第一步：调 Python 获取相似电影 ID 列表
+  fetch('http://localhost:8085/movie/similar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ movie_id: parseInt(movieId) })
+  })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      var ids = data.similar_ids || [];
+      if (!ids.length) { renderCards([]); return; }
+      // 第二步：并发调 Java 后端拿所有电影详情
+      return Promise.all(ids.map(function(id) {
+        return fetch('http://localhost:8080/FILMES/ONEID?id=' + id, { headers: { token: token } })
+          .then(function(res) { return res.json(); });
+      }));
+    })
+    .then(function(movies) {
+      if (!movies) return;
+      allMovies = movies;
+      page = 0;
+      showPage();
+      document.getElementById('similarRefreshBtn').onclick = nextPage;
+    })
+    .catch(function(err) {
+      console.warn('相似电影API未就绪', err);
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-muted);">相似电影服务未启动，请先启动 Python 服务 (port 8085)</div>';
+    });
+})();
 </script>
 </body>
 </html>

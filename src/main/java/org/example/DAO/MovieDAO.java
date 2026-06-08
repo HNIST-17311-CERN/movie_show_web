@@ -68,7 +68,7 @@ public class MovieDAO
 
         int offset = (page - 1) * size;
 
-        String sql = "SELECT * FROM movie LIMIT ?, ?";
+        String sql = "SELECT * FROM movie WHERE type NOT LIKE '%动漫%' AND type NOT LIKE '%电视剧%' LIMIT ?, ?";
         return jdbcTemplate.query(sql, new Object[]{offset, size}, movieRowMapper);
     }
 
@@ -107,7 +107,7 @@ public class MovieDAO
         if (size < 1) size = 12;
 
         int offset = (page - 1) * size;
-        StringBuilder sql = new StringBuilder("SELECT * FROM movie WHERE 1 = 1");
+        StringBuilder sql = new StringBuilder("SELECT * FROM movie WHERE type NOT LIKE '%动漫%' AND type NOT LIKE '%电视剧%'");
         List<Object> params = new ArrayList<>();
 
         if (hasFilterValue(type)) {
