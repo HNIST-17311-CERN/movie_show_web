@@ -4,7 +4,23 @@
       "Bash(git checkout *)",
       "Bash(git pull *)",
       "Bash(git stash *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(git filter-branch *)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch -f --index-filter \"git rm --cached --ignore-unmatch -r src/main/resources/Movie_Online/\" --prune-empty HEAD)",
+      "WebSearch",
+      "Bash(netstat -ano)",
+      "Bash(netsh int *)",
+      "Bash(mvn compile *)",
+      "Bash(where mvn *)",
+      "Bash(where mvnw *)",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Program Files \\(x86\\)/**)",
+      "Read(//c/Users/24405/.m2/**)",
+      "Read(//c/Users/24405/**)",
+      "Bash(java -version)",
+      "Bash(export PATH=\"$PATH:/c/Users/24405/.m2/wrapper/dists/apache-maven-3.9.10-bin/53h08a94dg6djh6umvruv7q564/apache-maven-3.9.10/bin\")",
+      "Bash(taskkill *)",
+      "Bash(findstr \"9001\")"
     ]
   }
 }
