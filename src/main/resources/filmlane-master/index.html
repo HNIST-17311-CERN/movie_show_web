@@ -115,6 +115,8 @@
     .user-dropdown-menu li a:hover {
       background: #f5f5f5; color: #e74c3c;
     }
+    .section-shuffle { margin-left: auto; margin-right: 12px; font-size: 13px; color: var(--primary, #2563eb); text-decoration: none; white-space: nowrap; }
+    .section-shuffle:hover { text-decoration: underline; }
   </style>
 </head>
 <body id="top">
@@ -174,6 +176,7 @@
       <section class="section">
         <div class="section-header">
           <h2 class="section-title">最近更新的电影</h2>
+          <a href="javascript:void(0)" class="section-shuffle" id="shuffle-movie" style="display:none;">换一换</a>
           <a href="./All_movie.html" class="section-more">更多 &gt;</a>
         </div>
         <div id="home-loading" class="loading-state">加载中...</div>
@@ -184,6 +187,7 @@
       <section class="section">
         <div class="section-header">
           <h2 class="section-title">最近更新的剧集</h2>
+          <a href="javascript:void(0)" class="section-shuffle" id="shuffle-tv" style="display:none;">换一换</a>
           <a href="./TV_series.html" class="section-more">更多 &gt;</a>
         </div>
         <div id="tv-loading" class="loading-state">加载中...</div>
@@ -193,6 +197,7 @@
       <section class="section">
         <div class="section-header">
           <h2 class="section-title">最近更新的动漫</h2>
+          <a href="javascript:void(0)" class="section-shuffle" id="shuffle-anime" style="display:none;">换一换</a>
           <a href="./Net_movie.html" class="section-more">更多 &gt;</a>
         </div>
         <div id="anime-loading" class="loading-state">加载中...</div>
@@ -224,7 +229,6 @@
         return;
       }
 
-      var API_URL = 'http://localhost:8080/Mapper/findlast12';
       var LOGIN_URL = '../adminkit-web-ui-kit-dashboard-template/static/pages-sign-in.html';
       var DEFAULT_COVER_URL = './assets/images/movie-1.png';
 
@@ -413,16 +417,35 @@
           .catch(function() {});
       }
 
-      // 加载首页最新电影列表
-      // API: GET /Mapper/findlast12 (MyBatis级联查询，硬编码12个ID)
-      // 请求头: { token: localStorage.token, Content-Type: application/json }
-      // 响应: JSON数组或 { data: [...] } → 遍历调用renderMovie()
-      // HTTP 401: 清除localStorage.token，提示重新登录
+      var PER_BATCH = 12;
+      var movieAll = [], tvAll = [], animeAll = [];
+      var movieIdx = 0, tvIdx = 0, animeIdx = 0;
+
+      function showBatch(all, idx, listEl, renderFn) {
+        var start = idx * PER_BATCH;
+        var batch = all.slice(start, start + PER_BATCH);
+        listEl.innerHTML = '';
+        batch.forEach(renderFn);
+      }
+
+      function showMovieBatch() {
+        showBatch(movieAll, movieIdx, document.getElementById('home-movies-list'), renderMovie);
+        document.getElementById('shuffle-movie').textContent = '换一换';
+      }
+      function showTvBatch() {
+        showBatch(tvAll, tvIdx, document.getElementById('tv-list'), function(item) { renderTvCard(item, document.getElementById('tv-list')); });
+        document.getElementById('shuffle-tv').textContent = '换一换';
+      }
+      function showAnimeBatch() {
+        showBatch(animeAll, animeIdx, document.getElementById('anime-list'), function(item) { renderCard(item, document.getElementById('anime-list')); });
+        document.getElementById('shuffle-anime').textContent = '换一换';
+      }
+
+      // 加载首页电影推荐
       function loadLastMovies() {
         var token = localStorage.getItem('token');
         var loadingEl = document.getElementById('home-loading');
         var errorEl = document.getElementById('home-error');
-        var listEl = document.getElementById('home-movies-list');
 
         if (!token) {
           loadingEl.style.display = 'none';
@@ -430,39 +453,26 @@
           return;
         }
 
-        fetch(API_URL, {
-          headers: {
-            token: token,
-            'Content-Type': 'application/json'
-          }
+        fetch('http://localhost:8080/home/movie?limit=48', {
+          headers: { token: token }
         })
           .then(function(res) {
-            if (res.status === 401) {
-              localStorage.removeItem('token');
-              throw new Error('Unauthorized');
-            }
+            if (res.status === 401) { localStorage.removeItem('token'); throw new Error('Unauthorized'); }
             if (!res.ok) throw new Error('HTTP ' + res.status);
             return res.json();
           })
           .then(function(data) {
-            var movies = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
+            movieAll = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
             loadingEl.style.display = 'none';
             errorEl.style.display = 'none';
-            listEl.innerHTML = '';
-
-            if (!movies.length) {
-              renderEmpty('暂无最新电影');
-              return;
-            }
-
-            movies.forEach(renderMovie);
+            movieIdx = 0;
+            if (!movieAll.length) { renderEmpty('暂无最新电影'); return; }
+            showMovieBatch();
+            if (movieAll.length > PER_BATCH) document.getElementById('shuffle-movie').style.display = '';
           })
           .catch(function(err) {
             loadingEl.style.display = 'none';
-            if (err.message === 'Unauthorized') {
-              renderEmpty('token 已过期，请重新 <a href="' + LOGIN_URL + '">登录</a>');
-              return;
-            }
+            if (err.message === 'Unauthorized') { renderEmpty('token 已过期，请重新 <a href="' + LOGIN_URL + '">登录</a>'); return; }
             errorEl.style.display = 'block';
           });
       }
@@ -550,63 +560,68 @@
       });
     }
 
-    // 加载首页剧集区域
-    // API: GET /TV/ONEP?page=1&pageSize=12
-    // 响应: JSON数组 → 遍历调用renderTvCard()写入 #tv-list
+    // 加载首页剧集推荐
     function loadTv() {
       var token = localStorage.getItem('token');
       var list = document.getElementById('tv-list');
       var loading = document.getElementById('tv-loading');
       if (!token || !list) return;
 
-      fetch('http://localhost:8080/TV/ONEP?page=1&pageSize=12', {
+      fetch('http://localhost:8080/home/tv?limit=48', {
         headers: { token: token }
       })
         .then(function(res) {
           if (!res.ok) throw new Error('HTTP ' + res.status);
           return res.json();
         })
-        .then(function(tvList) {
+        .then(function(data) {
+          tvAll = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
           loading.style.display = 'none';
-          if (!Array.isArray(tvList) || !tvList.length) {
-            list.innerHTML = '<li class="empty-state">暂无剧集数据</li>';
-            return;
-          }
-          tvList.forEach(function(item) { renderTvCard(item, list); });
+          tvIdx = 0;
+          if (!tvAll.length) { list.innerHTML = '<li class="empty-state">暂无剧集数据</li>'; return; }
+          showTvBatch();
+          if (tvAll.length > PER_BATCH) document.getElementById('shuffle-tv').style.display = '';
         })
-        .catch(function() {
-          loading.style.display = 'none';
-        });
+        .catch(function() { loading.style.display = 'none'; });
     }
 
-    // 加载首页动漫区域
-    // API: GET /ANIME/ONEP?page=1&pageSize=12
-    // 响应: JSON数组 → 遍历调用renderCard()写入 #anime-list
+    // 加载首页动漫推荐
     function loadAnime() {
       var token = localStorage.getItem('token');
       var list = document.getElementById('anime-list');
       var loading = document.getElementById('anime-loading');
       if (!token || !list) return;
 
-      fetch('http://localhost:8080/ANIME/ONEP?page=1&pageSize=12', {
+      fetch('http://localhost:8080/home/anime?limit=48', {
         headers: { token: token }
       })
         .then(function(res) {
           if (!res.ok) throw new Error('HTTP ' + res.status);
           return res.json();
         })
-        .then(function(animeList) {
+        .then(function(data) {
+          animeAll = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
           loading.style.display = 'none';
-          if (!Array.isArray(animeList) || !animeList.length) {
-            list.innerHTML = '<li class="empty-state">暂无动漫数据</li>';
-            return;
-          }
-          animeList.forEach(function(item) { renderCard(item, list); });
+          animeIdx = 0;
+          if (!animeAll.length) { list.innerHTML = '<li class="empty-state">暂无动漫数据</li>'; return; }
+          showAnimeBatch();
+          if (animeAll.length > PER_BATCH) document.getElementById('shuffle-anime').style.display = '';
         })
-        .catch(function() {
-          loading.style.display = 'none';
-        });
+        .catch(function() { loading.style.display = 'none'; });
     }
+
+    document.getElementById('shuffle-movie').addEventListener('click', function() {
+      movieIdx = (movieIdx + 1) % Math.ceil(movieAll.length / PER_BATCH);
+      showMovieBatch();
+    });
+    document.getElementById('shuffle-tv').addEventListener('click', function() {
+      tvIdx = (tvIdx + 1) % Math.ceil(tvAll.length / PER_BATCH);
+      showTvBatch();
+    });
+    document.getElementById('shuffle-anime').addEventListener('click', function() {
+      animeIdx = (animeIdx + 1) % Math.ceil(animeAll.length / PER_BATCH);
+      showAnimeBatch();
+    });
 
     // 渲染动漫卡片到指定列表
     // 入参: item { id, name, cover, releaseDate, region, type } — 动漫数据

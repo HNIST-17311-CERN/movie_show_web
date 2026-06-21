@@ -68,15 +68,18 @@ public class HomeRecommendDAO {
         String sql = """
                 SELECT m.* FROM movie m
                 INNER JOIN home_movie hm ON m.id = hm.movie_id
-                ORDER BY hm.create_time DESC, hm.sort_order ASC
+                ORDER BY hm.sort_order ASC
                 LIMIT ?
                 """;
         return jdbcTemplate.query(sql, rowMapper, limit);
     }
 
     public int insertMovieRecommend(Long movieId, int sortOrder) {
+        Integer max = jdbcTemplate.queryForObject(
+                "SELECT COALESCE(MAX(sort_order), -1) FROM home_movie", Integer.class);
+        int next = (max != null ? max : -1) + 1;
         String sql = "INSERT INTO home_movie (movie_id, sort_order) VALUES (?, ?)";
-        return jdbcTemplate.update(sql, movieId, sortOrder);
+        return jdbcTemplate.update(sql, movieId, next);
     }
 
     public int deleteMovieRecommend(Long movieId) {
@@ -107,15 +110,18 @@ public class HomeRecommendDAO {
         String sql = """
                 SELECT m.* FROM movie m
                 INNER JOIN home_tv ht ON m.id = ht.tv_id
-                ORDER BY ht.create_time DESC, ht.sort_order ASC
+                ORDER BY ht.sort_order ASC
                 LIMIT ?
                 """;
         return jdbcTemplate.query(sql, rowMapper, limit);
     }
 
     public int insertTvRecommend(Long movieId, int sortOrder) {
+        Integer max = jdbcTemplate.queryForObject(
+                "SELECT COALESCE(MAX(sort_order), -1) FROM home_tv", Integer.class);
+        int next = (max != null ? max : -1) + 1;
         String sql = "INSERT INTO home_tv (tv_id, sort_order) VALUES (?, ?)";
-        return jdbcTemplate.update(sql, movieId, sortOrder);
+        return jdbcTemplate.update(sql, movieId, next);
     }
 
     public int deleteTvRecommend(Long movieId) {
@@ -146,15 +152,18 @@ public class HomeRecommendDAO {
         String sql = """
                 SELECT m.* FROM movie m
                 INNER JOIN home_anime ha ON m.id = ha.anime_id
-                ORDER BY ha.create_time DESC, ha.sort_order ASC
+                ORDER BY ha.sort_order ASC
                 LIMIT ?
                 """;
         return jdbcTemplate.query(sql, rowMapper, limit);
     }
 
     public int insertAnimeRecommend(Long movieId, int sortOrder) {
+        Integer max = jdbcTemplate.queryForObject(
+                "SELECT COALESCE(MAX(sort_order), -1) FROM home_anime", Integer.class);
+        int next = (max != null ? max : -1) + 1;
         String sql = "INSERT INTO home_anime (anime_id, sort_order) VALUES (?, ?)";
-        return jdbcTemplate.update(sql, movieId, sortOrder);
+        return jdbcTemplate.update(sql, movieId, next);
     }
 
     public int deleteAnimeRecommend(Long movieId) {
