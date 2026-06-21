@@ -268,6 +268,12 @@
                         <span class="align-middle">资源审查</span>
                     </a>
                 </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="pages-recommend-manage.html">
+                        <i class="align-middle" data-feather="star"></i>
+                        <span class="align-middle">首页推荐</span>
+                    </a>
+                </li>
                 <li class="sidebar-header">账户</li>
                 <li class="sidebar-item">
                     <a class="sidebar-link" href="index.html">
@@ -511,8 +517,29 @@
     </div>
 </div>
 
+<!-- Bootstrap 5 JS（模态框等组件） -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- 引入AdminKit模板公共JS（侧边栏、Feather Icons等） -->
 <script src="js/app.js"></script>
+<!--
+电影管理CRUD（管理后台核心页面）
+  页面级变量:
+    movies[]             — 当前加载的电影列表缓存
+    currentPage          — 当前页码
+    hasNextPage          — 是否有下一页
+    previewObjectUrl     — 封面预览的Blob URL（需手动释放）
+    resourceMovieId      — 当前打开资源弹窗的电影ID
+    resourceMovies{}     — { movieId: [resource, ...] } 资源缓存
+
+  FormData结构（新增/更新电影）:
+    formData.append("movie", Blob([JSON.stringify({
+      id, name, cover, director, actors, type, region, language, releaseDate, duration, description
+    })], { type: "application/json" }))
+    formData.append("file", File)  // 封面图片文件
+
+  资源JSON结构（新增/更新资源）:
+    { id, movieId, name, quality, size, type, url, createTime, subtitle }
+-->
 <script>
     let movies = [];
     let previewObjectUrl = null;
@@ -526,10 +553,15 @@
     const DEFAULT_COVER_URL = "../../filmlane-master/assets/images/movie-1.png";
     const PAGE_SIZE = 60;
 
+    // 获取JWT token
+    // 读取: localStorage.getItem("token")，空则返回 ""
     function getToken() {
         return localStorage.getItem("token") || "";
     }
 
+    // 封面URL规范化（适配管理后台路径前缀 ../../filmlane-master/）
+    // 入参: cover (String|null) — movie.cover原始值
+    // 处理: blob:/data:/http: 直接返回，assets/或resource/路径补前缀，其余原样返回
     function getCoverUrl(cover) {
         if (!cover) return DEFAULT_COVER_URL;
         if (/^(blob:|data:|https?:\/\/)/i.test(cover)) return cover;
@@ -550,6 +582,7 @@
         return normalized;
     }
 
+    // 设置图片src并注册onerror兜底
     function setLocalImage(imgEl, cover) {
         imgEl.src = getCoverUrl(cover);
         imgEl.onerror = function() {
@@ -558,6 +591,8 @@
         };
     }
 
+    // 释放封面预览Blob URL（防止内存泄漏）
+    // 操作: URL.revokeObjectURL(previewObjectUrl) → previewObjectUrl = null
     function revokePreviewObjectUrl() {
         if (previewObjectUrl) {
             URL.revokeObjectURL(previewObjectUrl);
@@ -565,6 +600,7 @@
         }
     }
 
+    // 格式化Date对象为datetime-local输入框值
     function formatDateTimeLocal(date) {
         const pad = value => String(value).padStart(2, "0");
         return [
@@ -574,16 +610,21 @@
         ].join("-") + "T" + [pad(date.getHours()), pad(date.getMinutes())].join(":");
     }
 
+    // 将日期字符串标准化为datetime-local格式
     function normalizeDateTime(value) {
         if (!value) return "";
         return String(value).replace(" ", "T").slice(0, 16);
     }
 
+    // 格式化日期时间为表格友好显示格式
     function formatDateTimeDisplay(value) {
         if (!value) return "";
         return String(value).replace("T", " ").slice(0, 16);
     }
 
+    // 生成示例资源数据（前端演示，无后端时使用）
+    // 入参: movie { id, name } — 根据movie.id生成伪ID和示例链接
+    // 返回: [ { id, movieId, name, quality, size, type, url, createTime, subtitle }, ... ]
     function getSampleResources(movie) {
         const movieId = movie.id || 0;
         return [
@@ -612,10 +653,15 @@
         ];
     }
 
+    // 从movies数组中按ID查找电影
     function getMovieById(id) {
         return movies.find(movie => movie.id === id);
     }
 
+    // 从API加载电影资源列表并缓存到resourceMovies[movieId]
+    // API: GET /FILMES/RESOURCE/ONE?id=movieId
+    // 响应: JSON数组 → 存入 resourceMovies[movieId]
+    // 错误: resourceMovies[movieId] = []
     async function loadMovieResources(movieId) {
         try {
             const res = await fetch(`${API_BASE}/RESOURCE/ONE?id=${movieId}`, {
@@ -630,11 +676,16 @@
         }
     }
 
+    // 获取当前选中电影的资源列表
+    // 从缓存 resourceMovies[resourceMovieId] 读取，无则返回 []
     function getCurrentMovieResources() {
         if (!resourceMovieId) return [];
         return resourceMovies[resourceMovieId] || [];
     }
 
+    // 渲染资源管理表格
+    // 读取: getCurrentMovieResources() → 资源数组
+    // 写入DOM: #resourceTableBody (innerHTML)，每行含编辑/删除按钮
     function renderResourceTable() {
         const tbody = document.getElementById("resourceTableBody");
         const resourceList = getCurrentMovieResources();
@@ -661,6 +712,7 @@
         `).join("");
     }
 
+    // 重置资源表单为新增模式
     function resetResourceForm() {
         document.getElementById("resourceForm").reset();
         document.getElementById("resourceId").value = "";
@@ -668,6 +720,7 @@
         document.getElementById("resourceCreateTime").value = formatDateTimeLocal(new Date());
     }
 
+    // 打开资源管理弹窗：加载电影资源列表并显示Bootstrap模态框
     async function openResourceModal(id) {
         const movie = getMovieById(id);
         if (!movie) {
@@ -684,6 +737,8 @@
         new bootstrap.Modal(document.getElementById("resourceModal")).show();
     }
 
+    // 收集资源表单数据
+    // 返回: { id, movieId, name, quality, size, type, url, createTime, subtitle }
     function getResourceFormData() {
         return {
             id: document.getElementById("resourceId").value ? parseInt(document.getElementById("resourceId").value, 10) : null,
@@ -698,6 +753,10 @@
         };
     }
 
+    // 保存资源（新增或更新）
+    // 判断: resource.id存在 → POST /FILMES/RESOURCE/UPDATE, 否则 → POST /FILMES/RESOURCE/ADD
+    // Body: JSON (getResourceFormData()返回值)
+    // 之后: 重新加载资源列表 + 刷新表格
     async function saveResource() {
         if (!resourceMovieId) return;
 
@@ -733,6 +792,7 @@
         }
     }
 
+    // 编辑资源：回填表单数据，切换到编辑模式
     function editResource(resourceId) {
         const resource = getCurrentMovieResources().find(item => item.id === resourceId);
         if (!resource) return;
@@ -748,6 +808,9 @@
         document.getElementById("resourceFormTitle").textContent = "编辑资源";
     }
 
+    // 删除资源
+    // API: POST /FILMES/RESOURCE/DELETE?id=resourceId
+    // 之后: 重新加载资源列表 + 刷新表格，如果删除的是当前编辑项则重置表单
     async function deleteResource(resourceId) {
         if (!resourceMovieId) return;
         if (!confirm("确定删除这条资源吗？")) return;
@@ -773,10 +836,12 @@
         }
     }
 
+    // 更新封面文件选择提示文本
     function setSelectedFileLabel(text) {
         document.getElementById("coverFileName").textContent = text;
     }
 
+    // 清空已选择的封面图片文件
     function clearSelectedFile() {
         revokePreviewObjectUrl();
         document.getElementById("coverFile").value = "";
@@ -785,6 +850,9 @@
         setLocalImage(document.getElementById("coverPreview"), existingCover);
     }
 
+    // 封面文件选择处理
+    // 入参: event.target.files[0] (File对象)
+    // 操作: URL.createObjectURL(file) → previewObjectUrl → 更新 #coverPreview.src 和提示文本
     function handleCoverChange(event) {
         const file = event.target.files && event.target.files[0];
         if (!file) {
@@ -798,6 +866,9 @@
         setSelectedFileLabel("已选择图片：" + file.name);
     }
 
+    // 收集电影表单数据
+    // 返回: { id, name, cover, director, actors, type, region, language, releaseDate, duration, description }
+    // 注意: id=null表示新增，cover取自#existingCover（编辑时保留旧封面）
     function getFormMovieData() {
         const idValue = document.getElementById("movieId").value;
         const durationValue = document.getElementById("duration").value;
@@ -817,6 +888,10 @@
         };
     }
 
+    // 渲染电影管理表格
+    // 入参: data (Array) — 默认为页面级movies[]
+    // 写入DOM: #movieTable tbody (innerHTML)，12列 + 编辑/删除/资源按钮
+    // 延迟处理: 遍历img[data-cover]调用setLocalImage补封面图
     function renderTable(data) {
         const tbody = document.querySelector("#movieTable tbody");
         tbody.innerHTML = "";
@@ -847,11 +922,13 @@
         tbody.querySelectorAll("img[data-cover]").forEach(img => setLocalImage(img, img.dataset.cover));
     }
 
+    // 在表格body显示提示信息（加载中/空数据/错误）
     function showTableMessage(message) {
         const tbody = document.querySelector("#movieTable tbody");
         tbody.innerHTML = `<tr><td colspan="12" class="text-center text-muted py-4">${message}</td></tr>`;
     }
 
+    // 打开添加电影弹窗：重置表单为空
     function openAddModal() {
         document.getElementById("movieForm").reset();
         document.getElementById("movieId").value = "";
@@ -864,6 +941,7 @@
         new bootstrap.Modal(document.getElementById("movieModal")).show();
     }
 
+    // 打开编辑电影弹窗：回填电影数据
     function openEditModal(id) {
         const movie = movies.find(m => m.id === id);
         if (!movie) return;
@@ -887,6 +965,11 @@
         new bootstrap.Modal(document.getElementById("movieModal")).show();
     }
 
+    // 新增电影（FormData上传）
+    // API: POST /FILMES/ADD
+    // Body: FormData { "movie": Blob(JSON), "file": File }
+    // 前提: file必须存在（#coverFile有文件），否则alert提示
+    // 返回: 响应文本 → saveMovie中alert显示
     async function createMovie(movieData) {
         const fileInput = document.getElementById("coverFile");
         const file = fileInput.files && fileInput.files[0];
@@ -910,6 +993,10 @@
         return text;
     }
 
+    // 更新电影（FormData上传，封面可选）
+    // API: POST /FILMES/UPDATE
+    // Body: FormData { "movie": Blob(JSON), "file": File|null }
+    // 注意: 不设Content-Type，浏览器自动multipart/form-data + boundary
     async function updateMovie(movieData) {
         const fileInput = document.getElementById("coverFile");
         const file = fileInput.files && fileInput.files[0];
@@ -944,6 +1031,7 @@
         return text;
     }
 
+    // 保存电影入口：根据是否有ID判断新增/更新
     async function saveMovie() {
         const movieData = getFormMovieData();
         if (!movieData.name) {
@@ -968,6 +1056,9 @@
         }
     }
 
+    // 删除电影
+    // API: POST /FILMES/DELETE?id=id
+    // 确认: confirm("确定删除吗？") → 刷新列表
     async function deleteMovie(id) {
         if (!confirm("确定删除吗？")) return;
 
@@ -988,6 +1079,10 @@
         }
     }
 
+    // 按名称模糊搜索
+    // API: GET /FILMES/ONENAME?name=keyword
+    // 响应: JSON数组 → 存入movies[] → renderTable()
+    // 空关键字: 直接调用fetchMovies(1)重置列表
     async function searchMovies() {
         const keyword = document.getElementById("searchName").value.trim();
         if (!keyword) {
@@ -1035,6 +1130,7 @@
         }
     }
 
+    // 渲染分页栏：上一页/页码/下一页/跳转
     function renderPagination() {
         const bar = document.getElementById("paginationBar");
         if (!bar) return;
@@ -1082,6 +1178,11 @@
         bar.appendChild(jumpBtn);
     }
 
+    // 核心加载函数：分页获取电影列表
+    // API: GET /FILMES/ONEP?page=N&pageSize=60
+    // 响应: JSON数组或 { data: [...] } → 存入movies[] → renderTable() + renderPagination()
+    // HTTP 401: 清除token，提示登录
+    // hasNextPage: 返回条数 === 60 时为true
     async function fetchMovies(page = 1) {
         const token = getToken();
         if (!token) {

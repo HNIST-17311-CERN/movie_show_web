@@ -73,7 +73,24 @@
     </div>
 </main>
 
+<!-- 引入AdminKit模板公共JS（侧边栏、Feather Icons等） -->
 <script src="js/app.js"></script>
+
+<!--
+登录页
+  API: POST /api/user/login
+    Body: { username: #username.value, password: #password.value }
+    成功响应: { code:200, data:{ token:"..." } }
+    失败响应: { code:!200, msg:"错误原因" }
+
+  存储:
+    localStorage.setItem("token", data.data.token)
+    localStorage.setItem("username", username)
+
+  跳转:
+    成功 → window.location.href = "../../filmlane-master/index.html"
+    失败 → alert(data.msg)
+-->
 <script>
     document.getElementById("loginForm").addEventListener("submit", function(e) {
         e.preventDefault(); // 阻止默认表单提交
@@ -114,9 +131,8 @@
     });
 </script>
 
-<!-- Live2D -->
+<!-- Live2D 看板娘：加载koharu模型，配置在右下角显示 -->
 <script src="/live2d-example-master/src/L2Dwidget.min.js"></script>
-
 <script>
 
     L2Dwidget.init({

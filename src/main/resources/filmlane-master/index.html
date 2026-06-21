@@ -208,7 +208,14 @@
 
   <a href="#top" class="go-top" data-go-top>↑</a>
 
+  <!-- 引入公共脚本：导航、返回顶部、主题等通用功能 -->
   <script src="./assets/js/script.js"></script>
+
+  <!--
+    localStorage.token  — JWT令牌（每次请求带在header）
+    DOM #home-movies-list / #tv-list / #anime-list — 渲染目标容器
+  页面级变量: API_URL, DEFAULT_COVER_URL
+-->
   <script>
     (function() {
       var token = localStorage.getItem('token');
@@ -221,6 +228,9 @@
       var LOGIN_URL = '../adminkit-web-ui-kit-dashboard-template/static/pages-sign-in.html';
       var DEFAULT_COVER_URL = './assets/images/movie-1.png';
 
+      // 封面URL规范化
+      // 入参: cover (String|null) — movie.cover字段，可能是远程URL、"assets/..."相对路径、"resource/cover/..."或null
+      // 输出: String — 可直接赋给<img src>的URL，失败时兜底为 DEFAULT_COVER_URL
       function getCoverUrl(cover) {
         if (!cover) return DEFAULT_COVER_URL;
         if (/^https?:\/\//i.test(cover)) return cover;
@@ -232,6 +242,9 @@
         return normalized;
       }
 
+      // HTML特殊字符转义（防XSS）
+      // 入参: value — 任意用户可控字符串
+      // 输出: & < > " ' 替换为HTML实体
       function escapeHtml(value) {
         return String(value || '')
           .replace(/&/g, '&amp;')
@@ -241,10 +254,16 @@
           .replace(/'/g, '&#39;');
       }
 
+      // 渲染空状态提示
+      // 入参: message (String|HTML) — 提示文案，可含<a>标签
+      // 写入: DOM #home-movies-list 的 innerHTML
       function renderEmpty(message) {
         document.getElementById('home-movies-list').innerHTML = '<li class="empty-state">' + message + '</li>';
       }
 
+      // Fisher-Yates洗牌，用于Hero随机展示
+      // 入参: list (Array<Object>) — 电影对象数组
+      // 返回: 新数组（不修改原数组）
       function shuffleMovies(list) {
         var movies = list.slice();
         for (var i = movies.length - 1; i > 0; i--) {
@@ -256,6 +275,9 @@
         return movies;
       }
 
+      // 拼装Hero副标题元信息
+      // 入参: movie.releaseDate(String) / .region / .type
+      // 返回: "2024 / 美国 / 科幻" 格式字符串
       function getHeroMeta(movie) {
         return [
           movie.releaseDate ? String(movie.releaseDate).substring(0, 4) : '',
@@ -264,10 +286,15 @@
         ].filter(Boolean).join(' / ');
       }
 
+      // 获取Hero推荐描述文本
+      // 优先级: movie.description → movie.duration + "min" → "暂无简介"
       function getHeroDesc(movie) {
         return movie.description || (movie.duration ? movie.duration + 'min' : '') || '暂无简介';
       }
 
+      // 更新Hero左侧大图区域
+      // 入参: movie { id, name, cover, releaseDate, region, type, description, duration }
+      // 写入DOM: #hero-featured-link(href), #hero-featured-img(src/alt), #hero-featured-title, #hero-featured-subtitle, #hero-featured-desc
       function updateHeroFeatured(movie) {
         var featuredLink = document.getElementById('hero-featured-link');
         var featuredImg = document.getElementById('hero-featured-img');
@@ -289,6 +316,9 @@
         if (featuredDesc) featuredDesc.textContent = getHeroDesc(movie);
       }
 
+      // 渲染Hero右侧边栏（3张卡片）
+      // 入参: movies (Array) — 从首页电影列表中随机挑选
+      // 写入DOM: #hero-sidebar，每张卡片绑定mouseenter事件切换左侧大图
       function renderHero(movies) {
         var heroSidebar = document.getElementById('hero-sidebar');
         if (!heroSidebar || !movies.length) return;
@@ -329,6 +359,11 @@
         });
       }
 
+      // 渲染单个电影卡片到首页列表
+      // 入参: movie { id, name, cover, releaseDate, region, type, duration }
+      // 创建: <li> 含封面图、HD角标、标题、年份/地区/类型元信息
+      // 异步: GET /FILMES/SCORE/ONE?id= → 回填 .card-score 评分
+      // 写入: appendChild到 #home-movies-list
       function renderMovie(movie) {
         var meta = [
           movie.releaseDate ? String(movie.releaseDate).substring(0, 4) : '',
@@ -378,6 +413,11 @@
           .catch(function() {});
       }
 
+      // 加载首页最新电影列表
+      // API: GET /Mapper/findlast12 (MyBatis级联查询，硬编码12个ID)
+      // 请求头: { token: localStorage.token, Content-Type: application/json }
+      // 响应: JSON数组或 { data: [...] } → 遍历调用renderMovie()
+      // HTTP 401: 清除localStorage.token，提示重新登录
       function loadLastMovies() {
         var token = localStorage.getItem('token');
         var loadingEl = document.getElementById('home-loading');
@@ -432,6 +472,10 @@
       loadAnime();
       loadTv();
 
+    // 加载Hero Banner推荐
+    // 步骤1: GET /BIGMOVIE/TOP3 → 返回 [ {id,...}, {id,...}, {id,...} ]
+    // 步骤2: GET /FILMES/ALL → 返回全部电影（从中按id匹配补全详情）
+    // 步骤3: 调renderHeroSidebar渲染侧边栏
     function loadHeroBanner() {
       var token = localStorage.getItem('token');
       if (!token) return;
@@ -466,6 +510,10 @@
         .catch(function() {});
     }
 
+    // 渲染Hero侧边栏（BIGMOVIE版本）
+    // 入参: sidebarMovies — 从/FILMES/ALL匹配到的完整电影数据
+    //       heroMovies    — /BIGMOVIE/TOP3返回的原始数据（用于hover时切换大图）
+    // 写入DOM: #hero-sidebar，每张卡片mouseenter时调用updateHeroFeatured()
     function renderHeroSidebar(sidebarMovies, heroMovies) {
       var heroSidebar = document.getElementById('hero-sidebar');
       if (!heroSidebar || !sidebarMovies.length) return;
@@ -502,6 +550,9 @@
       });
     }
 
+    // 加载首页剧集区域
+    // API: GET /TV/ONEP?page=1&pageSize=12
+    // 响应: JSON数组 → 遍历调用renderTvCard()写入 #tv-list
     function loadTv() {
       var token = localStorage.getItem('token');
       var list = document.getElementById('tv-list');
@@ -528,6 +579,9 @@
         });
     }
 
+    // 加载首页动漫区域
+    // API: GET /ANIME/ONEP?page=1&pageSize=12
+    // 响应: JSON数组 → 遍历调用renderCard()写入 #anime-list
     function loadAnime() {
       var token = localStorage.getItem('token');
       var list = document.getElementById('anime-list');
@@ -554,6 +608,11 @@
         });
     }
 
+    // 渲染动漫卡片到指定列表
+    // 入参: item { id, name, cover, releaseDate, region, type } — 动漫数据
+    //       list (DOM Element) — 目标<ul>容器
+    // 异步: GET /FILMES/SCORE/ONE?id= → 评分回填
+    //       GET /ANIME/EPISODES/ANIME?id= → { totalEpisodes, updateStatus } 回填集数
     function renderCard(item, list) {
       var meta = [
         item.releaseDate ? String(item.releaseDate).substring(0, 4) : '',
@@ -614,6 +673,11 @@
         .catch(function() {});
     }
 
+    // 渲染剧集卡片到指定列表
+    // 入参: item { id, name, cover, releaseDate, region, type } — 剧集数据
+    //       list (DOM Element) — 目标<ul>容器
+    // 异步: GET /FILMES/SCORE/ONE?id= → 评分回填
+    //       GET /TV/EPISODES/TV?id= → { totalEpisodes, updateStatus } 回填"全X集"/更新状态
     function renderTvCard(item, list) {
       var meta = [
         item.releaseDate ? String(item.releaseDate).substring(0, 4) : '',
@@ -676,13 +740,19 @@
     })();
   </script>
 
-  <script>
+  <!--
+用户菜单组件（所有页面复用）
+  读取: localStorage.username → 首字母显示在头像、全名显示在下拉框
+  操作: toggleUserDropdown() 切换显示, doLogout() 清除 localStorage.token 和 username 后跳转登录页
+--><script>
     (function initUserMenu() {
       var username = localStorage.getItem('username') || '用户';
       document.getElementById('avatarText').textContent = username.charAt(0).toUpperCase();
       document.getElementById('displayUsername').textContent = username;
     })();
 
+    // 切换用户下拉菜单显示/隐藏
+    // 读取DOM: #userDropdown.style.display，在 'none' 和 'block' 间切换
     function toggleUserDropdown() {
       var dropdown = document.getElementById('userDropdown');
       dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
@@ -695,6 +765,9 @@
       }
     });
 
+    // 退出登录
+    // 清除: localStorage.removeItem('token'), localStorage.removeItem('username')
+    // 跳转: window.location.href → adminkit/.../pages-sign-in.html
     function doLogout() {
       localStorage.removeItem('token');
       localStorage.removeItem('username');

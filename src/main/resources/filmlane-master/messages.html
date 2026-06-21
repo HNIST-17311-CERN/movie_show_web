@@ -152,11 +152,22 @@
 
 <a href="#top" class="go-top" data-go-top>↑</a>
 
+<!-- 引入公共脚本：导航、返回顶部、主题等通用功能 -->
 <script src="./assets/js/script.js"></script>
+
+<!--
+留言板（前端演示，无后端API）
+  富文本编辑器:
+    document.execCommand() 实现粗体/斜体/下划线/删除线/标题/引用/列表/链接/图片
+    Markdown自动转换: keydown监听空格键 → 正则匹配行内/块级语法 → execCommand转换
+    粘贴图片: paste事件 → clipboardData.items → FileReader → execCommand('insertImage')
+  留言提交:
+    submitMessage() → 读取#editor.innerHTML + localStorage.username
+    → 创建留言卡片DOM → insertBefore到#messageList顶部
+    （纯前端渲染，刷新即丢失）
+-->
 <script>
-  /* ============================================================
-   *  模块 1：用户菜单
-   *  读取 localStorage 中的用户名，渲染头像首字母和下拉菜单
+  /* 读取 localStorage 中的用户名，渲染头像首字母和下拉菜单
    * ============================================================ */
   (function initUserMenu() {
     var username = localStorage.getItem('username') || '用户';
@@ -164,6 +175,7 @@
     document.getElementById('displayUsername').textContent = username;
   })();
 
+  // 切换用户下拉菜单的显示/隐藏
   function toggleUserDropdown() {
     var d = document.getElementById('userDropdown');
     d.style.display = d.style.display === 'none' ? 'block' : 'none';
@@ -175,6 +187,7 @@
     if (m && !m.contains(e.target)) document.getElementById('userDropdown').style.display = 'none';
   });
 
+  // 退出登录：清除token和username，跳转到登录页
   function doLogout() {
     localStorage.removeItem('token'); localStorage.removeItem('username');
     window.location.href = '../adminkit-web-ui-kit-dashboard-template/static/pages-sign-in.html';
@@ -361,6 +374,7 @@
   editor.addEventListener('keyup', updateToolbarState);
   editor.addEventListener('mouseup', updateToolbarState);
 
+  // 同步工具栏按钮高亮状态：光标所在位置有对应样式时按钮active
   function updateToolbarState() {
     var btns = document.querySelectorAll('#toolbar button[data-cmd]');
     btns.forEach(function(btn) {
@@ -378,6 +392,7 @@
    *  模块 7：提交留言（前端演示）
    *  获取编辑器 HTML 内容，渲染留言卡片到列表顶部
    * ============================================================ */
+  // 提交留言：获取编辑器HTML内容，渲染留言卡片到列表顶部（前端演示）
   function submitMessage() {
     var html = editor.innerHTML.trim();
     if (!html || html === '<br>') {

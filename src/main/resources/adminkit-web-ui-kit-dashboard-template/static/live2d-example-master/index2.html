@@ -41,6 +41,7 @@
   }
 </style>
     <meta name="chromesniffer" id="chromesniffer_meta" content="{&quot;SPDY&quot;:-1}">
+    <!-- Chrome浏览器扩展注入脚本（非项目代码） -->
     <script type="text/javascript" src="chrome-extension://fhhdlnnepfjhlhilgmeepgkhjmhhhjkh/js/detector.js"></script>
 </head>
 
@@ -49,7 +50,9 @@
     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="190" height="180" class="star">
         <polygon points="100,0 160,180 10,60 190,60 40,180" style="fill:yellow;stroke:yellow;stroke-width:1;"></polygon>
     </svg>
+    <!-- Live2D 看板娘核心库 -->
     <script src="./src/L2Dwidget.min.js"></script>
+    <!-- 带互动对话的看板娘：空闲10秒显示一言、触摸星星/身体/头部有不同回复 -->
     <script type="text/javascript">
     L2Dwidget
         .on('*', (name) => {

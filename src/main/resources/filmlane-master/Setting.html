@@ -96,13 +96,16 @@
   </main>
 
   <a href="#top" class="go-top" data-go-top>↑</a>
+  <!-- 引入公共脚本：导航、返回顶部、主题等通用功能 -->
   <script src="./assets/js/script.js"></script>
+  <!-- 用户菜单：初始化头像下拉菜单、切换显示/隐藏、退出登录 -->
   <script>
     (function initUserMenu() {
       var username = localStorage.getItem('username') || '用户';
       document.getElementById('avatarText').textContent = username.charAt(0).toUpperCase();
       document.getElementById('displayUsername').textContent = username;
     })();
+    // 切换用户下拉菜单的显示/隐藏
     function toggleUserDropdown() {
       var d = document.getElementById('userDropdown');
       d.style.display = d.style.display === 'none' ? 'block' : 'none';
@@ -111,12 +114,22 @@
       var m = document.getElementById('userMenu');
       if (m && !m.contains(e.target)) document.getElementById('userDropdown').style.display = 'none';
     });
+    // 退出登录：清除token和username，跳转到登录页
     function doLogout() {
       localStorage.removeItem('token'); localStorage.removeItem('username');
       window.location.href = '../adminkit-web-ui-kit-dashboard-template/static/pages-sign-in.html';
     }
   </script>
-  <script>
+<!--
+设置页
+  localStorage读写:
+    深色模式: localStorage.darkMode = "true"|"false"
+              → document.documentElement.setAttribute/removeAttribute('data-theme','dark')
+    相似电影: localStorage.similarMoviesEnabled = "true"|"false"
+    自动播放: localStorage.autoPlayNext = "true"|"false"
+  所有开关状态在页面加载时从localStorage恢复
+-->
+<script>
     (function() {
       var isDark = localStorage.getItem('darkMode') === 'true';
       if (isDark) document.documentElement.setAttribute('data-theme', 'dark');

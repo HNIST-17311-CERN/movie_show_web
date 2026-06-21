@@ -71,7 +71,9 @@
     </div>
 </main>
 
+<!-- 引入AdminKit模板公共JS（侧边栏、Feather Icons等） -->
 <script src="js/app.js"></script>
+<!-- 登录表单：收集用户名/密码，POST到/api/user/login，保存token到localStorage并跳转首页 -->
 <script>
     document.getElementById("loginForm").addEventListener("submit", function(e) {
         e.preventDefault(); // 阻止默认表单提交

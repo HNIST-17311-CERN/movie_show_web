@@ -20,7 +20,9 @@
       "Bash(java -version)",
       "Bash(export PATH=\"$PATH:/c/Users/24405/.m2/wrapper/dists/apache-maven-3.9.10-bin/53h08a94dg6djh6umvruv7q564/apache-maven-3.9.10/bin\")",
       "Bash(taskkill *)",
-      "Bash(findstr \"9001\")"
+      "Bash(findstr \"9001\")",
+      "Bash(git diff *)",
+      "Bash(./mvnw compile *)"
     ]
   }
 }

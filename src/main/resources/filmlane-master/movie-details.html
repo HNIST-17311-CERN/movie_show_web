@@ -408,87 +408,87 @@
 </script>
 
 <script>
-// 相似电影推荐（独立插件 — 不依赖 movieId 参数）
-(function() {
-  var section = document.getElementById('similarMoviesSection');
-  var grid = document.getElementById('similarMoviesGrid');
-  if (!section || !grid) return;
+  // 相似电影推荐（独立插件 — 不依赖 movieId 参数）
+  (function() {
+    var section = document.getElementById('similarMoviesSection');
+    var grid = document.getElementById('similarMoviesGrid');
+    if (!section || !grid) return;
 
-  var enabled = localStorage.getItem('similarMoviesEnabled');
-  if (enabled === 'false') { section.style.display = 'none'; return; }
+    var enabled = localStorage.getItem('similarMoviesEnabled');
+    if (enabled === 'false') { section.style.display = 'none'; return; }
 
-  var params = new URLSearchParams(window.location.search);
-  var movieId = params.get('id');
-  var token = localStorage.getItem('token') || '';
-  var DEFAULT_COVER = './assets/images/movie-1.png';
+    var params = new URLSearchParams(window.location.search);
+    var movieId = params.get('id');
+    var token = localStorage.getItem('token') || '';
+    var DEFAULT_COVER = './assets/images/movie-1.png';
 
-  function renderCards(list) {
-    if (!list || !list.length) {
-      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-muted);">暂无推荐</div>';
+    function renderCards(list) {
+      if (!list || !list.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-muted);">暂无推荐</div>';
+        return;
+      }
+      grid.innerHTML = list.map(function(m) {
+        var cover = m.cover || DEFAULT_COVER;
+        if (!/^https?:\/\//i.test(cover)) {
+          if (cover.indexOf('assets/') === -1 && cover.indexOf('resource/') === -1) cover = DEFAULT_COVER;
+          if (!cover.startsWith('./') && !cover.startsWith('/')) cover = './' + cover;
+        }
+        return '<div class="similar-card" onclick="location.href=\'./movie-details.html?id=' + (m.id || '') + '\'">' +
+          '<div class="similar-card-img"><img src="' + cover + '" alt="' + (m.name || '') + '" loading="lazy" onerror="this.src=\'' + DEFAULT_COVER + '\'"></div>' +
+          '<div class="similar-card-title" title="' + (m.name || '') + '">' + (m.name || '') + '</div>' +
+          '</div>';
+      }).join('');
+    }
+
+    if (!movieId) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-muted);">缺少电影 ID</div>';
       return;
     }
-    grid.innerHTML = list.map(function(m) {
-      var cover = m.cover || DEFAULT_COVER;
-      if (!/^https?:\/\//i.test(cover)) {
-        if (cover.indexOf('assets/') === -1 && cover.indexOf('resource/') === -1) cover = DEFAULT_COVER;
-        if (!cover.startsWith('./') && !cover.startsWith('/')) cover = './' + cover;
-      }
-      return '<div class="similar-card" onclick="location.href=\'./movie-details.html?id=' + (m.id || '') + '\'">' +
-        '<div class="similar-card-img"><img src="' + cover + '" alt="' + (m.name || '') + '" loading="lazy" onerror="this.src=\'' + DEFAULT_COVER + '\'"></div>' +
-        '<div class="similar-card-title" title="' + (m.name || '') + '">' + (m.name || '') + '</div>' +
-        '</div>';
-    }).join('');
-  }
 
-  if (!movieId) {
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-muted);">缺少电影 ID</div>';
-    return;
-  }
+    var PER_PAGE = 7;
+    var allMovies = [];
+    var page = 0;
 
-  var PER_PAGE = 7;
-  var allMovies = [];
-  var page = 0;
+    function showPage() {
+      var start = page * PER_PAGE;
+      var batch = allMovies.slice(start, start + PER_PAGE);
+      renderCards(batch);
+    }
 
-  function showPage() {
-    var start = page * PER_PAGE;
-    var batch = allMovies.slice(start, start + PER_PAGE);
-    renderCards(batch);
-  }
-
-  function nextPage() {
-    if (allMovies.length <= PER_PAGE) return;
-    page = (page + 1) % Math.ceil(allMovies.length / PER_PAGE);
-    showPage();
-  }
-
-  // 第一步：调 Python 获取相似电影 ID 列表
-  fetch('http://localhost:8085/movie/similar', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ movie_id: parseInt(movieId) })
-  })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-      var ids = data.similar_ids || [];
-      if (!ids.length) { renderCards([]); return; }
-      // 第二步：并发调 Java 后端拿所有电影详情
-      return Promise.all(ids.map(function(id) {
-        return fetch('http://localhost:8080/FILMES/ONEID?id=' + id, { headers: { token: token } })
-          .then(function(res) { return res.json(); });
-      }));
-    })
-    .then(function(movies) {
-      if (!movies) return;
-      allMovies = movies;
-      page = 0;
+    function nextPage() {
+      if (allMovies.length <= PER_PAGE) return;
+      page = (page + 1) % Math.ceil(allMovies.length / PER_PAGE);
       showPage();
-      document.getElementById('similarRefreshBtn').onclick = nextPage;
+    }
+
+    // 第一步：调 Python 获取相似电影 ID 列表
+    fetch('http://localhost:8085/movie/similar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ movie_id: parseInt(movieId) })
     })
-    .catch(function(err) {
-      console.warn('相似电影API未就绪', err);
-      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-muted);">相似电影服务未启动，请先启动 Python 服务 (port 8085)</div>';
-    });
-})();
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        var ids = data.similar_ids || [];
+        if (!ids.length) { renderCards([]); return; }
+        // 第二步：并发调 Java 后端拿所有电影详情
+        return Promise.all(ids.map(function(id) {
+          return fetch('http://localhost:8080/FILMES/ONEID?id=' + id, { headers: { token: token } })
+            .then(function(res) { return res.json(); });
+        }));
+      })
+      .then(function(movies) {
+        if (!movies) return;
+        allMovies = movies;
+        page = 0;
+        showPage();
+        document.getElementById('similarRefreshBtn').onclick = nextPage;
+      })
+      .catch(function(err) {
+        console.warn('相似电影API未就绪', err);
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-muted);">相似电影服务未启动，请先启动 Python 服务 (port 8085)</div>';
+      });
+  })();
 </script>
 </body>
 </html>

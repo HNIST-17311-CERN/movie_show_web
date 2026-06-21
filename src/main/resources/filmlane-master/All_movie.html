@@ -329,7 +329,20 @@
 
 <a href="#top" class="go-top" data-go-top>↑</a>
 
+<!-- 引入公共脚本：导航、返回顶部、主题等通用功能 -->
 <script src="./assets/js/script.js"></script>
+<!--
+电影列表页（分页+筛选+排序）
+  页面级变量:
+    movies[] (实际未缓存全量，仅currentPage数据通过DOM体现)
+    currentPage, hasNextPage, PAGE_SIZE=60
+    filters { type, year, region, language, sort }
+    pendingScores[] — 评分异步加载后暂存，全部到齐后按分排序
+
+  筛选联动: pill点击 → filters[key]更新 → loadMovies(1) → buildMoviesUrl()决定调哪个API
+  排序联动: 下拉change → getSortValue() 标记scoreSortActive → 评分全部到齐后reorderByScore()
+  分页: renderPagination() 创建上一页/页码/下一页/跳转输入按钮
+-->
 <script>
   (function() {
     var API_URL = 'http://localhost:8080/FILMES/ONEP';
@@ -347,6 +360,7 @@
       sort: ''
     };
 
+    // 将封面路径规范化：本地相对路径/远程URL/默认封面兜底
     function getCoverUrl(cover) {
       if (!cover) return DEFAULT_COVER_URL;
       if (/^https?:\/\//i.test(cover)) return cover;
@@ -357,6 +371,7 @@
       return normalized;
     }
 
+    // 设置图片元素的src并注册加载失败兜底
     function setLocalImage(imgEl, cover) {
       imgEl.src = getCoverUrl(cover);
       imgEl.onerror = function() {
@@ -365,10 +380,12 @@
       };
     }
 
+    // 判断筛选器是否为"全部"（即未选中特定筛选项）
     function isAll(value) {
       return !value || value === '全部';
     }
 
+    // 判断是否有任何激活的筛选条件
     function hasActiveFilters() {
       return !isAll(filters.type) ||
         !isAll(filters.year) ||
@@ -377,6 +394,7 @@
         !!filters.sort;
     }
 
+    // 将筛选栏中文标签映射为API参数字段名
     function getFilterKey(label) {
       if (label === '类型') return 'type';
       if (label === '年代') return 'year';
@@ -388,6 +406,7 @@
     var pendingScores = [];
     var scoreSortActive = false;
 
+    // 将排序选项文本映射为API sort参数，标记是否按评分排序
     function getSortValue(text) {
       if (text === '添加时间' || text === '更新时间') { scoreSortActive = false; return 'create_time'; }
       if (text === '上映时间') { scoreSortActive = false; return 'releaseDate'; }
@@ -397,6 +416,7 @@
       return '';
     }
 
+    // 构建API请求URL：有筛选条件用/FILMES/FILTER否则用/FILMES/ONEP
     function buildMoviesUrl(page) {
       var params = new URLSearchParams();
       params.set('page', page);
@@ -411,6 +431,7 @@
       return (hasActiveFilters() ? FILTER_API_URL : API_URL) + '?' + params.toString();
     }
 
+    // 绑定筛选器点击事件：类型/年代/地区/语言pill切换、排序下拉
     function bindFilters() {
       document.querySelectorAll('.filter-row').forEach(function(row) {
         var labelEl = row.querySelector('.filter-label');
@@ -438,6 +459,7 @@
       }
     }
 
+    // 提示用户需要登录，隐藏加载状态和分页栏
     function needLogin() {
       var loadingEl = document.getElementById('loading');
       var listEl = document.getElementById('movies-list');
@@ -447,6 +469,11 @@
       listEl.innerHTML = '<li class="empty-state">请先 <a href="' + LOGIN_URL + '">登录</a> 后访问</li>';
     }
 
+    // 渲染单个电影卡片 + 异步查评分
+    // 入参: movie { id, name, cover, releaseDate, region, type, duration }
+    // 创建: li.movie-card-wrapper > .movie-card > a[href=movie-details.html?id=] > figure.card-banner + h3.card-title + p.card-meta
+    // 异步: GET /FILMES/SCORE/ONE?id= → 回填.card-score + 存入pendingScores[]
+    //       如果scoreSortActive且所有卡片评分到齐 → reorderByScore()
     function renderMovie(movie) {
       var meta = [movie.releaseDate ? String(movie.releaseDate).substring(0, 4) : '', movie.region || '', movie.type || ''].filter(Boolean).join(' / ');
       var li = document.createElement('li');
@@ -491,6 +518,7 @@
         .catch(function() {});
     }
 
+    // 按评分降序重排卡片DOM顺序
     function reorderByScore() {
       pendingScores.sort(function(a, b) { return b.score - a.score; });
       var listEl = document.getElementById('movies-list');
@@ -499,6 +527,7 @@
       });
     }
 
+    // 创建分页按钮DOM元素
     function createPageBtn(label, page, active) {
       var btn = document.createElement('button');
       btn.className = 'pagination-btn' + (active ? ' active' : '');
@@ -509,6 +538,7 @@
       return btn;
     }
 
+    // 渲染分页栏：上一页/页码/下一页/跳转输入
     function renderPagination() {
       var bar = document.getElementById('pagination-bar');
       var startPage = Math.floor((currentPage - 1) / 10) * 10 + 1;
@@ -564,6 +594,11 @@
       bar.appendChild(jumpBtn);
     }
 
+    // 核心加载函数
+    // 1. 检查token → 无则needLogin()
+    // 2. fetch(buildMoviesUrl(page)) → 响应可能是JSON数组或{data:[...]}
+    // 3. 更新currentPage/hasNextPage → 清空列表 → 遍历renderMovie()
+    // 4. HTTP 401 → 清除token + needLogin()
     function loadMovies(page) {
       var token = localStorage.getItem('token');
       var listEl = document.getElementById('movies-list');
@@ -630,12 +665,14 @@
   })();
 </script>
 
+<!-- 用户菜单：初始化头像下拉菜单、切换显示/隐藏、退出登录 -->
 <script>
   (function initUserMenu() {
     var username = localStorage.getItem('username') || '用户';
     document.getElementById('avatarText').textContent = username.charAt(0).toUpperCase();
     document.getElementById('displayUsername').textContent = username;
   })();
+  // 切换用户下拉菜单的显示/隐藏
   function toggleUserDropdown() {
     var d = document.getElementById('userDropdown');
     d.style.display = d.style.display === 'none' ? 'block' : 'none';
@@ -644,6 +681,7 @@
     var m = document.getElementById('userMenu');
     if (m && !m.contains(e.target)) document.getElementById('userDropdown').style.display = 'none';
   });
+  // 退出登录：清除token和username，跳转到登录页
   function doLogout() {
     localStorage.removeItem('token'); localStorage.removeItem('username');
     window.location.href = '../adminkit-web-ui-kit-dashboard-template/static/pages-sign-in.html';

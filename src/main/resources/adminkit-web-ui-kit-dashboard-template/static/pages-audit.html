@@ -47,6 +47,12 @@
             <span class="align-middle">资源审查</span>
           </a>
         </li>
+        <li class="sidebar-item">
+          <a class="sidebar-link" href="pages-recommend-manage.html">
+            <i class="align-middle" data-feather="star"></i>
+            <span class="align-middle">首页推荐</span>
+          </a>
+        </li>
         <li class="sidebar-header">账户</li>
         <li class="sidebar-item">
           <a class="sidebar-link" href="index.html">
@@ -179,14 +185,33 @@
   </div>
 </div>
 
+<!-- Bootstrap 5 JS（模态框等组件） -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- 引入AdminKit模板公共JS（侧边栏、Feather Icons等） -->
 <script src="js/app.js"></script>
+<!--
+资源审查（管理员审核用户提交的资源）
+  页面级变量:
+    currentFilter — "pending"|"approved"|"rejected"|"all"
+
+  数据源:
+    GET  /AUDIT/ALL              → [ {id, movie_id, movie_name, resouce_name, quality, size, url, submitter, submitter_id, note, status, review_msg, createTime}, ... ]
+    POST /AUDIT/APPROVE?id=      → 通过审核
+    POST /AUDIT/REJECT?id=&reason= → 拒绝审核（可选理由）
+
+  统计卡片: 从/AUDIT/ALL返回的全量数据中按status分组计数
+    #countPending / #countApproved / #countRejected / #countTotal
+
+  筛选: 前端过滤，filter()按currentFilter筛选后渲染
+-->
 <script>
   const API_BASE = "http://localhost:8080";
   let currentFilter = "pending";
 
+  // 从localStorage获取JWT token
   function getToken() { return localStorage.getItem("token") || ""; }
 
+  // 切换审核列表筛选条件（待审核/已通过/已拒绝/全部）
   function setFilter(filter, btn) {
     currentFilter = filter;
     document.querySelectorAll(".review-filter .btn").forEach(function(b) { b.classList.remove("active"); });
@@ -194,6 +219,7 @@
     refreshAudit();
   }
 
+  // 根据状态返回Bootstrap彩色badge HTML
   function renderStatusBadge(status) {
     var map = {
       approved: '<span class="badge badge-approved">已通过</span>',
@@ -203,6 +229,10 @@
     return map[status] || map.pending;
   }
 
+  // 加载审核数据
+  // API: GET /AUDIT/ALL → 全量审核列表
+  // 处理: 按currentFilter筛选 → 渲染表格 + 更新4个统计卡片
+  // 错误: 显示"后端/AUDIT/PENDING尚未部署"
   function fetchAudit() {
     var tbody = document.getElementById("auditTableBody");
     tbody.innerHTML = '<tr><td colspan="12" class="text-center text-muted py-5">加载中...</td></tr>';
@@ -252,6 +282,8 @@
       });
   }
 
+  // 通过审核
+  // API: POST /AUDIT/APPROVE?id=id → 提示响应文本 → refreshAudit()
   function approveSubmission(id) {
     if (!confirm("确认通过这条资源？")) return;
     fetch(API_BASE + "/AUDIT/APPROVE?id=" + id, {
@@ -263,12 +295,15 @@
       .catch(function() { alert("操作失败"); });
   }
 
+  // 打开拒绝理由弹窗
   function openReject(id) {
     document.getElementById("rejectId").value = id;
     document.getElementById("rejectReason").value = "";
     new bootstrap.Modal(document.getElementById("rejectModal")).show();
   }
 
+  // 确认拒绝
+  // API: POST /AUDIT/REJECT?id=#rejectId&reason=#rejectReason → 关闭弹窗 → refreshAudit()
   function confirmReject() {
     var id = document.getElementById("rejectId").value;
     var reason = document.getElementById("rejectReason").value.trim();
@@ -285,14 +320,17 @@
       .catch(function() { alert("操作失败"); });
   }
 
+  // 弹窗显示审核备注
   function showNote(text) {
     alert('备注：\n\n' + text);
   }
 
+  // 弹窗显示提交者信息
   function showSubmitter(name, id) {
     alert('提交者：' + name + '\n用户ID：' + (id || '未知'));
   }
 
+  // 刷新审核列表的快捷方法
   function refreshAudit() { fetchAudit(); }
 
   // 管理员标识

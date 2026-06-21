@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>推荐管理 - 电影俱乐部 Movie Club</title>
+  <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .rec-tabs { display: flex; gap: 0; margin-bottom: 16px; border-bottom: 2px solid #e2e8f0; }
+    .rec-tab { padding: 10px 24px; font-size: 15px; font-weight: 700; cursor: pointer; border: none; background: none; color: #64748b; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+    .rec-tab.active { color: var(--primary, #2563eb); border-bottom-color: var(--primary, #2563eb); }
+    .rec-tab:hover { color: var(--primary, #2563eb); }
+    .rec-counter { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 10px; margin-bottom: 16px; font-size: 14px; font-weight: 600; }
+    .rec-counter .count-num { font-size: 22px; font-weight: 800; color: var(--primary, #2563eb); }
+    .rec-counter .count-max { color: #94a3b8; font-size: 13px; }
+    .rec-counter.full { background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%); }
+    .rec-counter.full .count-num { color: #dc2626; }
+    .rec-btn { display: block; width: 100%; padding: 6px 0; margin-top: 8px; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .rec-btn.add { background: #2563eb; color: #fff; }
+    .rec-btn.add:hover { background: #1d4ed8; }
+    .rec-btn.remove { background: #f1f5f9; color: #dc2626; border: 1px solid #fecaca; }
+    .rec-btn.remove:hover { background: #fef2f2; }
+    .rec-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  </style>
+</head>
+<body id="top">
+
+<header class="header">
+  <div class="header-inner">
+    <a href="./index.html" class="logo"><span class="logo-cn">电影俱乐部</span> <span class="logo-en">Movie Club</span></a>
+    <nav class="nav-links">
+      <a href="./index.html">首页</a>
+      <a href="./All_movie.html">电影</a>
+      <a href="./TV_series.html">剧集</a>
+      <a href="./Net_movie.html">动漫</a>
+      <a href="./Online.html">在线</a>
+      <a href="./recommend-manage.html" class="active">推荐管理</a>
+      <a href="./Setting.html">设置</a>
+    </nav>
+    <div class="header-actions">
+      <div class="user-menu" id="userMenu">
+        <div class="user-avatar" onclick="toggleUserDropdown()">
+          <span id="avatarText">用</span>
+        </div>
+        <div class="user-dropdown" id="userDropdown" style="display:none;">
+          <div class="user-info"><b id="displayUsername">--</b></div>
+          <ul class="user-dropdown-menu">
+            <li><a href="../adminkit-web-ui-kit-dashboard-template/static/pages-blank.html">后台管理</a></li>
+            <li><a href="#" onclick="doLogout()">退出登录</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+
+    <h1 class="page-title" style="margin-bottom:8px;">推荐管理</h1>
+
+    <div class="rec-tabs" id="recTabs">
+      <button class="rec-tab active" data-type="movie">电影推荐</button>
+      <button class="rec-tab" data-type="tv">剧集推荐</button>
+      <button class="rec-tab" data-type="anime">动漫推荐</button>
+    </div>
+
+    <div class="rec-counter" id="recCounter">
+      <span class="count-num" id="countNum">0</span>
+      <span>/</span>
+      <span class="count-max">48</span>
+      <span id="countLabel">已推荐</span>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-row" data-filter-key="type">
+        <span class="filter-label">类型</span>
+        <div class="filter-options" id="filter-type"></div>
+      </div>
+      <div class="filter-row" data-filter-key="year">
+        <span class="filter-label">年份</span>
+        <div class="filter-options" id="filter-year"></div>
+      </div>
+      <div class="filter-row" data-filter-key="region">
+        <span class="filter-label">地区</span>
+        <div class="filter-options" id="filter-region"></div>
+      </div>
+      <div class="filter-row" data-filter-key="language">
+        <span class="filter-label">语言</span>
+        <div class="filter-options" id="filter-language"></div>
+      </div>
+    </div>
+
+    <div id="loading" class="loading-state" style="text-align:center;padding:40px;">加载中...</div>
+    <div id="error" class="error-state" style="text-align:center;padding:40px;display:none;"></div>
+    <ul class="movies-list" id="movies-list"></ul>
+    <div class="pagination-bar" id="pagination-bar"></div>
+
+  </div>
+</main>
+
+<a href="#top" class="go-top" data-go-top>↑</a>
+
+<script src="./assets/js/script.js"></script>
+<script>
+(function() {
+
+var currentType = 'movie';
+var currentPage = 1;
+var pageSize = 60;
+var filters = {};
+var recommendedSet = {};  // movieId → true
+var recommendedCount = 0;
+var MAX_REC = 48;
+var DEFAULT_COVER = './assets/images/movie-1.png';
+var httpErrorShown = false;
+
+// ==================== API 路由 ====================
+
+function listApi(type) {
+    if (type === 'movie') return 'http://localhost:8080/FILMES';
+    if (type === 'tv')    return 'http://localhost:8080/TV';
+    if (type === 'anime') return 'http://localhost:8080/ANIME';
+}
+
+function recApi(type) {
+    return 'http://localhost:8080/home/' + type;
+}
+
+function getToken() {
+    return localStorage.getItem('token') || '';
+}
+
+// ==================== 获取当前推荐列表 ====================
+
+function loadRecommendations() {
+    return fetch(recApi(currentType) + '/items', {
+        headers: { token: getToken() }
+    })
+    .then(function(res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+    })
+    .then(function(items) {
+        recommendedSet = {};
+        items.forEach(function(item) { recommendedSet[item.movieId] = true; });
+        recommendedCount = items.length;
+        updateCounter();
+    })
+    .catch(function(err) {
+        console.error('获取推荐列表失败', err);
+    });
+}
+
+// ==================== 计数器 ====================
+
+function updateCounter() {
+    document.getElementById('countNum').textContent = recommendedCount;
+    var counter = document.getElementById('recCounter');
+    counter.classList.toggle('full', recommendedCount >= MAX_REC);
+}
+
+// ==================== 加入/取消推荐 ====================
+
+function toggleRecommend(movieId, movieName) {
+    var btn = document.getElementById('rec-btn-' + movieId);
+    if (!btn) return;
+    btn.disabled = true;
+
+    if (recommendedSet[movieId]) {
+        // 取消推荐
+        var formData = new URLSearchParams();
+        formData.append('movieId', movieId);
+        fetch(recApi(currentType) + '/delete', {
+            method: 'POST',
+            headers: { token: getToken(), 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData.toString()
+        })
+        .then(function(res) { return res.text(); })
+        .then(function() {
+            delete recommendedSet[movieId];
+            recommendedCount--;
+            updateCounter();
+            updateBtnState(movieId);
+        })
+        .catch(function() { alert('操作失败'); })
+        .finally(function() { btn.disabled = false; });
+    } else {
+        if (recommendedCount >= MAX_REC) {
+            alert('已达到 ' + MAX_REC + ' 部上限，请先取消一些再添加');
+            btn.disabled = false;
+            return;
+        }
+        var formData = new URLSearchParams();
+        formData.append('movieId', movieId);
+        formData.append('sortOrder', '0');
+        fetch(recApi(currentType) + '/add', {
+            method: 'POST',
+            headers: { token: getToken(), 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData.toString()
+        })
+        .then(function(res) { return res.text(); })
+        .then(function() {
+            recommendedSet[movieId] = true;
+            recommendedCount++;
+            updateCounter();
+            updateBtnState(movieId);
+        })
+        .catch(function() { alert('操作失败'); })
+        .finally(function() { btn.disabled = false; });
+    }
+}
+
+function updateBtnState(movieId) {
+    var btn = document.getElementById('rec-btn-' + movieId);
+    if (!btn) return;
+    if (recommendedSet[movieId]) {
+        btn.className = 'rec-btn remove';
+        btn.textContent = '✓ 取消推荐';
+    } else {
+        btn.className = 'rec-btn add';
+        btn.textContent = '+ 加入推荐';
+    }
+}
+
+// ==================== 卡片渲染 ====================
+
+function getCoverUrl(cover) {
+    if (!cover) return DEFAULT_COVER;
+    if (/^https?:\/\//i.test(cover)) return cover;
+    var normalized = String(cover).replace(/\\/g, '/');
+    if (normalized.indexOf('assets/images/') !== -1) return './' + normalized.substring(normalized.indexOf('assets/images/'));
+    if (normalized.indexOf('resource/cover/') !== -1) return './' + normalized.substring(normalized.indexOf('resource/cover/'));
+    if (normalized.startsWith('/')) return '.' + normalized;
+    return normalized;
+}
+
+function escapeHtml(value) {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function renderMovie(movie) {
+    var meta = [
+        movie.releaseDate ? String(movie.releaseDate).substring(0, 4) : '',
+        movie.region || '',
+        movie.type || ''
+    ].filter(Boolean).join(' / ');
+
+    var isRec = !!recommendedSet[movie.id];
+    var li = document.createElement('li');
+    li.className = 'movie-card-wrapper';
+    li.innerHTML =
+        '<div class="movie-card">' +
+            '<a href="./movie-details.html?id=' + encodeURIComponent(movie.id || '') + '" target="_blank">' +
+                '<figure class="card-banner">' +
+                    '<img src="' + escapeHtml(getCoverUrl(movie.cover)) + '" alt="' + escapeHtml(movie.name || '') + '" loading="lazy">' +
+                    '<span class="card-badge">HD</span>' +
+                    '<div class="card-overlay">' +
+                        '<span class="star-count">' + escapeHtml(movie.duration ? movie.duration + 'min' : '--') + '</span>' +
+                    '</div>' +
+                '</figure>' +
+            '</a>' +
+            '<h3 class="card-title">' + escapeHtml(movie.name || 'Unknown') + '</h3>' +
+            '<p class="card-meta">' + escapeHtml(meta || '--') + '</p>' +
+            '<button class="rec-btn ' + (isRec ? 'remove' : 'add') + '" id="rec-btn-' + movie.id + '" onclick="toggleRecommend(' + movie.id + ',\'' + escapeHtml(movie.name || '') + '\')">' +
+                (isRec ? '✓ 取消推荐' : '+ 加入推荐') +
+            '</button>' +
+        '</div>';
+
+    var img = li.querySelector('img');
+    if (img) {
+        img.onerror = function() { this.onerror = null; this.src = DEFAULT_COVER; };
+    }
+
+    return li;
+}
+
+// ==================== 加载电影列表 ====================
+
+function buildUrl() {
+    var hasFilter = filters.type || filters.year || filters.region || filters.language;
+    var base = listApi(currentType);
+    var endpoint = hasFilter ? (base + '/FILTER') : (base + '/ONEP');
+    var params = 'page=' + currentPage + '&pageSize=' + pageSize;
+    if (filters.type) params += '&type=' + encodeURIComponent(filters.type);
+    if (filters.year) params += '&year=' + encodeURIComponent(filters.year);
+    if (filters.region) params += '&region=' + encodeURIComponent(filters.region);
+    if (filters.language) params += '&language=' + encodeURIComponent(filters.language);
+    return endpoint + '?' + params;
+}
+
+function loadMovies(page) {
+    if (page) currentPage = page;
+    var listEl = document.getElementById('movies-list');
+    var loadingEl = document.getElementById('loading');
+    var errorEl = document.getElementById('error');
+
+    loadingEl.style.display = 'block';
+    errorEl.style.display = 'none';
+    listEl.innerHTML = '';
+    document.getElementById('pagination-bar').innerHTML = '';
+
+    fetch(buildUrl(), {
+        headers: { token: getToken() }
+    })
+    .then(function(res) {
+        if (res.status === 401) {
+            localStorage.removeItem('token');
+            throw new Error('请先登录');
+        }
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+    })
+    .then(function(data) {
+        loadingEl.style.display = 'none';
+        var movies = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
+
+        if (!movies.length) {
+            errorEl.style.display = 'block';
+            errorEl.textContent = '暂无影片数据';
+            return;
+        }
+
+        var fragment = document.createDocumentFragment();
+        movies.forEach(function(movie) {
+            fragment.appendChild(renderMovie(movie));
+        });
+        listEl.appendChild(fragment);
+
+        var hasNext = movies.length >= pageSize;
+        renderPagination(hasNext);
+    })
+    .catch(function(err) {
+        loadingEl.style.display = 'none';
+        errorEl.style.display = 'block';
+        if (err.message === '请先登录') {
+            errorEl.innerHTML = '登录已过期，请重新 <a href="../adminkit-web-ui-kit-dashboard-template/static/pages-sign-in.html">登录</a>';
+        } else {
+            errorEl.textContent = '加载失败: ' + err.message;
+            if (!httpErrorShown) {
+                httpErrorShown = true;
+                setTimeout(function() { httpErrorShown = false; }, 5000);
+            }
+        }
+    });
+}
+
+// ==================== 分页 ====================
+
+function renderPagination(hasNext) {
+    var bar = document.getElementById('pagination-bar');
+    var html = '';
+
+    var startPage = Math.floor((currentPage - 1) / 10) * 10 + 1;
+    var endPage = startPage + 9;
+    if (!hasNext && endPage > currentPage) endPage = currentPage;
+
+    // 上一页
+    html += '<button class="pagination-btn" onclick="loadMovies(' + (currentPage - 1) + ')"' + (currentPage <= 1 ? ' disabled' : '') + '>上一页</button>';
+
+    for (var p = startPage; p <= endPage; p++) {
+        html += '<button class="pagination-btn' + (p === currentPage ? ' active' : '') + '" onclick="loadMovies(' + p + ')">' + p + '</button>';
+    }
+
+    if (hasNext) html += '<span class="pagination-ellipsis">...</span>';
+
+    // 下一页
+    html += '<button class="pagination-btn" onclick="loadMovies(' + (currentPage + 1) + ')"' + (!hasNext ? ' disabled' : '') + '>下一页</button>';
+
+    html += '<input type="number" class="pagination-input" id="jumpPage" placeholder="页码" min="1" style="width:70px;">';
+    html += '<button class="pagination-btn pagination-jump" onclick="jumpPage()">跳转</button>';
+
+    bar.innerHTML = html;
+}
+
+function jumpPage() {
+    var val = parseInt(document.getElementById('jumpPage').value);
+    if (val > 0) loadMovies(val);
+}
+
+// ==================== 筛选 ====================
+
+function bindFilters() {
+    var filterRows = document.querySelectorAll('.filter-row');
+    filterRows.forEach(function(row) {
+        var key = row.getAttribute('data-filter-key');
+        row.addEventListener('click', function(e) {
+            var pill = e.target.closest('.filter-option');
+            if (!pill) return;
+            row.querySelectorAll('.filter-option').forEach(function(p) { p.classList.remove('active'); });
+            pill.classList.add('active');
+            filters[key] = pill.getAttribute('data-value');
+            loadMovies(1);
+        });
+    });
+}
+
+// ==================== Tab 切换 ====================
+
+document.getElementById('recTabs').addEventListener('click', function(e) {
+    var tab = e.target.closest('.rec-tab');
+    if (!tab) return;
+    document.querySelectorAll('.rec-tab').forEach(function(t) { t.classList.remove('active'); });
+    tab.classList.add('active');
+    currentType = tab.getAttribute('data-type');
+    currentPage = 1;
+    filters = {};
+    document.querySelectorAll('.filter-option.active').forEach(function(p) { p.classList.remove('active'); });
+    recommendedSet = {};
+    recommendedCount = 0;
+    updateCounter();
+    loadRecommendations().then(function() { loadMovies(1); });
+});
+
+// ==================== 用户菜单 ====================
+
+(function initUserMenu() {
+    var username = localStorage.getItem('username') || '用户';
+    document.getElementById('avatarText').textContent = username.charAt(0).toUpperCase();
+    document.getElementById('displayUsername').textContent = username;
+})();
+
+function toggleUserDropdown() {
+    var d = document.getElementById('userDropdown');
+    d.style.display = d.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', function(e) {
+    var m = document.getElementById('userMenu');
+    if (m && !m.contains(e.target)) document.getElementById('userDropdown').style.display = 'none';
+});
+
+function doLogout() {
+    localStorage.removeItem('token'); localStorage.removeItem('username');
+    window.location.href = '../adminkit-web-ui-kit-dashboard-template/static/pages-sign-in.html';
+}
+
+// ==================== 初始化 ====================
+
+bindFilters();
+loadRecommendations().then(function() { loadMovies(1); });
+
+})();
+</script>
+</body>
+</html>
