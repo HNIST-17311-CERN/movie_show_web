@@ -15,6 +15,9 @@
         .order-badge { display: inline-block; min-width: 40px; text-align: center; font-weight: 700; font-size: 16px; }
         .nav-tabs .nav-link { font-weight: 600; }
         .cover-thumb { width: 48px; height: 64px; object-fit: cover; border-radius: 4px; }
+        .order-table tbody tr { cursor: grab; user-select: none; }
+        .order-table tbody tr.dragging { opacity: 0.4; }
+        .order-table tbody tr.drag-over { border-top: 3px solid #2563eb; }
     </style>
 </head>
 <body>
@@ -170,7 +173,8 @@ function render() {
     tbody.innerHTML = items.map(function(item, i) {
         var first = i === 0;
         var last = i === items.length - 1;
-        return '<tr>' +
+        return '<tr draggable="true" data-idx="' + i + '" ' +
+            'ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">' +
             '<td><span class="order-badge">' + item.sortOrder + '</span></td>' +
             '<td><img class="cover-thumb" src="' + getCoverUrl(item.cover) + '" alt="" onerror="this.style.display=\'none\'"></td>' +
             '<td><a href="../../filmlane-master/movie-details.html?id=' + item.movieId + '" target="_blank">' + (item.movieName || '--') + '</a> <span class="text-muted">ID:' + item.movieId + '</span></td>' +
@@ -182,7 +186,15 @@ function render() {
     }).join('');
 }
 
-function swapAndRefresh(fromIdx, toIdx) {
+function moveUp(i) {
+    if (i > 0) swapItems(i, i - 1);
+}
+
+function moveDown(i) {
+    if (i < items.length - 1) swapItems(i, i + 1);
+}
+
+function swapItems(fromIdx, toIdx) {
     var a = items[fromIdx];
     var b = items[toIdx];
     var tmp = a.sortOrder;
@@ -191,26 +203,57 @@ function swapAndRefresh(fromIdx, toIdx) {
 
     function post(item) {
         var url = recApi(currentType) + '/reorder?movieId=' + item.movieId + '&sortOrder=' + item.sortOrder;
-        return fetch(url, {
-            method: 'POST',
-            headers: { token: getToken() }
-        });
+        return fetch(url, { method: 'POST', headers: { token: getToken() } });
     }
 
     Promise.all([post(a), post(b)]).then(function() {
         items.sort(function(x, y) { return x.sortOrder - y.sortOrder; });
         render();
-    }).catch(function(err) { console.error('排序更新失败', err); alert('排序更新失败'); });
+    });
 }
 
-function moveUp(i) {
-    console.log('moveUp called, i=' + i);
-    if (i > 0) swapAndRefresh(i, i - 1);
+// ========== 拖拽排序 ==========
+
+var dragIdx = -1;
+
+function onDragStart(e) {
+    dragIdx = parseInt(e.target.closest('tr').getAttribute('data-idx'));
+    e.target.closest('tr').classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
 }
 
-function moveDown(i) {
-    console.log('moveDown called, i=' + i);
-    if (i < items.length - 1) swapAndRefresh(i, i + 1);
+function onDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    var tr = e.target.closest('tr');
+    if (tr) tr.classList.add('drag-over');
+}
+
+function onDragLeave(e) {
+    var tr = e.target.closest('tr');
+    if (tr) tr.classList.remove('drag-over');
+}
+
+function onDrop(e) {
+    e.preventDefault();
+    document.querySelectorAll('.order-table tbody tr').forEach(function(tr) { tr.classList.remove('dragging', 'drag-over'); });
+
+    var toIdx = parseInt(e.target.closest('tr').getAttribute('data-idx'));
+    if (dragIdx < 0 || toIdx < 0 || dragIdx === toIdx) return;
+
+    var moved = items.splice(dragIdx, 1)[0];
+    items.splice(toIdx, 0, moved);
+
+    // 重新分配 sort_order: 0, 1, 2, ...
+    items.forEach(function(item, i) { item.sortOrder = i; });
+
+    var promises = items.map(function(item) {
+        var url = recApi(currentType) + '/reorder?movieId=' + item.movieId + '&sortOrder=' + item.sortOrder;
+        return fetch(url, { method: 'POST', headers: { token: getToken() } });
+    });
+
+    Promise.all(promises).then(function() { render(); });
+    dragIdx = -1;
 }
 
 // Tab 切换
@@ -226,6 +269,10 @@ document.getElementById('typeTabs').addEventListener('click', function(e) {
 
 window.moveUp = moveUp;
 window.moveDown = moveDown;
+window.onDragStart = onDragStart;
+window.onDragOver = onDragOver;
+window.onDragLeave = onDragLeave;
+window.onDrop = onDrop;
 
 // 初始化
 loadItems();
