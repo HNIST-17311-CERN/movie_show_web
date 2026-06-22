@@ -22,7 +22,14 @@
       "Bash(taskkill *)",
       "Bash(findstr \"9001\")",
       "Bash(git diff *)",
-      "Bash(./mvnw compile *)"
+      "Bash(./mvnw compile *)",
+      "Bash(xxd)",
+      "Bash(sed -i '251,340d' \"src/main/resources/adminkit-web-ui-kit-dashboard-template/static/index.html\")",
+      "Bash(sed -i 's/col-xl-6 col-xxl-7/col-12/' \"src/main/resources/adminkit-web-ui-kit-dashboard-template/static/index.html\")",
+      "Bash(awk '/Chart.js折线图|Chart.js饼图|Chart.js柱状图|jsVectorMap世界地图|flatpickr日历/' \"src/main/resources/adminkit-web-ui-kit-dashboard-template/static/index.html\")",
+      "Bash(python3)",
+      "Bash(python fix_index.py)",
+      "Bash(python -c ' *)"
     ]
   }
 }

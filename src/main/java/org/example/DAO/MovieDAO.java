@@ -10,7 +10,9 @@ import org.springframework.stereotype.Repository;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class MovieDAO
@@ -271,5 +273,16 @@ public class MovieDAO
 
         String sql ="select * from movie where locate('动画', description) > 0 LIMIT ?, ?";
         return jdbcTemplate.query(sql, new Object[]{offset, size}, movieRowMapper);
+    }
+
+    public Map<String, Integer> countByMonth() {
+        String sql = "SELECT DATE_FORMAT(create_time, '%Y-%m') AS m, COUNT(*) AS cnt " +
+                "FROM movie WHERE create_time IS NOT NULL " +
+                "GROUP BY m ORDER BY m ASC LIMIT 12";
+        Map<String, Integer> result = new LinkedHashMap<>();
+        jdbcTemplate.query(sql, (rs) -> {
+            result.put(rs.getString("m"), rs.getInt("cnt"));
+        });
+        return result;
     }
 }

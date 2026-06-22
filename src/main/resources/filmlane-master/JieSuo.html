@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图识电影 - 电影俱乐部 Movie Club</title>
+  <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .jiesuo-container { max-width: 600px; margin: 0 auto; }
+
+    .upload-zone {
+      border: 2px dashed #cbd5e1;
+      border-radius: 16px;
+      padding: 72px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+    .upload-zone:hover { border-color: #2563eb; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); }
+    .upload-zone.dragover { border-color: #2563eb; background: #eff6ff; }
+    .upload-zone .upload-icon { font-size: 48px; margin-bottom: 12px; }
+    .upload-zone .upload-text { font-size: 16px; font-weight: 600; color: #334155; margin: 0 0 6px; }
+    .upload-zone .upload-hint { font-size: 13px; color: #94a3b8; margin: 0; }
+
+    .preview-area { display: none; margin-top: 20px; text-align: center; }
+    .preview-area img { max-width: 100%; max-height: 360px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
+    .preview-area .preview-actions { margin-top: 12px; display: flex; gap: 10px; justify-content: center; }
+    .preview-area .btn { padding: 10px 24px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-primary { background: #2563eb; color: #fff; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-ghost { background: #f1f5f9; color: #64748b; }
+    .btn-ghost:hover { background: #e2e8f0; }
+
+    .result-area { display: none; margin-top: 28px; }
+    .result-area .result-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #334155; }
+    .result-card {
+      display: flex; gap: 18px; padding: 16px;
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 14px;
+      margin-bottom: 12px; transition: box-shadow 0.2s; text-decoration: none; color: inherit;
+    }
+    .result-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+    .result-card .result-poster { width: 88px; height: 124px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: #f1f5f9; }
+    .result-card .result-info { flex: 1; min-width: 0; }
+    .result-card .result-name { font-size: 16px; font-weight: 700; margin: 0 0 4px; }
+    .result-card .result-meta { font-size: 13px; color: #94a3b8; margin: 0 0 6px; }
+    .result-card .result-desc { font-size: 13px; color: #64748b; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .result-card .result-score { display: inline-block; background: #fef3c7; color: #d97706; padding: 2px 8px; border-radius: 4px; font-size: 13px; font-weight: 700; margin-top: 6px; }
+
+    .loading-state { display: none; text-align: center; padding: 40px; }
+    .loading-spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-state .loading-text { font-size: 14px; color: #64748b; }
+
+    .example-bar { margin-top: 32px; }
+    .example-bar .example-label { font-size: 13px; color: #94a3b8; margin-bottom: 10px; }
+    .example-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+    .example-thumb { width: 100px; height: 56px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: border-color 0.2s; }
+    .example-thumb:hover { border-color: #2563eb; }
+
+    .error-state { display: none; text-align: center; padding: 24px; color: #dc2626; font-size: 14px; }
+
+    .rec-similar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+    @media (max-width: 768px) { .rec-similar-grid { grid-template-columns: repeat(3, 1fr); } }
+    .rec-similar-card { text-decoration: none; color: inherit; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; transition: box-shadow 0.2s; }
+    .rec-similar-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .rec-similar-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; background: #f1f5f9; }
+    .rec-similar-title { font-size: 12px; font-weight: 700; padding: 6px 8px 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rec-similar-meta { font-size: 11px; color: #94a3b8; padding: 0 8px 8px; }
+  </style>
+</head>
+<body id="top">
+
+<header class="header">
+  <div class="header-inner">
+    <a href="./index.html" class="logo"><span class="logo-cn">电影俱乐部</span> <span class="logo-en">Movie Club</span></a>
+    <nav class="nav-links">
+      <a href="./index.html">首页</a>
+      <a href="./All_movie.html">电影</a>
+      <a href="./TV_series.html">剧集</a>
+      <a href="./Net_movie.html">动漫</a>
+      <a href="./Online.html">在线</a>
+      <a href="./JieSuo.html" class="active">解析</a>
+      <a href="./Setting.html">设置</a>
+    </nav>
+    <div class="search-box">
+      <input type="text" placeholder="搜索影片">
+    </div>
+    <div class="header-actions">
+      <a href="./notifications.html">通知</a>
+      <a href="./messages.html">留言</a>
+      <a href="#">收藏</a>
+      <a href="#">观看历史</a>
+      <div class="user-menu" id="userMenu">
+        <div class="user-avatar" onclick="toggleUserDropdown()">
+          <span id="avatarText">用</span>
+        </div>
+        <div class="user-dropdown" id="userDropdown" style="display:none;">
+          <div class="user-info"><b id="displayUsername">--</b></div>
+          <ul class="user-dropdown-menu">
+            <li><a href="../adminkit-web-ui-kit-dashboard-template/static/pages-blank.html">后台管理</a></li>
+            <li><a href="#" onclick="doLogout()">退出登录</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+    <div class="jiesuo-container">
+
+      <h1 class="page-title">图识电影</h1>
+      <p style="color:#64748b;margin-bottom:24px;">上传电影截图或剧照，AI 识别电影名称并展示详情</p>
+
+      <input type="file" id="fileInput" accept="image/*" style="display:none;">
+
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-icon">📷</div>
+        <p class="upload-text">点击上传 或 拖拽图片到此处</p>
+        <p class="upload-hint">支持 JPG / PNG / WebP，最大 10MB</p>
+      </div>
+
+      <div class="preview-area" id="previewArea">
+        <img id="previewImg" src="" alt="预览">
+        <div class="preview-actions">
+          <button class="btn btn-primary" id="searchBtn" onclick="searchMovie()">🔍 识别电影</button>
+          <button class="btn btn-ghost" onclick="resetUpload()">重新上传</button>
+        </div>
+      </div>
+
+      <div class="loading-state" id="loadingState">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">正在识别，请稍候...</p>
+      </div>
+
+      <div class="error-state" id="errorState"></div>
+
+      <div class="result-area" id="resultArea">
+        <p class="result-title" id="resultTitle">识别结果</p>
+        <div id="resultList"></div>
+      </div>
+
+      <div class="example-bar">
+        <p class="example-label">没有图片？试试这些示例：</p>
+        <div class="example-grid" id="exampleGrid"></div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<a href="#top" class="go-top" data-go-top>↑</a>
+
+<script src="./assets/js/script.js"></script>
+<script>
+(function() {
+
+var token = localStorage.getItem('token');
+if (!token) {
+    window.location.href = '../adminkit-web-ui-kit-dashboard-template/static/pages-sign-in.html';
+}
+
+var selectedFile = null;
+
+// ========== 文件选择 ==========
+
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (file) handleFile(file);
+});
+
+// ========== 拖拽上传 ==========
+
+var uploadZone = document.getElementById('uploadZone');
+uploadZone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    uploadZone.classList.add('dragover');
+});
+uploadZone.addEventListener('dragleave', function() {
+    uploadZone.classList.remove('dragover');
+});
+uploadZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    var file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) handleFile(file);
+});
+
+function handleFile(file) {
+    if (file.size > 10 * 1024 * 1024) { alert('图片不能超过 10MB'); return; }
+    selectedFile = file;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('previewImg').src = e.target.result;
+        document.getElementById('uploadZone').style.display = 'none';
+        document.getElementById('previewArea').style.display = 'block';
+        document.getElementById('resultArea').style.display = 'none';
+        document.getElementById('errorState').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+}
+
+function resetUpload() {
+    selectedFile = null;
+    document.getElementById('fileInput').value = '';
+    document.getElementById('uploadZone').style.display = '';
+    document.getElementById('previewArea').style.display = 'none';
+    document.getElementById('resultArea').style.display = 'none';
+    document.getElementById('errorState').style.display = 'none';
+}
+window.resetUpload = resetUpload;
+
+// ========== 搜索 ==========
+
+function searchMovie() {
+    if (!selectedFile) return;
+
+    var formData = new FormData();
+    formData.append('image', selectedFile);
+
+    document.getElementById('searchBtn').disabled = true;
+    document.getElementById('loadingState').style.display = 'block';
+    document.getElementById('resultArea').style.display = 'none';
+    document.getElementById('errorState').style.display = 'none';
+
+    fetch('http://localhost:8080/api/image-search', {
+        method: 'POST',
+        headers: { token: token },
+        body: formData
+    })
+    .then(function(res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+    })
+    .then(function(data) {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('searchBtn').disabled = false;
+        renderResults(data);
+    })
+    .catch(function(err) {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('searchBtn').disabled = false;
+        document.getElementById('errorState').style.display = 'block';
+        document.getElementById('errorState').textContent = '识别失败: ' + err.message;
+    });
+}
+window.searchMovie = searchMovie;
+
+// ========== 渲染结果 ==========
+
+function getCoverUrl(cover) {
+    if (!cover) return './assets/images/movie-1.png';
+    if (/^https?:\/\//i.test(cover)) return cover;
+    var n = String(cover).replace(/\\/g, '/');
+    if (n.indexOf('assets/images/') !== -1) return './' + n.substring(n.indexOf('assets/images/'));
+    if (n.indexOf('resource/cover/') !== -1) return './' + n.substring(n.indexOf('resource/cover/'));
+    return n;
+}
+
+function renderResults(data) {
+    var area = document.getElementById('resultArea');
+    var list = document.getElementById('resultList');
+    var title = document.getElementById('resultTitle');
+    area.style.display = 'block';
+
+    var guess = data.movieGuess;
+    var matched = guess && guess.matchedMovie;
+    var similar = (guess && guess.similarMovies) || [];
+    var html = '';
+
+    // 分析文字
+    if (data.analysis) {
+        html += '<div style="background:#f8fafc;border-radius:10px;padding:14px 18px;margin-bottom:18px;font-size:14px;color:#475569;">' +
+            '<span style="font-weight:700;color:#1e293b;">📋 画面分析：</span>' +
+            escapeHtml(data.analysis) + '</div>';
+    }
+
+    // 猜测信息
+    if (guess) {
+        html += '<div style="margin-bottom:18px;">';
+        if (guess.confidence) {
+            var confColor = guess.confidence === '高' ? '#16a34a' : (guess.confidence === '中' ? '#d97706' : '#dc2626');
+            html += '<span style="display:inline-block;background:' + confColor + ';color:#fff;padding:2px 10px;border-radius:4px;font-size:12px;font-weight:700;margin-bottom:8px;">' + guess.confidence + '置信度</span> ';
+        }
+        html += '<span style="font-size:14px;color:#475569;">' + escapeHtml(guess.reason || '') + '</span></div>';
+    }
+
+    // 匹配到的电影
+    if (matched) {
+        title.textContent = '🎯 识别结果';
+        var meta = [matched.releaseDate ? String(matched.releaseDate).substring(0,4) : '', matched.type || ''].filter(Boolean).join(' / ');
+        html += '<a class="result-card" style="border-color:#2563eb;border-width:2px;" ' +
+            'href="./movie-details.html?id=' + encodeURIComponent(matched.id || '') + '" target="_blank">' +
+            '<img class="result-poster" src="' + getCoverUrl(matched.cover) + '" alt="" onerror="this.src=\'./assets/images/movie-1.png\'">' +
+            '<div class="result-info">' +
+                '<h3 class="result-name">' + escapeHtml(matched.name || 'Unknown') +
+                (matched.releaseDate ? ' <span style="font-weight:400;color:#94a3b8;">(' + String(matched.releaseDate).substring(0,4) + ')</span>' : '') + '</h3>' +
+                '<p class="result-meta">' + escapeHtml(meta || '--') + '</p>' +
+                '<p class="result-desc">' + escapeHtml(matched.description || '暂无简介') + '</p>' +
+            '</div></a>';
+    } else {
+        title.textContent = '未找到匹配的电影';
+    }
+
+    // 相似电影
+    if (similar.length) {
+        html += '<p class="result-title" style="margin-top:20px;">📺 相似电影推荐</p>';
+        html += '<div class="rec-similar-grid">';
+        similar.forEach(function(m) {
+            var meta = [m.releaseDate ? String(m.releaseDate).substring(0,4) : '', m.type || ''].filter(Boolean).join(' / ');
+            html += '<a class="rec-similar-card" href="./movie-details.html?id=' + encodeURIComponent(m.id || '') + '" target="_blank">' +
+                '<img src="' + getCoverUrl(m.cover) + '" alt="' + escapeHtml(m.name || '') + '" onerror="this.src=\'./assets/images/movie-1.png\'">' +
+                '<div class="rec-similar-title">' + escapeHtml(m.name || 'Unknown') + '</div>' +
+                '<div class="rec-similar-meta">' + escapeHtml(meta || '--') + '</div>' +
+                '</a>';
+        });
+        html += '</div>';
+    }
+
+    list.innerHTML = html;
+}
+
+function escapeHtml(value) {
+    return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ========== 用户菜单 ==========
+
+(function initUserMenu() {
+    var username = localStorage.getItem('username') || '用户';
+    document.getElementById('avatarText').textContent = username.charAt(0).toUpperCase();
+    document.getElementById('displayUsername').textContent = username;
+})();
+
+function toggleUserDropdown() {
+    var d = document.getElementById('userDropdown');
+    d.style.display = d.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', function(e) {
+    var m = document.getElementById('userMenu');
+    if (m && !m.contains(e.target)) document.getElementById('userDropdown').style.display = 'none';
+});
+
+function doLogout() {
+    localStorage.removeItem('token'); localStorage.removeItem('username');
+    window.location.href = '../adminkit-web-ui-kit-dashboard-template/static/pages-sign-in.html';
+}
+
+})();
+</script>
+</body>
+</html>

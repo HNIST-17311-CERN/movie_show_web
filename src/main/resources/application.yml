@@ -2,6 +2,10 @@ server:
   port: 8080
 
 spring:
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
   datasource:
     username: ${DB_USERNAME:root} #用户名
     password: ${DB_PASSWORD:ROOT} #密码

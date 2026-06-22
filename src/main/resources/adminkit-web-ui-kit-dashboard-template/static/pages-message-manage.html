@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>留言管理</title>
+    <link href="css/app.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .msg-table th, .msg-table td { vertical-align: middle; }
+        .msg-table tbody tr:nth-child(odd) { background-color: #f8fafc; }
+        .msg-content { max-width: 400px; max-height: 120px; overflow-y: auto; font-size: 13px; line-height: 1.6; }
+        .msg-type-badge { display: inline-block; padding: 2px 10px; border-radius: 4px; font-size: 12px; font-weight: 700; }
+        .msg-type-反馈 { background: #fef3c7; color: #d97706; }
+        .msg-type-建议 { background: #dbeafe; color: #2563eb; }
+        .msg-type-报错 { background: #fecaca; color: #dc2626; }
+        .msg-empty { text-align: center; padding: 48px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <nav id="sidebar" class="sidebar js-sidebar">
+        <div class="sidebar-content js-simplebar">
+            <a class="sidebar-brand" href="../../filmlane-master/index.html">
+                <span class="align-middle">电影俱乐部 Movie Club</span>
+            </a>
+            <ul class="sidebar-nav">
+                <li class="sidebar-header">管理后台</li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="pages-blank.html">
+                        <i class="align-middle" data-feather="film"></i>
+                        <span class="align-middle">电影管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="pages-audit.html">
+                        <i class="align-middle" data-feather="check-circle"></i>
+                        <span class="align-middle">资源审查</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="pages-recommend-manage.html">
+                        <i class="align-middle" data-feather="star"></i>
+                        <span class="align-middle">首页推荐</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="pages-recommend-order.html">
+                        <i class="align-middle" data-feather="list"></i>
+                        <span class="align-middle">推荐排序</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="pages-message-audit.html">
+                        <i class="align-middle" data-feather="message-square"></i>
+                        <span class="align-middle">留言审核</span>
+                    </a>
+                </li>
+                <li class="sidebar-item active">
+                    <a class="sidebar-link" href="pages-message-manage.html">
+                        <i class="align-middle" data-feather="edit"></i>
+                        <span class="align-middle">留言管理</span>
+                    </a>
+                </li>
+                <li class="sidebar-header">账户</li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="index.html">
+                        <i class="align-middle" data-feather="user"></i>
+                        <span class="align-middle">个人资料</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="pages-sign-in.html">
+                        <i class="align-middle" data-feather="log-in"></i>
+                        <span class="align-middle">登录</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="../../filmlane-master/index.html">
+                        <i class="align-middle" data-feather="home"></i>
+                        <span class="align-middle">返回首页</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main">
+        <nav class="navbar navbar-expand navbar-light navbar-bg">
+            <a class="sidebar-toggle js-sidebar-toggle"><i class="hamburger align-self-center"></i></a>
+        </nav>
+
+        <main class="content">
+            <div class="container-fluid p-0">
+                <h1 class="h3 mb-3"><strong>留言管理</strong></h1>
+
+                <div class="card">
+                    <div class="card-body">
+                        <table class="table msg-table">
+                            <thead>
+                            <tr>
+                                <th style="width:60px;">ID</th>
+                                <th style="width:100px;">用户</th>
+                                <th style="width:70px;">类型</th>
+                                <th>内容</th>
+                                <th style="width:160px;">发布时间</th>
+                                <th style="width:80px;">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody id="msgTbody"></tbody>
+                        </table>
+                        <div class="msg-empty" id="msgEmpty" style="display:none;">暂无已发布留言</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="js/app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+(function() {
+
+function getToken() { return localStorage.getItem('token') || ''; }
+
+function loadMessages() {
+    fetch('http://localhost:8080/api/messages', {
+        headers: { token: getToken() }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(messages) {
+        var tbody = document.getElementById('msgTbody');
+        var empty = document.getElementById('msgEmpty');
+        if (!messages || !messages.length) {
+            tbody.innerHTML = '';
+            empty.style.display = 'block';
+            return;
+        }
+        empty.style.display = 'none';
+        tbody.innerHTML = messages.map(function(m) {
+            var time = m.createTime ? String(m.createTime).substring(0, 16) : '';
+            return '<tr>' +
+                '<td>' + m.id + '</td>' +
+                '<td>' + (m.username || '--') + '</td>' +
+                '<td><span class="msg-type-badge msg-type-' + (m.type || '反馈') + '">' + (m.type || '反馈') + '</span></td>' +
+                '<td><div class="msg-content">' + (m.content || '') + '</div></td>' +
+                '<td>' + time + '</td>' +
+                '<td><button class="btn btn-sm btn-outline-danger" onclick="deleteMsg(' + m.id + ')">删除</button></td>' +
+                '</tr>';
+        }).join('');
+    });
+}
+
+function deleteMsg(id) {
+    if (!confirm('确定删除这条留言吗？')) return;
+    var fd = new URLSearchParams();
+    fd.append('id', id);
+    fetch('http://localhost:8080/api/messages/delete', {
+        method: 'POST',
+        headers: { token: getToken(), 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: fd.toString()
+    })
+    .then(function(res) { return res.text(); })
+    .then(function(msg) { alert(msg); loadMessages(); });
+}
+
+window.deleteMsg = deleteMsg;
+
+loadMessages();
+
+})();
+</script>
+</body>
+</html>
