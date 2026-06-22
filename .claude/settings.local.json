@@ -29,7 +29,14 @@
       "Bash(awk '/Chart.js折线图|Chart.js饼图|Chart.js柱状图|jsVectorMap世界地图|flatpickr日历/' \"src/main/resources/adminkit-web-ui-kit-dashboard-template/static/index.html\")",
       "Bash(python3)",
       "Bash(python fix_index.py)",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(sed -n '228,336p' \"C:\\\\Users\\\\24405\\\\Downloads\\\\security\\\\security\\\\src\\\\main\\\\resources\\\\adminkit-web-ui-kit-dashboard-template\\\\static\\\\index.html\")",
+      "Read(//tmp/**)",
+      "Bash(gnu-sed -i '290d' \"src/main/resources/adminkit-web-ui-kit-dashboard-template/static/index.html\")",
+      "Bash(sed -i '290d' \"src/main/resources/adminkit-web-ui-kit-dashboard-template/static/index.html\")",
+      "Bash(sed -i '228,229d' \"src/main/resources/adminkit-web-ui-kit-dashboard-template/static/index.html\")",
+      "Bash(sed -n '226,232p' \"src/main/resources/adminkit-web-ui-kit-dashboard-template/static/index.html\")",
+      "Bash(python fix_search.py)"
     ]
   }
 }

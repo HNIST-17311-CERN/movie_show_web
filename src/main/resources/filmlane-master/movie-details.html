@@ -59,7 +59,6 @@
     <div class="header-actions">
       <a href="./notifications.html">通知</a>
       <a href="./messages.html">留言</a>
-      <a href="#">收藏</a>
       <a href="#">观看历史</a>
       <div class="user-menu" id="userMenu">
         <div class="user-avatar" onclick="toggleUserDropdown()">
@@ -124,9 +123,10 @@
       <thead>
       <tr>
         <th>名称</th>
+        <th>清晰度</th>
+        <th>类型</th>
         <th>下载</th>
         <th>大小</th>
-        <th>做种</th>
         <th>发布时间</th>
       </tr>
       </thead>
@@ -275,40 +275,76 @@
       var tbody = document.getElementById('resource-tbody');
       var tabsContainer = document.getElementById('resource-tabs');
       if (!resources || !resources.length) {
-        tbody.innerHTML = '<tr><td colspan="5">暂无资源</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6">暂无资源</td></tr>';
         tabsContainer.innerHTML = '';
         return;
       }
 
-      var categories = Array.from(new Set(resources.map(function(r) { return r.category || '其他'; })));
-      tabsContainer.innerHTML = categories.map(function(c) {
-        return '<button class="tab-btn">' + c + ' (' + resources.filter(function(r) { return (r.category || '其他') === c; }).length + ')</button>';
+      var types = ['磁力', '网盘'];
+      var counts = {};
+      types.forEach(function(t) { counts[t] = resources.filter(function(r) { return (r.type || '磁力') === t; }).length; });
+      tabsContainer.innerHTML = types.map(function(t) {
+        return '<button class="tab-btn">' + t + ' (' + counts[t] + ')</button>';
       }).join('');
+
+      function formatTime(raw) {
+        if (!raw) return '';
+        return String(raw).substring(0, 19).replace('T', ' ');
+      }
+
+      var activeType = '磁力';
+      var activeQuality = '全部';
+
+      function filtered() {
+        return resources.filter(function(r) {
+          var matchType = (r.type || '磁力') === activeType;
+          var matchQuality = activeQuality === '全部' || (r.quality || '').toUpperCase() === activeQuality.toUpperCase();
+          return matchType && matchQuality;
+        });
+      }
 
       function fillRows(list) {
         tbody.innerHTML = list.map(function(r) {
+          var typeBadge = (r.type || '磁力') === '磁力'
+            ? '<span class="badge" style="background:#f97316;color:#fff;font-size:11px;padding:2px 6px;border-radius:4px;">磁力</span>'
+            : '<span class="badge" style="background:#3b82f6;color:#fff;font-size:11px;padding:2px 6px;border-radius:4px;">网盘</span>';
           return '<tr>' +
             '<td><span class="resource-name">' + (r.name || '') + '</span></td>' +
-                  '<td>' +
-                  (r.url
-                          ? '<a class="download-link" href="' + r.url + '" target="_blank">下载</a>'
-                          : '无') +
-                  '</td>' +
+            '<td>' + (r.quality || '--') + '</td>' +
+            '<td>' + typeBadge + '</td>' +
+            '<td>' +
+              (r.url
+                ? '<a class="download-link" href="' + r.url + '" target="_blank">下载</a>'
+                : '无') +
+              '</td>' +
             '<td>' + (r.size || '') + '</td>' +
-            '<td>' + (r.seed || '') + '</td>' +
-            '<td>' + (r.pubDate || '') + '</td>' +
+            '<td>' + formatTime(r.createTime) + '</td>' +
             '</tr>';
         }).join('');
       }
 
-      fillRows(resources);
+      fillRows(filtered());
+
+      // type tabs
       var tabBtns = tabsContainer.querySelectorAll('.tab-btn');
-      tabBtns.forEach(function(btn) {
+      if (tabBtns.length > 0) tabBtns[0].classList.add('active');
+      tabBtns.forEach(function(btn, idx) {
         btn.addEventListener('click', function() {
           tabBtns.forEach(function(b) { b.classList.remove('active'); });
           btn.classList.add('active');
-          var category = btn.textContent.replace(/\(\d+\)/, '').trim();
-          fillRows(resources.filter(function(r) { return (r.category || '其他') === category; }));
+          activeType = types[idx];
+          fillRows(filtered());
+        });
+      });
+
+      // quality filters
+      var qualityTags = document.querySelectorAll('#quality-filters .quality-tag');
+      qualityTags.forEach(function(tag) {
+        tag.addEventListener('click', function() {
+          qualityTags.forEach(function(t) { t.classList.remove('active'); });
+          tag.classList.add('active');
+          activeQuality = tag.textContent.trim();
+          fillRows(filtered());
         });
       });
     }

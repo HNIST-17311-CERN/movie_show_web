@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>搜索 - 电影俱乐部 Movie Club</title>
+  <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .search-page { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+    .search-bar-wrap { display: flex; gap: 0; margin-bottom: 20px; }
+    .search-bar-wrap input { flex: 1; height: 44px; padding: 0 16px; border: 2px solid var(--primary, #007bff); border-right: 0; border-radius: 8px 0 0 8px; font-size: 15px; outline: none; }
+    .search-bar-wrap button { height: 44px; padding: 0 24px; background: var(--primary, #007bff); color: #fff; border: none; border-radius: 0 8px 8px 0; font-size: 15px; cursor: pointer; }
+    .search-bar-wrap button:hover { opacity: 0.9; }
+
+    .search-tabs { display: flex; gap: 0; border-bottom: 2px solid #e5e7eb; margin-bottom: 18px; }
+    .search-tab { padding: 8px 20px; font-size: 14px; color: #666; cursor: pointer; border: none; background: none; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+    .search-tab small { color: #999; margin-left: 4px; }
+    .search-tab:hover { color: #333; }
+    .search-tab.active { color: var(--primary, #007bff); border-bottom-color: var(--primary, #007bff); font-weight: 600; }
+
+    .result-list { display: flex; flex-direction: column; gap: 0; }
+    .result-item { display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.15s; }
+    .result-item:hover { background: #fafafa; }
+    .result-poster { flex: 0 0 100px; height: 140px; border-radius: 6px; overflow: hidden; background: #eee; }
+    .result-poster img { width: 100%; height: 100%; object-fit: cover; }
+    .result-info { flex: 1; min-width: 0; }
+    .result-info h3 { margin: 0 0 6px; font-size: 17px; }
+    .result-info h3 a { color: #111; text-decoration: none; }
+    .result-info h3 a:hover { color: var(--primary, #007bff); }
+    .result-info .meta { font-size: 13px; color: #888; margin-bottom: 4px; }
+    .result-info .desc { font-size: 13px; color: #666; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+    .empty-state { text-align: center; padding: 60px 20px; color: #999; font-size: 15px; }
+    .user-menu { position: relative; }
+    .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary, #007bff); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; user-select: none; }
+    .user-dropdown { position: absolute; top: 44px; right: 0; width: 180px; background: #fff; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 1000; overflow: hidden; }
+    .user-info { padding: 14px 16px; border-bottom: 1px solid #eee; font-size: 14px; color: #333; text-align: center; }
+    .user-dropdown-menu { list-style: none; margin: 0; padding: 4px 0; }
+    .user-dropdown-menu li a { display: block; padding: 10px 16px; font-size: 13px; color: #333; text-decoration: none; transition: background 0.2s; }
+    .user-dropdown-menu li a:hover { background: #f5f5f5; color: #e74c3c; }
+    .mode-tabs { display: flex; gap: 8px; margin-bottom: 16px; font-size: 13px; align-items: center; }
+    .mode-tabs span { color: #888; }
+    .mode-tab { padding: 4px 14px; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer; background: #fff; color: #555; }
+    .mode-tab.active { background: var(--primary, #007bff); color: #fff; border-color: var(--primary, #007bff); }
+    .highlight { color: #e74c3c; font-style: normal; }
+  </style>
+</head>
+<body id="top">
+
+<header class="header">
+  <div class="header-inner">
+    <a href="./index.html" class="logo"><span class="logo-cn">电影俱乐部</span> <span class="logo-en">Movie Club</span></a>
+    <nav class="nav-links">
+      <a href="./index.html">首页</a>
+      <a href="./All_movie.html">电影</a>
+      <a href="./TV_series.html">剧集</a>
+      <a href="./Net_movie.html">动漫</a>
+      <a href="./Online.html">在线</a>
+      <a href="./JieSuo.html">解析</a>
+      <a href="./Setting.html">设置</a>
+    </nav>
+    <div class="header-actions">
+      <a href="./notifications.html">通知</a>
+      <a href="./messages.html">留言</a>
+      <a href="#">观看历史</a>
+      <div class="user-menu" id="userMenu">
+        <div class="user-avatar" onclick="toggleUserDropdown()">
+          <span id="avatarText">用</span>
+        </div>
+        <div class="user-dropdown" id="userDropdown" style="display:none;">
+          <div class="user-info"><b id="displayUsername">--</b></div>
+          <ul class="user-dropdown-menu">
+            <li><a href="../adminkit-web-ui-kit-dashboard-template/static/pages-blank.html">后台管理</a></li>
+            <li><a href="#" onclick="doLogout()">退出登录</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="search-page">
+  <div class="search-bar-wrap">
+    <input type="text" id="searchInput" placeholder="搜索电影、剧集、动漫..." autocomplete="off">
+    <button onclick="doSearch()">搜索</button>
+  </div>
+
+  <div id="resultArea" style="display:none;">
+    <div class="search-tabs" id="searchTabs"></div>
+    <div class="mode-tabs">
+      <span>搜索模式</span>
+      <button class="mode-tab" data-mode="1">模糊</button>
+      <button class="mode-tab active" data-mode="2">适中</button>
+      <button class="mode-tab" data-mode="3">精准</button>
+    </div>
+    <div class="result-list" id="resultList"></div>
+  </div>
+
+  <div id="emptyHint" class="empty-state">输入关键词搜索你想看的影片</div>
+</main>
+
+<a href="#top" class="go-top" data-go-top>↑</a>
+<script src="./assets/js/script.js"></script>
+<script>
+(function() {
+  var API_BASE = 'http://localhost:8080';
+  var DEFAULT_COVER = './assets/images/movie-1.png';
+  var allResults = [];
+  var activeType = 'all';
+  var activeMode = 2;
+  var currentQuery = '';
+
+  function tagResult(r) {
+    var t = r.type || '';
+    if (t.indexOf('动漫') !== -1) return '动漫';
+    if (t.indexOf('电视剧') !== -1) return '剧集';
+    return '电影';
+  }
+
+  window.doSearch = function() {
+    currentQuery = document.getElementById('searchInput').value.trim();
+    if (!currentQuery) return;
+    activeType = 'all';
+    allResults = [];
+    document.getElementById('emptyHint').style.display = 'none';
+    document.getElementById('resultArea').style.display = 'block';
+
+    var token = localStorage.getItem('token') || '';
+    var url = API_BASE + '/api/search?q=' + encodeURIComponent(currentQuery) + '&mode=' + activeMode + '&type=all';
+
+    fetch(url, { headers: { token: token } })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        allResults = (data.results || []).map(function(r) { r._type = tagResult(r); return r; });
+        renderTabs(data.counts);
+        renderResults();
+      })
+      .catch(function() { allResults = []; renderTabs(); renderResults(); });
+  };
+
+  function renderTabs(counts) {
+    counts = counts || {};
+    var tabs = [
+      { key: 'all', label: '全部', count: counts.all || 0 },
+      { key: '电影', label: '电影', count: counts.movie || 0 },
+      { key: '剧集', label: '剧集', count: counts.tv || 0 },
+      { key: '动漫', label: '动漫', count: counts.anime || 0 },
+      { key: '种子', label: '种子', count: counts['种子'] || 0 },
+      { key: '网盘', label: '网盘', count: counts['网盘'] || 0 }
+    ];
+    document.getElementById('searchTabs').innerHTML = tabs.map(function(t) {
+      return '<button class="search-tab' + (t.key === activeType ? ' active' : '') + '" data-type="' + t.key + '">' + t.label + '<small>' + t.count + '</small></button>';
+    }).join('');
+    document.querySelectorAll('.search-tab').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.search-tab').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        activeType = btn.dataset.type;
+        renderResults();
+      });
+    });
+  }
+
+  function filterResults() {
+    if (activeType === '种子' || activeType === '网盘') return [];
+    if (activeType === 'all') return allResults;
+    return allResults.filter(function(r) { return r._type === activeType; });
+  }
+
+  function getCoverUrl(cover) {
+    if (!cover) return DEFAULT_COVER;
+    if (/^https?:\/\//i.test(cover)) return cover;
+    var n = String(cover).replace(/\\/g, '/');
+    if (n.indexOf('assets/images/') !== -1) return './' + n.substring(n.indexOf('assets/images/'));
+    if (n.indexOf('resource/cover/') !== -1) return './' + n.substring(n.indexOf('resource/cover/'));
+    if (n.startsWith('/')) return '.' + n;
+    return n;
+  }
+
+  function highlight(text) {
+    if (!text || !currentQuery) return text || '';
+    var escaped = currentQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return String(text).replace(new RegExp('(' + escaped + ')', 'gi'), '<em class="highlight">$1</em>');
+  }
+
+  function formatMeta(r) {
+    var parts = [];
+    if (r._type) parts.push(r._type);
+    if (r.region) parts.push(r.region);
+    if (r.type) parts.push(r.type);
+    return parts.join(' / ');
+  }
+
+  function renderResults() {
+    var filtered = filterResults();
+    var container = document.getElementById('resultList');
+    if (!filtered.length) {
+      container.innerHTML = '<div class="empty-state">未找到相关结果</div>';
+      return;
+    }
+    container.innerHTML = filtered.map(function(r) {
+      var detailUrl = (r._type === '剧集' ? './TV_series.html' : r._type === '动漫' ? './Net_movie.html' : './movie-details.html') + '?id=' + r.id;
+      var meta = formatMeta(r);
+      var desc = r.description || '';
+      var director = r.director ? '<p class="meta">导演：' + highlight(r.director) + '</p>' : '';
+      var actors = r.actors ? '<p class="meta">主演：' + highlight(r.actors.substring(0, 100)) + '</p>' : '';
+      return '<div class="result-item" onclick="location.href=\'' + detailUrl + '\'">' +
+        '<div class="result-poster"><img src="' + getCoverUrl(r.cover) + '" alt="" onerror="this.src=\'' + DEFAULT_COVER + '\'"></div>' +
+        '<div class="result-info">' +
+          '<h3><a href="' + detailUrl + '" target="_blank">' + highlight(r.name || '未知') + (r.releaseDate ? ' (' + String(r.releaseDate).substring(0,4) + ')' : '') + '</a></h3>' +
+          '<p class="meta">' + (meta || '--') + '</p>' +
+          director + actors +
+          (desc ? '<p class="desc">' + highlight(desc.substring(0, 200)) + '</p>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  document.querySelectorAll('.mode-tab').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.mode-tab').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      activeMode = parseInt(btn.dataset.mode);
+      if (currentQuery) doSearch();
+    });
+  });
+
+  document.getElementById('searchInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') doSearch();
+  });
+
+  var params = new URLSearchParams(window.location.search);
+  var initQ = params.get('q') || '';
+  if (initQ) {
+    document.getElementById('searchInput').value = initQ;
+    doSearch();
+  }
+})();
+</script>
+
+<script>
+  (function initUserMenu() {
+    var username = localStorage.getItem('username') || '用户';
+    document.getElementById('avatarText').textContent = username.charAt(0).toUpperCase();
+    document.getElementById('displayUsername').textContent = username;
+  })();
+  function toggleUserDropdown() {
+    var d = document.getElementById('userDropdown');
+    d.style.display = d.style.display === 'none' ? 'block' : 'none';
+  }
+  document.addEventListener('click', function(e) {
+    var m = document.getElementById('userMenu');
+    if (m && !m.contains(e.target)) document.getElementById('userDropdown').style.display = 'none';
+  });
+  function doLogout() {
+    localStorage.removeItem('token'); localStorage.removeItem('username');
+    window.location.href = '../adminkit-web-ui-kit-dashboard-template/static/pages-sign-in.html';
+  }
+</script>
+</body>
+</html>

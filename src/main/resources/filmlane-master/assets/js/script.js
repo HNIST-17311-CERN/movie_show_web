@@ -22,3 +22,12 @@ document.querySelectorAll('.filter-pill').forEach(function(btn) {
     }
   });
 });
+
+document.querySelectorAll('.search-box input').forEach(function(input) {
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      var q = this.value.trim();
+      if (q) window.location.href = './search.html?q=' + encodeURIComponent(q);
+    }
+  });
+});
