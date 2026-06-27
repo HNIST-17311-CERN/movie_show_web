@@ -1,328 +1,303 @@
-# 观影 GYING — 电影分享平台
+# Movie Club — 电影俱乐部
 
-一个集**电影/剧集/动漫资源分享**、**RAG 智能问答**、**用户资源提交与审核**于一体的全栈 Web 应用。
+Spring Boot 3.2.2 + Java 21 电影分享平台，覆盖电影/剧集/动漫浏览、资源管理、视频流媒体、图片识电影、JWT 认证、操作审计。
 
----
+## 快速开始
 
-## 功能概览
-前台界面：
-    1.首页
-    <img width="1912" height="948" alt="image" src="https://github.com/user-attachments/assets/e9cc2d27-dd5b-4ce2-8419-2c0dda6f8f8b" />
-    2.电影
-    <img width="1912" height="948" alt="image" src="https://github.com/user-attachments/assets/ba0f4986-16d8-4544-a1b0-553c4d46cd76" />
-    3.剧集
-    <img width="1912" height="948" alt="image" src="https://github.com/user-attachments/assets/b1be5f90-fe80-47d2-b2c0-c7201819597b" />
-    4.动漫
-    <img width="1912" height="948" alt="image" src="https://github.com/user-attachments/assets/2bdfdd7e-9f02-4c4a-8d18-108839dd7e31" />
-    5.通知
-    <img width="1912" height="948" alt="image" src="https://github.com/user-attachments/assets/10301846-c894-4d89-a6bd-48f05bbadbc6" />
-    6.电影信息
-    <img width="1912" height="948" alt="image" src="https://github.com/user-attachments/assets/b54caf0f-e36c-4795-98b9-e47b20802194" />
-    7.上传信息
-    <img width="1912" height="948" alt="image" src="https://github.com/user-attachments/assets/854f9c55-896f-4ff2-adca-5598249551de" />
-后台界面:
-    1.管理
-    <img width="1912" height="948" alt="image" src="https://github.com/user-attachments/assets/ec640b0f-9211-4ec6-802b-ad716d92d7d5" />
-    2.资源审查
-    <img width="1912" height="948" alt="image" src="https://github.com/user-attachments/assets/87fe86d9-5f81-4582-9d6d-abfa1aa50b19" />
-    3.登录
-    <img width="1912" height="948" alt="image" src="https://github.com/user-attachments/assets/13bec0bd-0618-4775-ab13-7fdb259c58e8" />
+### 环境要求
 
+- Java 21+
+- MySQL 8.0+
+- Redis 7.0+
+- Maven 3.9+
 
-### 影音浏览
-- 电影、电视剧、动漫三大分类，各带完整筛选（类型/年代/地区/语言/排序）
-- 海报墙展示 + 分页加载 + IMDb 评分显示
-- 电影详情页：简介、海报、多平台评分、资源下载列表
-- 首页置顶推荐（TOP3）+ 最新 12 部快捷入口
-- 用户登录 / JWT 无状态认证
-- 深色模式 / 响应式适配
+### 环境变量
 
-### 资源提交与审核（新）
-- 登录用户可提交电影资源（磁力/网盘），填写画质、大小、备注
-- 管理员审核后台：待审列表 / 全部列表 / 通过（自动同步到资源表）/ 拒绝（填写理由）
-- 所有操作均受 Spring Security 保护
+```bash
+DEEPSEEK_API_KEY=sk-...    # DeepSeek API 密钥 (RAG，暂未启用)
+QWEN_API_KEY=sk-...        # 通义千问 Embedding (RAG，暂未启用)
+DB_USERNAME=root           # MySQL 用户名 (默认 root)
+DB_PASSWORD=ROOT           # MySQL 密码 (默认 ROOT)
+```
 
-### AI 智能问答（RAG）
-- 基于知识库的问答：用户提问 → Embedding → Milvus 语义检索 → DeepSeek 生成回答
-- 严格基于参考资料回答，不编造、可溯源，无匹配时返回「未找到相关文档」
+### 启动
 
-### 操作审计
-- AOP 切面自动拦截 Service 层所有方法
-- 记录：操作用户、方法名、操作类型（INSERT/UPDATE/DELETE/SELECT）、参数、结果、耗时
-- 支持审计回溯和安全分析
-
-### 后台管理
-- 管理员仪表盘（AdminKit 模板）
-- 用户资源审核管理
-- 通知页面、空白页面等管理模板
-
----
-
-## 技术架构
-
-| 层级 | 技术 |
-|---|---|
-| 后端框架 | Spring Boot 3.2.2 |
-| 语言 | Java 21 |
-| 数据库 | MySQL 8.0 + MyBatis + JDBC Template |
-| 缓存 | Redis（Lettuce 连接池） |
-| 安全 | Spring Security + JWT 无状态认证 + BCrypt |
-| AI 集成 | LangChain4j 1.0.0-beta3（OpenAI 兼容接口） |
-| Chat 模型 | DeepSeek V4 Pro |
-| Embedding | 千问 text-embedding-v3（1024 维） |
-| 向量库 | Milvus 2.4（SDK，COSINE 相似度，TOP_K=5） |
-| 文档解析 | Apache Tika 2.9（PDF / Word / Markdown / HTML） |
-| 容器 | Docker（Milvus + etcd + MinIO） |
-| 前端 | 原生 HTML/CSS/JS + FilmLane 模板 + AdminKit 仪表盘 |
-| 模板引擎 | Thymeleaf 3.1 |
-| AOP | Spring AOP 操作日志 |
-
----
+```bash
+# 1. 确保 MySQL 和 Redis 已运行
+# 2. 导入数据库 — 执行 datagrip.txt 建表
+# 3. 启动
+mvn spring-boot:run
+# 访问 http://localhost:8080
+```
 
 ## 项目结构
 
 ```
 src/main/java/org/example/
-├── AI/                         # AI 模块（Chat + Embedding + RAG）
-│   ├── LangChain4j.java          # DeepSeek Chat 调用（OpenAI 兼容接口）
-│   ├── EmbeddingService.java     # 千问 Embedding（1024 维向量）
-│   ├── RetrievalService.java     # Milvus 向量检索（COSINE，TopK=5）
-│   ├── RAGService.java           # RAG 主链路（检索 + Prompt 组装）
-│   ├── RAGController.java        # POST /api/rag/ask
-│   └── LangChain4jController.java # GET /AI/hello（AI 连通性测试）
-├── Config/                     # 配置类
-│   ├── SecurityConfig.java       # Spring Security：JWT + 无状态 + 接口授权
-│   ├── MilvusConfig.java         # Milvus 客户端 Bean
-│   ├── MilvusHealthCheck.java    # Milvus 健康检查
-│   └── RedisConfig.java          # Redis 序列化 + 连接池
-├── DAO/                        # 数据访问层
-│   ├── MovieDAO.java             # 电影 CRUD + 筛选 + 分页 + 搜索
-│   ├── TV_DAO.java               # 动漫/电视剧查询 + 筛选
-│   ├── Movie_ScoreDAO.java       # 电影评分查询
-│   ├── Movie_ResourceDAO.java    # 电影资源（磁力/网盘链接）
-│   ├── MediaEpisodesDAO.java     # 剧集信息（总集数/更新状态）
-│   ├── BigMovieDAO.java          # 首页置顶海报
-│   ├── UserDAO.java              # 用户查询
-│   ├── OperationLogDAO.java      # 操作日志持久化
-│   └── ResourceSubmissionDAO.java # 用户资源提交审核 CRUD
-├── Entity/                     # 实体类
-│   ├── Movie_details.java        # 电影基本信息
-│   ├── MovieCascadeDetails.java  # 电影级联详情（评分/资源）
-│   ├── Movie_Score.java          # 评分
-│   ├── Movie_Resource.java       # 下载资源
-│   ├── MediaEpisodes.java        # 剧集信息
-│   ├── Resource_Submission.java  # 用户资源提交（含审核状态）
-│   ├── User.java / LoginUser.java # 用户 + Spring Security 适配
-│   ├── OperationLog.java         # 操作日志
-│   ├── Chunk.java                # 文本分块
-│   └── ResonseResult.java        # 统一响应体
-├── Service/                    # 业务层
-│   ├── MovieService.java         # 电影搜索/筛选/CRUD（Redis 缓存）
-│   ├── TV_Service.java           # 动漫/电视剧业务
-│   ├── Movie_Score_Service.java  # 评分业务
-│   ├── Movie_Resource_Service.java  # 资源管理
-│   ├── Movie_Cover_URL_Service.java # 封面 URL 处理
-│   ├── Score_Update_Service.java    # 评分更新
-│   ├── BigMovieService.java      # 首页推荐
-│   ├── MediaEpisodesService.java # 剧集信息服务
-│   ├── LoginService.java         # 用户认证（JWT 签发）
-│   ├── UserDetailsService_NEW.java # Spring Security 用户加载
-│   ├── RedisService.java         # Redis 缓存读写
-│   └── ResourceSubmissionService.java # 资源提交 + 审核 + 同步
-├── Servlet/                    # 控制器（REST API）
-│   ├── MovieController.java      # /FILMES/*（电影 CRUD + 筛选）
-│   ├── TV_Controller.java        # /ANIME/* /TV/*（动漫/电视剧）
-│   ├── BigMovieController.java   # /BIGMOVIE/TOP3
-│   ├── LoginController.java      # /api/user/login /logout
-│   ├── MapperController.java     # /Mapper/*（首页快捷接口）
-│   ├── selectController.java     # 通用查询
-│   ├── HelloController.java      # 健康检查
-│   └── ResourceSubmissionController.java # /SUBMIT/* /AUDIT/*（资源审核）
-├── Fileter/                    # 过滤器
-│   └── JwtAuthenticationTokenFileter.java # JWT Token 解析 + Security 上下文注入
-├── Tool/                       # 工具类
-│   ├── JWT_Utils.java            # JWT 签发 / 解析 / 验证
-│   ├── RedisCache.java           # Redis 缓存工具
-│   ├── FileUploadUtil.java       # 文件上传
-│   └── Tika_Get_File.java        # Tika 文档内容提取
-├── AOP/                        # 切面
-│   └── OperationLogAspect.java   # Service 层操作日志自动记录
-└── Mapper/                     # MyBatis Mapper 接口
-    └── MovieMapper.java          # 电影级联查询（评分 + 资源）
+├── Servlet/             # REST Controller (14个)
+│   ├── LoginController           登录/登出
+│   ├── SearchController          统一搜索
+│   ├── MovieController           电影 CRUD + 资源 + 评分
+│   ├── TV_Controller             动漫 + 剧集 + 分集
+│   ├── PlayController            在线播放 + 视频流(Range)
+│   ├── BigMovieController        精选推荐
+│   ├── HomeRecommendController   首页推荐管理
+│   ├── MessageController         留言 + 审核
+│   ├── ResourceSubmissionController  资源投稿审核
+│   ├── ImageSearchController     图片识电影
+│   ├── StatsController           统计数据
+│   ├── OperationLogController    操作日志
+│   ├── RoleController            角色查询
+│   ├── MapperController          MyBatis 联表查询
+│   └── selectController          用户管理
+├── Service/            # 业务层（全部 AOP 审计）
+│   ├── SearchService             统一搜索
+│   ├── LoginService              JWT 签发 + Redis 会话
+│   ├── MovieService              电影 CRUD + 筛选 + 分页
+│   ├── ImageSearchService        图片识电影 → Python :8085
+│   └── ...
+├── DAO/                # JdbcTemplate 数据访问 (12个)
+│   ├── SearchDAO                 搜索 SQL (精准+适中)
+│   ├── MovieDAO                  电影查询 + 筛选 + 分页 + 统计
+│   ├── TV_DAO                    动漫/剧集查询 + 筛选
+│   └── ...
+├── Mapper/             # MyBatis (2个)
+│   ├── MovieMapper              联表查询 (分数 + 资源)
+│   └── RoleMapper               角色详情
+├── Entity/             # 数据实体 (14个)
+├── Config/             # 配置类
+│   ├── SecurityConfig           Spring Security (JWT 无状态)
+│   └── RedisConfig              Redis 连接池 + 序列化
+├── AI/                 # RAG 管线 (已注释)
+├── AOP/                # OperationLogAspect
+├── Fileter/            # JWT 过滤器
+├── Tool/               # JWT / Redis / 文件上传
+└── SpringbootApplication.java
 
 src/main/resources/
-├── application.yml               # 主配置（MySQL / Redis / MyBatis）
-├── mapper/                       # MyBatis XML 映射文件
-├── filmlane-master/              # 用户前端（FilmLane 模板）
-│   ├── index.html                # 首页
-│   ├── All_movie.html            # 电影列表页
-│   ├── Net_movie.html            # 网盘电影页
-│   ├── TV_series.html            # 电视剧页
-│   ├── movie-details.html        # 电影详情页
-│   ├── Setting.html              # 设置页
-│   ├── notifications.html        # 通知页
-│   └── WinXP.html                # WinXP 怀旧主题页
-├── adminkit-web-ui-kit-dashboard-template/ # 管理员后台
-│   └── static/
-│       ├── index.html            # 仪表盘首页
-│       ├── pages-audit.html      # 资源审核页
-│       ├── pages-blank.html      # 空白模板页
-│       ├── pages-sign-in.html    # 登录页
-│       ├── pages-update.html     # 更新页
-│       └── live2d-example-master/ # Live2D 看板娘
-└── live2d-example-master/        # Live2D 示例
+├── application.yml
+├── filmlane-master/             用户端 (FilmLane 模板)
+├── adminkit-web-ui-kit-dashboard-template/static/  管理端 (AdminKit)
+└── Mapper/                      MyBatis XML
 ```
 
----
+## 数据库
 
-## 快速启动
+MySQL `security` 库，建表语句见 `datagrip.txt`。核心表：
 
-### 环境要求
-- JDK 21+
-- Maven 3.8+
-- Docker Desktop
-- MySQL 8.0+
-- Redis
+| 表 | 说明 |
+|---|---|
+| `movie` | 影片主表（电影/剧集/动漫共用，靠 type 列区分） |
+| `movie_resource` | 下载资源（type: 磁力/网盘） |
+| `movie_score` | 评分 |
+| `movie_episodes` | 剧集/动漫分集 |
+| `play_source` | 在线播放源 |
+| `users` | 用户 |
+| `user_roles` / `role_permissions` / `permissions` | RBAC 权限 |
+| `resource_submissions` | 用户投稿（status: pending/approved/rejected） |
+| `messages` | 用户留言 |
+| `operation_log` | AOP 操作审计 |
+| `home_movie_recommend` / `home_tv_recommend` / `home_anime_recommend` | 首页推荐 |
 
-### 1. 数据库
+## 认证流程
 
-在 MySQL 中创建 `security` 数据库，然后导入表结构：
-
-```sql
--- 核心业务表
-source datagrip.txt;
-
--- 资源提交审核表
-CREATE TABLE resource_submission (
-    id            BIGINT AUTO_INCREMENT PRIMARY KEY   COMMENT '提交ID',
-    movie_id      BIGINT        NOT NULL              COMMENT '关联电影ID',
-    movie_name    VARCHAR(255)  NULL                  COMMENT '电影名称（冗余）',
-    name          VARCHAR(255)  NOT NULL              COMMENT '资源名称',
-    url           VARCHAR(1000) NOT NULL              COMMENT '下载地址',
-    type          VARCHAR(20)   DEFAULT '磁力'        COMMENT '资源类型：磁力/网盘',
-    quality       VARCHAR(50)                          COMMENT '画质（720P/1080P/4K/蓝光）',
-    size          VARCHAR(50)                          COMMENT '文件大小',
-    submitter     VARCHAR(100)                         COMMENT '提交者用户名',
-    submitter_id  BIGINT        NULL                  COMMENT '提交者用户ID',
-    status        VARCHAR(20)   DEFAULT 'pending'     COMMENT '审核状态：pending/approved/rejected',
-    review_msg    VARCHAR(500)                         COMMENT '管理员拒绝理由',
-    note          VARCHAR(500)                         COMMENT '提交者备注',
-    create_time   DATETIME      DEFAULT NOW()          COMMENT '提交时间'
-);
-
--- 操作日志表
-CREATE TABLE operation_log (
-    id            BIGINT AUTO_INCREMENT PRIMARY KEY,
-    username      VARCHAR(100),
-    method        VARCHAR(255),
-    operation     VARCHAR(20),
-    params        TEXT,
-    result        VARCHAR(20),
-    error_msg     TEXT,
-    execute_time  BIGINT,
-    create_time   DATETIME DEFAULT NOW()
-);
+```
+客户端                              服务端
+  │  POST /api/user/login            │
+  │  {username, password}            │
+  │ ───────────────────────────────> │ → AuthenticationManager 认证
+  │                                  │ → JWT_Utils 生成 7 天 token
+  │                                  │ → Redis 存 login:{userId}
+  │  {code:200, data:{token}}        │
+  │ <─────────────────────────────── │
+  │                                  │
+  │  GET /api/xxx                    │
+  │  Header: token: <jwt>            │
+  │ ───────────────────────────────> │ → JwtAuthenticationTokenFileter
+  │                                  │   → 解析 JWT → Redis 查用户
+  │                                  │   → 注入 SecurityContextHolder
+  │                                  │ → @PreAuthorize 权限校验
 ```
 
-### 2. Milvus（向量数据库）
+- 除 `/api/user/login` 外所有接口需要 `token` Header
+- JWT 密钥启动时随机生成，重启后所有 token 失效
+- **密码编码器已注释，密码明文存储**
 
-```bash
-cd ~/milvus
-docker compose up -d
-# 确认三个容器都在运行
-docker ps --filter "name=milvus"
+## API 接口
+
+### 搜索
+
+```
+GET /api/search?q=&mode=&type=
 ```
 
-### 3. 环境变量
-
-```powershell
-# Chat 模型（DeepSeek）
-$env:DEEPSEEK_API_KEY="sk-..."
-
-# Embedding 模型（千问）
-$env:QWEN_API_KEY="sk-..."
-```
-
-### 4. 启动后端
-
-```bash
-cd security
-mvn spring-boot:run
-# 默认端口 8080
-```
-
-### 5. 访问前端
-
-用 IntelliJ 打开 `src/main/resources/filmlane-master/index.html` 即可预览。
-
----
-
-## API 概览
+| 参数 | 说明 |
+|---|---|
+| `q` | 关键词，搜电影名/导演/主演 |
+| `mode` | 2=适中(非连续LIKE) / 3=精准(完全匹配) |
+| `type` | all / movie / tv / anime |
 
 ### 电影
-| method | path | 说明 |
+
+| 方法 | 路径 | 权限 |
 |---|---|---|
-| GET | `/FILMES/ONEP?page=1&pageSize=60` | 电影分页 |
-| GET | `/FILMES/ONEID?id=1` | 电影详情 |
-| GET | `/FILMES/FILTER?type=科幻&year=2024` | 多条件筛选 |
-| GET | `/FILMES/SCORE/ONE?id=1` | 电影评分 |
-| GET | `/FILMES/RESOURCE/ONE?id=1` | 电影资源列表 |
-| GET | `/FILMES/SCORE/search?keyword=xxx` | 搜索电影 |
+| GET | `/FILMES/ALL` | `movie:view` |
+| GET | `/FILMES/ONEP?page=&pageSize=` | `movie:view` |
+| GET | `/FILMES/ONEID?id=` | `movie:view` |
+| GET | `/FILMES/ONENAME?name=` | `movie:view` |
+| GET | `/FILMES/FILTER?type=&year=&region=&language=&sort=` | `movie:view` |
+| POST | `/FILMES/ADD` `/UPDATE` `/DELETE` | `movie:manage` |
+| GET | `/FILMES/SCORE/ONE?id=` | `score:view` |
+| GET | `/FILMES/RESOURCE/ONE?id=` | `resource:view` |
 
-### 动漫 / 电视剧
-| method | path | 说明 |
+### 剧集 / 动漫
+
+| 方法 | 路径 | 权限 |
 |---|---|---|
-| GET | `/ANIME/ONEP` `/ANIME/FILTER` `/ANIME/ONEID` | 动漫列表/筛选/详情 |
-| GET | `/TV/ONEP` `/TV/FILTER` `/TV/ONEID` | 电视剧列表/筛选/详情 |
-| GET | `/ANIME/EPISODES/ANIME?id=1` | 动画剧集信息 |
-| GET | `/TV/EPISODES/TV?id=1` | 电视剧剧集信息 |
+| GET | `/ANIME/ALL` `/ONEP` `/ONEID` `/ONENAME` `/FILTER` | 公开 |
+| GET | `/TV/ALL` `/ONEP` `/ONEID` `/ONENAME` `/FILTER` | 公开 |
+| GET/POST | `/{ANIME,TV}/EPISODES/*` | 公开 |
 
-### 首页
-| method | path | 说明 |
+### 播放
+
+| 方法 | 路径 | 权限 |
 |---|---|---|
-| GET | `/BIGMOVIE/TOP3` | 首页置顶 3 部推荐 |
-| GET | `/Mapper/findlast12` | 首页最新 12 部电影 |
+| GET | `/PLAY/RESOURCES` `/PLAY/RESOURCES/ONE` | `resource:view` |
+| GET | `/PLAY/STREAM?id=` | `resource:view` (支持 Range) |
 
-### AI / RAG
-| method | path | 说明 |
+### 首页推荐
+
+| 方法 | 路径 | 权限 |
 |---|---|---|
-| GET | `/AI/hello` | AI 连通性测试 |
-| POST | `/api/rag/ask` | RAG 问答 `{"question":"..."}` |
+| GET | `/home/{movie,tv,anime}?limit=` | `movie:view` |
+| POST | `/home/{movie,tv,anime}/{add,delete,reorder}` | `movie:manage` |
 
-### 用户
-| method | path | 说明 |
+### 留言
+
+| 方法 | 路径 | 权限 |
 |---|---|---|
-| POST | `/api/user/login` | 登录 `{"username":"...","password":"..."}` |
-| GET | `/api/user/logout` | 登出 |
+| GET | `/api/messages` | 公开 |
+| POST | `/api/messages/submit` | token |
+| GET/POST | `/api/messages/{pending,approve,reject,delete}` | `movie:manage` |
 
-### 资源提交与审核（新）
-| method | path | 认证 | 说明 |
-|---|---|---|---|
-| POST | `/SUBMIT/RESOURCE` | 用户 | 提交电影资源（name/url/type/quality/size/note） |
-| GET | `/AUDIT/PENDING` | 管理员 | 待审核列表 |
-| GET | `/AUDIT/ALL` | 管理员 | 全部提交记录 |
-| POST | `/AUDIT/APPROVE?id=N` | 管理员 | 通过并同步到资源表 |
-| POST | `/AUDIT/REJECT?id=N&reason=...` | 管理员 | 拒绝并填写理由 |
+### 资源投稿
 
-> 除 `/api/user/login` 外，所有接口均需 Header 携带 `token`（JWT）认证。
+| 方法 | 路径 | 权限 |
+|---|---|---|
+| POST | `/SUBMIT/RESOURCE` | token |
+| GET | `/AUDIT/PENDING` `/AUDIT/ALL` | `movie:manage` |
+| POST | `/AUDIT/APPROVE` `/AUDIT/REJECT` | `movie:manage` |
 
----
+### 其他
 
-## RAG 工作流程
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| POST | `/api/image-search` | 图片识电影 → Python :8085 |
+| GET | `/api/stats/movies-monthly` | 月度电影统计 |
+| GET | `/api/logs/recent?limit=` | 操作日志 |
+| GET | `/BIGMOVIE/TOP3` `/BIGMOVIE/ALL` | 精选推荐 |
+| GET | `/role/detail?name=` | 角色详情 |
+| GET | `/JDBC/find/all` | 用户列表 (`user:manage`) |
+
+## 前端页面
+
+### 用户端 (`filmlane-master/`)
+
+| 页面 | 功能 |
+|---|---|
+| `index.html` | 首页 — Hero 推荐 + 电影/剧集/动漫列表 |
+| `search.html` | 统一搜索 — 关键词搜索 + 分类Tab + 适中/精准模式 |
+| `All_movie.html` | 电影列表 — 类型/年代/地区/语言筛选 + 分页 |
+| `TV_series.html` | 剧集列表 |
+| `Net_movie.html` | 动漫列表 |
+| `movie-details.html` | 详情页 — 简介+评分+资源(磁力/网盘 Tab)+相似推荐+资源投稿 |
+| `Online.html` | 在线播放 |
+| `JieSuo.html` | 视频解析 |
+| `Setting.html` | 设置 |
+| `messages.html` | 留言板 |
+| `notifications.html` | 通知 |
+
+### 管理端 (`adminkit-web-ui-kit-dashboard-template/static/`)
+
+| 页面 | 功能 |
+|---|---|
+| `index.html` | 仪表盘 — 留言/统计/日志概览 |
+| `pages-blank.html` | 电影管理 — 增删改查 |
+| `pages-audit.html` | 资源审查 — 审核用户投稿 |
+| `pages-recommend-manage.html` | 首页推荐管理 |
+| `pages-recommend-order.html` | 推荐排序 |
+| `pages-message-audit.html` | 留言审核 |
+| `pages-message-manage.html` | 留言管理 |
+| `pages-sign-in.html` | 登录页 |
+
+## AOP 审计
+
+`OperationLogAspect` 拦截所有 `org.example.Service.*.*(..)` 方法，自动记录：
+
+- 操作用户、方法名、参数
+- 操作类型（方法名含 add/insert → INSERT, delete → DELETE, update → UPDATE, get/find → SELECT）
+- 结果（SUCCESS/FAIL）、错误信息、耗时(ms)
+- 写入 `operation_log` 表，finally 块中执行确保失败也记录
+
+## 图片识电影
+
+用户上传电影截图 → `ImageSearchService` 转发 `http://localhost:8085/movie/recognize` (Python 服务) → 返回识别结果（匹配电影 + 相似电影） → 从本地 DB 补充详情数据。
+
+## RAG 管线（已注释）
 
 ```
-用户提问 → Embedding(1024维) → Milvus COSINE相似度检索(TopK=5)
-    → Prompt组装(System提示 + 引用编号) → DeepSeek V4 Pro生成回答
+用户问题 → EmbeddingService(Qwen text-embedding-v3, 1024维)
+  → RetrievalService(Milvus COSINE, TopK=5)
+  → RAGService 组装 Prompt
+  → DeepSeek V4 Pro (LangChain4j OpenAI 兼容接口)
 ```
 
-在 Milvus `rag_documents` 集合中需要预先存入向量化数据，否则返回「未找到相关文档，请先上传资料」。
+AI/ 目录下全部类和 Milvus 配置均为注释状态，待 Milvus 部署和数据灌入后启用。
 
----
+## 搜索实现
+
+三种搜索模式，统一入口 `/api/search`：
+
+| 模式 | 策略 | 示例 |
+|---|---|---|
+| 精准 (mode=3) | `WHERE name = ? OR director = ? OR actors = ?` | 完全匹配 |
+| 适中 (mode=2) | `WHERE (name/director/actors) LIKE '%X%Y%Z%'` | 非连续字符按序匹配 |
+| 模糊 (mode=1) | 向量语义搜索 (Milvus + Qwen) | 预留，待后端接入 |
+
+## 已知问题
+
+- JWT 密钥启动时随机生成，重启全部 token 失效
+- 密码编码器已注释，密码明文存储
+- MyBatis mapper XML 路径大小写不一致（`Mapper/` vs `mapper/`），Linux 部署会报错
+- AI/RAG 管线全部注释，Milvus 未启用
+- 视频文件提交在 `Movie_Online/` 目录
+- `Tika_Get_File` 为空类
+- 部分 API 硬编码 `localhost:8080`，部署需修改
+- JWT 过滤器类名拼写 `Fileter`（应为 Filter）
+- `ResonseResult` 拼写（应为 ResponseResult）
+
+## 技术栈
+
+| 组件 | 版本 |
+|---|---|
+| Spring Boot | 3.2.2 |
+| Java | 21 |
+| MySQL | 8.0+ (mysql-connector-j 8.3.0) |
+| Redis | 7.0+ (Lettuce + 连接池) |
+| MyBatis | 3.0.3 |
+| Spring Security | JWT 无状态 |
+| JWT | jjwt 0.11.5 |
+| LangChain4j | 1.0.0-beta3 (已注释) |
+| Milvus SDK | 2.4.1 (已注释) |
+| Apache Tika | 2.9.0 (已注释) |
+| Jsoup | 1.17.2 |
+| Jackson | 2.16.0 |
+| Thymeleaf | 3.1.3 |
+| 前端模板 | FilmLane + AdminKit (Bootstrap 5) |
 
 ## 致谢
 
+- [FilmLane](https://github.com/codewithsadee/filmlane) — 用户前端模板
+- [AdminKit](https://adminkit.io/) — 管理后台模板
 - [LangChain4j](https://github.com/langchain4j/langchain4j)
 - [Milvus](https://milvus.io/)
-- [Apache Tika](https://tika.apache.org/)
-- [FilmLane](https://github.com/codewithsadee/filmlane) — 用户前端模板
-- [AdminKit](https://adminkit.io/) — 管理员后台模板

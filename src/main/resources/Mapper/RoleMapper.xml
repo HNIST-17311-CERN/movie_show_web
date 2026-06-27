@@ -43,4 +43,23 @@
         WHERE r.name = #{roleName}
     </select>
 
+    <select id="findAllRolesFull" resultMap="RoleFullMap">
+        SELECT
+            r.id   AS role_id,
+            r.name AS role_name,
+            r.description AS role_desc,
+            p.id   AS perm_id,
+            p.name AS perm_name,
+            p.description AS perm_desc,
+            u.id   AS user_id,
+            u.username AS user_username,
+            u.email AS user_email
+        FROM roles r
+        LEFT JOIN role_permissions rp ON r.id = rp.role_id
+        LEFT JOIN permissions p ON rp.permission_id = p.id
+        LEFT JOIN user_roles ur ON r.id = ur.role_id
+        LEFT JOIN users u ON ur.user_id = u.id
+        ORDER BY r.id
+    </select>
+
 </mapper>

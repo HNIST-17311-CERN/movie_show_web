@@ -22,7 +22,7 @@
     .result-list { display: flex; flex-direction: column; gap: 0; }
     .result-item { display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.15s; }
     .result-item:hover { background: #fafafa; }
-    .result-poster { flex: 0 0 100px; height: 140px; border-radius: 6px; overflow: hidden; background: #eee; }
+    .result-poster { flex: 0 0 100px; height: 140px; border-radius: 6px; overflow: hidden; background: #eee; display: block; }
     .result-poster img { width: 100%; height: 100%; object-fit: cover; }
     .result-info { flex: 1; min-width: 0; }
     .result-info h3 { margin: 0 0 6px; font-size: 17px; }
@@ -63,7 +63,6 @@
     <div class="header-actions">
       <a href="./notifications.html">通知</a>
       <a href="./messages.html">留言</a>
-      <a href="#">观看历史</a>
       <div class="user-menu" id="userMenu">
         <div class="user-avatar" onclick="toggleUserDropdown()">
           <span id="avatarText">用</span>
@@ -184,6 +183,13 @@
     return String(text).replace(new RegExp('(' + escaped + ')', 'gi'), '<em class="highlight">$1</em>');
   }
 
+  function linkNames(text) {
+    if (!text) return '';
+    return text.split(' / ').map(function(name) {
+      return '<a href="./search.html?q=' + encodeURIComponent(name.trim()) + '" style="color:#2563eb;text-decoration:none;" onmouseover="this.style.textDecoration=\'underline\'" onmouseout="this.style.textDecoration=\'none\'">' + highlight(name.trim()) + '</a>';
+    }).join(' / ');
+  }
+
   function formatMeta(r) {
     var parts = [];
     if (r._type) parts.push(r._type);
@@ -204,9 +210,9 @@
       var meta = formatMeta(r);
       var desc = r.description || '';
       var director = r.director ? '<p class="meta">导演：' + highlight(r.director) + '</p>' : '';
-      var actors = r.actors ? '<p class="meta">主演：' + highlight(r.actors.substring(0, 100)) + '</p>' : '';
-      return '<div class="result-item" onclick="location.href=\'' + detailUrl + '\'">' +
-        '<div class="result-poster"><img src="' + getCoverUrl(r.cover) + '" alt="" onerror="this.src=\'' + DEFAULT_COVER + '\'"></div>' +
+      var actors = r.actors ? '<p class="meta">主演：' + highlight(r.actors) + '</p>' : '';
+      return '<div class="result-item">' +
+        '<a href="' + detailUrl + '" target="_blank" class="result-poster"><img src="' + getCoverUrl(r.cover) + '" alt="" onerror="this.src=\'' + DEFAULT_COVER + '\'"></a>' +
         '<div class="result-info">' +
           '<h3><a href="' + detailUrl + '" target="_blank">' + highlight(r.name || '未知') + (r.releaseDate ? ' (' + String(r.releaseDate).substring(0,4) + ')' : '') + '</a></h3>' +
           '<p class="meta">' + (meta || '--') + '</p>' +

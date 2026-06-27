@@ -95,8 +95,14 @@
     document.getElementById("loginForm").addEventListener("submit", function(e) {
         e.preventDefault(); // 阻止默认表单提交
 
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("password").value;
+        var username = document.getElementById("username").value.trim();
+        var password = document.getElementById("password").value;
+        var pattern = /^[a-zA-Z0-9]+$/;
+
+        if (!username) { alert("请输入用户名"); return; }
+        if (!password) { alert("请输入密码"); return; }
+        if (!pattern.test(username)) { alert("用户名只能包含大小写字母和数字"); return; }
+        if (!pattern.test(password)) { alert("密码只能包含大小写字母和数字"); return; }
 
         fetch("http://localhost:8080/api/user/login", {
             method: "POST",

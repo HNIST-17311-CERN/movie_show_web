@@ -59,7 +59,6 @@
     <div class="header-actions">
       <a href="./notifications.html">通知</a>
       <a href="./messages.html">留言</a>
-      <a href="#">观看历史</a>
       <div class="user-menu" id="userMenu">
         <div class="user-avatar" onclick="toggleUserDropdown()">
           <span id="avatarText">用</span>
@@ -226,15 +225,23 @@
       return '<div class="meta-item"><span class="meta-label">' + label + '：</span><span class="meta-value">' + (value || '未知') + '</span></div>';
     }
 
+    function linkNames(text) {
+      if (!text) return '未知';
+      var normalized = text.replace(/,/g, ' / ').replace(/，/g, ' / ');
+      return normalized.split(' / ').map(function(name) {
+        return '<a href="./search.html?q=' + encodeURIComponent(name.trim()) + '" style="color:#2563eb;text-decoration:none;" onmouseover="this.style.textDecoration=\'underline\'" onmouseout="this.style.textDecoration=\'none\'">' + (name.trim() || '未知') + '</a>';
+      }).join(' / ');
+    }
+
     function renderMovieDetails(details) {
       setLocalImage(document.getElementById('movie-poster'), details.cover);
       setText('movie-title', (details.name || '未知') + (details.releaseDate ? ' (' + String(details.releaseDate).substring(0, 4) + ')' : ''));
       setText('movie-status', details.status || '');
 
       var metaHtml = [
-        createMetaItem('导演', details.director),
-        createMetaItem('编剧', details.screenwriter),
-        createMetaItem('主演', details.actors),
+        '<div class="meta-item"><span class="meta-label">导演：</span><span class="meta-value">' + linkNames(details.director) + '</span></div>',
+        '<div class="meta-item"><span class="meta-label">编剧：</span><span class="meta-value">' + linkNames(details.screenwriter) + '</span></div>',
+        '<div class="meta-item"><span class="meta-label">主演：</span><span class="meta-value">' + linkNames(details.actors) + '</span></div>',
         createMetaItem('类型', details.type),
         createMetaItem('地区', details.region),
         createMetaItem('语言', details.language),

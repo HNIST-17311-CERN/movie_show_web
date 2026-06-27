@@ -36,7 +36,12 @@
       "Bash(sed -i '290d' \"src/main/resources/adminkit-web-ui-kit-dashboard-template/static/index.html\")",
       "Bash(sed -i '228,229d' \"src/main/resources/adminkit-web-ui-kit-dashboard-template/static/index.html\")",
       "Bash(sed -n '226,232p' \"src/main/resources/adminkit-web-ui-kit-dashboard-template/static/index.html\")",
-      "Bash(python fix_search.py)"
+      "Bash(python fix_search.py)",
+      "Bash(sed -i '85,94d' Setting.html)",
+      "Bash(sed -i '/autoPlayToggle/d' Setting.html)",
+      "Bash(sed -i '/autoPlayNext/d' Setting.html)",
+      "Bash(sed -i '/autoPlay = localStorage/,+6d' Setting.html)",
+      "Bash(grep -n '^}$' \"richtext-lab.html\")"
     ]
   }
 }

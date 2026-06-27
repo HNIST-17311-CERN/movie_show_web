@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>富文本编辑器实验</title>
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; min-height: 100vh; }
+    .lab-header { background: #1a1a2e; color: #fff; padding: 14px 24px; font-size: 16px; display: flex; align-items: center; gap: 10px; }
+    .lab-badge { background: #e94560; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+    .lab-container { max-width: 900px; margin: 30px auto; padding: 0 16px; }
+    .toolbar-card { background: #fff; border-radius: 12px 12px 0 0; padding: 16px 20px; border-bottom: 1px solid #e5e7eb; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .toolbar-card button { padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+    .toolbar-card button:hover { background: #f3f4f6; }
+    .toolbar-card button.primary { background: #2563eb; color: #fff; border-color: #2563eb; }
+    .toolbar-card button.primary:hover { background: #1d4ed8; }
+    .toolbar-card .sep { width: 1px; height: 24px; background: #e5e7eb; }
+    #editor { height: 420px; background: #fff; border-radius: 0 0 12px 12px; }
+    .output-card { margin-top: 24px; background: #fff; border-radius: 12px; overflow: hidden; }
+    .output-tabs { display: flex; border-bottom: 1px solid #e5e7eb; }
+    .output-tab { padding: 10px 20px; font-size: 13px; cursor: pointer; border: none; background: none; color: #888; }
+    .output-tab.active { color: #2563eb; border-bottom: 2px solid #2563eb; margin-bottom: -1px; font-weight: 600; }
+    .output-content { padding: 20px; max-height: 360px; overflow: auto; }
+    .output-content pre { white-space: pre-wrap; font-size: 13px; color: #374151; font-family: 'SF Mono', 'Fira Code', monospace; }
+    .output-content .preview { line-height: 1.8; }
+    .output-content .preview img { max-width: 100%; }
+    .image-picker-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+    .image-picker-modal { background: #fff; border-radius: 12px; width: 700px; max-width: 90%; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column; }
+    .image-picker-header { padding: 16px 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+    .image-picker-body { padding: 16px; overflow: auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .image-picker-item { cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; text-align: center; }
+    .image-picker-item:hover { border-color: #2563eb; }
+    .image-picker-item img { width: 100%; height: 100px; object-fit: cover; display: block; }
+    .image-picker-item .name { font-size: 11px; padding: 4px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  </style>
+</head>
+<body>
+
+<div class="lab-header">
+  <span>富文本编辑器实验</span>
+  <span class="lab-badge">LAB</span>
+</div>
+
+<input type="file" id="fileInput" style="display:none" multiple onchange="uploadFile()">
+
+<div class="lab-container">
+  <div class="toolbar-card">
+    <input id="docTitle" placeholder="文档标题" style="width:140px;height:36px;padding:0 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;">
+    <button onclick="saveContent()" class="primary">提交</button>
+    <span class="sep"></span>
+    <button onclick="openDocList()">📋 文档列表</button>
+    <button onclick="clearContent()" style="color:#e74c3c;">清空</button>
+    <span class="sep"></span>
+    <button onclick="openDownloadList()">📥 下载文件</button>
+  </div>
+
+  <div id="editor"></div>
+
+  <div class="image-picker-overlay" id="downloadOverlay" style="display:none;">
+    <div class="image-picker-modal" style="height:450px;">
+      <div class="image-picker-header">
+        <b>文件列表</b>
+        <button onclick="document.getElementById('downloadOverlay').style.display='none'" style="border:none;background:none;font-size:18px;cursor:pointer;">✕</button>
+      </div>
+      <div style="padding:16px;overflow:auto;flex:1;" id="downloadBody">加载中...</div>
+    </div>
+  </div>
+
+  <div class="image-picker-overlay" id="imagePicker" style="display:none;">
+    <div class="image-picker-modal">
+      <div class="image-picker-header">
+        <b>选择图片</b>
+        <button onclick="closeImagePicker()" style="border:none;background:none;font-size:18px;cursor:pointer;">✕</button>
+      </div>
+      <div class="image-picker-body" id="imagePickerBody">加载中...</div>
+    </div>
+  </div>
+
+  <div class="image-picker-overlay" id="docListOverlay" style="display:none;">
+    <div class="image-picker-modal" style="height:500px;">
+      <div class="image-picker-header">
+        <b>文档列表</b>
+        <button onclick="closeDocList()" style="border:none;background:none;font-size:18px;cursor:pointer;">✕</button>
+      </div>
+      <div style="padding:16px;overflow:auto;flex:1;" id="docListBody">加载中...</div>
+    </div>
+  </div>
+
+  <div class="output-card">
+    <div class="output-tabs">
+      <button class="output-tab active" onclick="switchTab('html')">HTML</button>
+      <button class="output-tab" onclick="switchTab('text')">纯文本</button>
+      <button class="output-tab" onclick="switchTab('delta')">Delta (JSON)</button>
+    </div>
+    <div class="output-content" id="outputContent">
+      <pre id="outputPre">点击「保存」后在此查看 HTML 输出</pre>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+<script>
+var quill = new Quill('#editor', {
+  theme: 'snow',
+  placeholder: '开始编写富文本内容...',
+  modules: {
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'color': [] }, { 'background': [] }],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      [{ 'align': [] }],
+      ['blockquote', 'code-block'],
+      ['link', 'image'],
+      ['clean']
+    ]
+  }
+});
+
+// 手动在工具栏加附件按钮
+var toolbar = document.querySelector('.ql-toolbar');
+var fileBtn = document.createElement('button');
+fileBtn.className = 'ql-attachment';
+fileBtn.innerHTML = '📎';
+fileBtn.title = '上传附件';
+fileBtn.onclick = function() { document.getElementById('fileInput').click(); };
+
+var linkGroup = toolbar.querySelector('.ql-link').parentNode;
+linkGroup.appendChild(fileBtn);
+
+var currentTab = 'html';
+var currentDocId = null;
+var API = 'http://localhost:8080';
+
+function saveContent() {
+  var title = document.getElementById('docTitle').value.trim() || '未命名文档';
+  var body = {
+    title: title,
+    htmlContent: quill.getSemanticHTML(),
+    textContent: quill.getText().trim(),
+    deltaJson: JSON.stringify(quill.getContents())
+  };
+  if (currentDocId) body.id = currentDocId;
+
+  fetch(API + '/api/docs/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.ok) {
+        currentDocId = data.id;
+        document.getElementById('storageStatus').textContent =
+          '已保存 (id=' + data.id + ', ' + data.action + ')';
+        updateOutput();
+      } else {
+        alert('保存失败');
+      }
+    })
+    .catch(function() { alert('保存失败，检查后端'); });
+}
+
+function uploadFile() {
+  var input = document.getElementById('fileInput');
+  var files = input.files;
+  if (!files.length) return;
+
+  var API = 'http://localhost:8080';
+  var cursor = quill.getSelection(true);
+  var idx = cursor ? cursor.index : quill.getLength();
+
+  var pending = files.length;
+  var results = [];
+
+  Array.from(files).forEach(function(file) {
+    var formData = new FormData();
+    formData.append('file', file);
+
+    fetch(API + '/api/files/upload', { method: 'POST', body: formData })
+      .then(function(r) { return r.json(); })
+      .then(function(data) { results.push({ name: file.name, type: file.type, data: data }); })
+      .catch(function() { results.push({ name: file.name, type: file.type, data: null }); })
+      .finally(function() {
+        pending--;
+        if (pending === 0) finishAll();
+      });
+  });
+
+  function finishAll() {
+    results.forEach(function(r) {
+      var text, formats;
+      if (r.data && r.data.ok) {
+        text = '📎 ' + r.name + ' (' + formatBytes(r.data.size) + ')\n' +
+               '   路径: ' + r.data.path + '\n' +
+               '   存储名: ' + r.data.storedName + '\n';
+        formats = {};
+        quill.insertText(idx, text, formats);
+        idx += text.length;
+        // 给文件名加链接
+        var linkStart = idx - text.length;
+        var linkEnd = linkStart + ('📎 ' + r.name + ' (' + formatBytes(r.data.size) + ')').length;
+        quill.formatText(linkStart, linkEnd - linkStart, 'link', r.data.url);
+      } else {
+        text = '❌ ' + r.name + ' 上传失败\n';
+        formats = { color: '#e74c3c' };
+        quill.insertText(idx, text, formats);
+        idx += text.length;
+      }
+    });
+  }
+
+  input.value = '';
+}
+
+function toggleExportMenu() {
+  var m = document.getElementById('exportMenu');
+  m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#exportMenu') && !e.target.matches('[onclick*=\"toggleExportMenu\"]')) {
+    document.getElementById('exportMenu').style.display = 'none';
+  }
+});
+
+function exportFile(format) {
+  document.getElementById('exportMenu').style.display = 'none';
+  var content, mime, ext;
+  if (format === 'html') { content = quill.getSemanticHTML(); mime = 'text/html'; ext = '.html'; }
+  else if (format === 'text') { content = quill.getText(); mime = 'text/plain'; ext = '.txt'; }
+  else { content = JSON.stringify(quill.getContents(), null, 2); mime = 'application/json'; ext = '.json'; }
+  if (!content || (format === 'text' && !content.trim())) { alert('内容为空'); return; }
+  var blob = new Blob([content], { type: mime + ';charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'richtext-export' + ext;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+function importFile() {
+  var file = document.getElementById('importInput').files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var text = e.target.result;
+    var ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    if (ext === '.json') {
+      try { var delta = JSON.parse(text); if (delta.ops) { quill.setContents(delta); return; } } catch(err) {}
+      quill.setText(text);
+    } else if (ext === '.html' || ext === '.htm') {
+      quill.clipboard.dangerouslyPasteHTML(text);
+    } else { quill.setText(text); }
+  };
+  reader.readAsText(file);
+  document.getElementById('importInput').value = '';
+}
+
+function formatBytes(bytes) {
+  if (!bytes) return '0B';
+  var units = ['B', 'KB', 'MB', 'GB'];
+  var i = 0;
+  var size = bytes;
+  while (size >= 1024 && i < units.length - 1) { size /= 1024; i++; }
+  return size.toFixed(i > 0 ? 1 : 0) + ' ' + units[i];
+}
+
+
+
+
+
+document.addEventListener('click', function(e) {
+});
+
+function openImagePicker() {
+  document.getElementById('imagePicker').style.display = 'flex';
+  document.getElementById('imagePickerBody').innerHTML = '加载中...';
+  fetch('http://localhost:8080/api/files/list')
+    .then(function(r) { return r.json(); })
+    .then(function(files) {
+      var body = document.getElementById('imagePickerBody');
+      var images = files.filter(function(f) { return /\.(png|jpg|jpeg|gif|webp|svg|bmp)/i.test(f.name); });
+      if (!images.length) { body.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#999;">没有图片</div>'; return; }
+      body.innerHTML = images.map(function(img) {
+        return '<div class="image-picker-item" onclick="insertImage(\'' + img.url + '\')">' +
+          '<img src="' + img.url + '" alt="" onerror="this.src=\'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><rect fill=%22%23eee%22 width=%22100%22 height=%22100%22/></svg>\'">' +
+          '<div class="name">' + img.name + '</div></div>';
+      }).join('');
+    })
+    .catch(function() { document.getElementById('imagePickerBody').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#e74c3c;">加载失败</div>'; });
+}
+
+function closeImagePicker() { document.getElementById('imagePicker').style.display = 'none'; }
+
+function insertImage(url) {
+  var absUrl = url.startsWith('http') ? url : 'http://localhost:8080' + url;
+  var range = quill.getSelection(true);
+  quill.insertEmbed(range ? range.index : quill.getLength(), 'image', absUrl);
+  quill.setSelection(quill.getSelection().index + 1, 0);
+  closeImagePicker();
+}
+
+document.addEventListener('click', function(e) { if (e.target.id === 'imagePicker') closeImagePicker(); });
+
+function openDocList() {
+  document.getElementById('docListOverlay').style.display = 'flex';
+  document.getElementById('docListBody').innerHTML = '加载中...';
+
+  fetch(API + '/api/docs/list')
+    .then(function(r) { return r.json(); })
+    .then(function(list) {
+      var body = document.getElementById('docListBody');
+      if (!list.length) {
+        body.innerHTML = '<div style="text-align:center;color:#999;padding:40px;">暂无文档</div>';
+        return;
+      }
+      body.innerHTML = '<table style="width:100%;font-size:13px;border-collapse:collapse;">' +
+        '<tr style="border-bottom:1px solid #e5e7eb;color:#888;"><th style="padding:8px;text-align:left;">ID</th><th style="text-align:left;">标题</th><th style="text-align:left;">更新时间</th><th>操作</th></tr>' +
+        list.map(function(d) {
+          var time = d.updateTime ? String(d.updateTime).substring(0, 19).replace('T', ' ') : '';
+          return '<tr style="border-bottom:1px solid #f3f4f6;">' +
+            '<td style="padding:8px;">' + d.id + '</td>' +
+            '<td>' + (d.title || '--') + '</td>' +
+            '<td style="font-size:12px;color:#888;">' + time + '</td>' +
+            '<td style="text-align:right;">' +
+              '<button onclick="loadDoc(' + d.id + ')" style="border:none;background:#2563eb;color:#fff;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;margin-right:4px;">加载</button>' +
+              '<button onclick="deleteDoc(' + d.id + ')" style="border:none;background:#e74c3c;color:#fff;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;">删除</button>' +
+            '</td></tr>';
+        }).join('') + '</table>';
+    })
+    .catch(function() {
+      document.getElementById('docListBody').innerHTML =
+        '<div style="text-align:center;color:#e74c3c;padding:40px;">加载失败</div>';
+    });
+}
+
+function closeDocList() {
+  document.getElementById('docListOverlay').style.display = 'none';
+}
+
+function loadDoc(id) {
+  fetch(API + '/api/docs/' + id)
+    .then(function(r) { return r.json(); })
+    .then(function(doc) {
+      if (!doc.id) { alert('文档不存在'); return; }
+      currentDocId = doc.id;
+      document.getElementById('docTitle').value = doc.title || '';
+      if (doc.deltaJson) {
+        try { quill.setContents(JSON.parse(doc.deltaJson)); }
+        catch(e) { quill.clipboard.dangerouslyPasteHTML(doc.htmlContent || ''); }
+      }
+      document.getElementById('storageStatus').textContent = '已加载 (id=' + doc.id + ')';
+      closeDocList();
+      updateOutput();
+    })
+    .catch(function() { alert('加载失败'); });
+}
+
+function deleteDoc(id) {
+  if (!confirm('确定删除文档 #' + id + '？')) return;
+  fetch(API + '/api/docs/' + id, { method: 'DELETE' })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.ok) {
+        if (currentDocId === id) { currentDocId = null; }
+        openDocList();
+      }
+    })
+    .catch(function() { alert('删除失败'); });
+}
+
+document.addEventListener('click', function(e) {
+  if (e.target.id === 'docListOverlay') closeDocList();
+});
+
+function openDownloadList() {
+  document.getElementById('downloadOverlay').style.display = 'flex';
+  document.getElementById('downloadBody').innerHTML = '加载中...';
+  fetch(API + '/api/files/list')
+    .then(function(r) { return r.json(); })
+    .then(function(files) {
+      var body = document.getElementById('downloadBody');
+      if (!files.length) { body.innerHTML = '<div style="text-align:center;color:#999;padding:40px;">暂无文件</div>'; return; }
+      body.innerHTML = '<table style="width:100%;font-size:13px;border-collapse:collapse;">' +
+        '<tr style="border-bottom:1px solid #e5e7eb;color:#888;"><th style="padding:8px;text-align:left;">文件名</th><th style="text-align:left;">大小</th><th>操作</th></tr>' +
+        files.map(function(f) {
+          var size = f.size ? (f.size < 1024 ? f.size + 'B' : f.size < 1048576 ? (f.size/1024).toFixed(1)+'KB' : (f.size/1048576).toFixed(1)+'MB') : '--';
+          return '<tr style="border-bottom:1px solid #f3f4f6;">' +
+            '<td style="padding:8px;">' + (f.name || '--') + '</td>' +
+            '<td>' + size + '</td>' +
+            '<td style="text-align:right;"><a href="' + (f.url.startsWith('http') ? f.url : API + f.url) + '" download style="color:#2563eb;text-decoration:none;">下载</a></td></tr>';
+        }).join('') + '</table>';
+    })
+    .catch(function() { document.getElementById('downloadBody').innerHTML = '<div style="text-align:center;color:#e74c3c;padding:40px;">加载失败</div>'; });
+}
+
+document.addEventListener('click', function(e) { if (e.target.id === 'downloadOverlay') document.getElementById('downloadOverlay').style.display = 'none'; });
+
+function clearContent() {
+  if (!confirm('确定清空编辑器内容？')) return;
+  currentDocId = null;
+  document.getElementById('docTitle').value = '';
+  document.getElementById('storageStatus').textContent = '未保存';
+  quill.setContents([]);
+  updateOutput();
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.output-tab').forEach(function(b) { b.classList.toggle('active', b.textContent.trim().startsWith(tab === 'html' ? 'HTML' : tab === 'text' ? '纯文本' : 'Delta')); });
+  updateOutput();
+}
+
+function updateOutput() {
+  var html = quill.getSemanticHTML();
+  var text = quill.getText().trim();
+  var delta = JSON.stringify(quill.getContents(), null, 2);
+  var pre = document.getElementById('outputPre');
+  var container = document.getElementById('outputContent');
+
+  if (currentTab === 'html') {
+    pre.textContent = html || '(空)';
+    container.style.display = '';
+    pre.style.display = '';
+    document.querySelector('.preview') && document.querySelector('.preview').remove();
+  } else if (currentTab === 'text') {
+    pre.textContent = text || '(空)';
+    container.style.display = '';
+    pre.style.display = '';
+    document.querySelector('.preview') && document.querySelector('.preview').remove();
+  } else {
+    pre.textContent = delta || '{}';
+    container.style.display = '';
+    pre.style.display = '';
+    document.querySelector('.preview') && document.querySelector('.preview').remove();
+  }
+}
+
+updateOutput();
+</script>
+</body>
+</html>

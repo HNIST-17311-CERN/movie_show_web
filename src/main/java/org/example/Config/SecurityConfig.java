@@ -44,7 +44,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception
     {
         http
-                // 关闭csrf（前后端分离一般关闭）
+                .cors(cors -> {})   // 开启 CORS，配合 @CrossOrigin
                 .csrf(csrf -> csrf.disable())   // ✅ 关闭CSRF
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -52,7 +52,7 @@ public class SecurityConfig {
 
                 // 配置接口权限.....................................
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/user/login").permitAll()  // 登录接口放行
+                        .requestMatchers("/api/user/login", "/api/files/**", "/role/all", "/api/users/**", "/api/docs/**").permitAll()
                         .anyRequest().authenticated()       // 其他接口需要登录
                 )
 

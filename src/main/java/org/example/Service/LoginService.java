@@ -29,6 +29,14 @@ public class LoginService
 
     public ResonseResult login(User user) throws Exception
     {
+        // 格式校验
+        if (user.getUsername() == null || !user.getUsername().matches("^[a-zA-Z0-9]+$")) {
+            return new ResonseResult(400, "用户名只能包含大小写字母和数字");
+        }
+        if (user.getPassword() == null || !user.getPassword().matches("^[a-zA-Z0-9]+$")) {
+            return new ResonseResult(400, "密码只能包含大小写字母和数字");
+        }
+
         //进行用户认证
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(user.getUsername(),user.getPassword());
         Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);

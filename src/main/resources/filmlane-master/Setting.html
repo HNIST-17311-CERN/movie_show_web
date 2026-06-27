@@ -36,7 +36,6 @@
       <div class="header-actions">
         <a href="./notifications.html">通知</a>
         <a href="./messages.html">留言</a>
-        <a href="#">观看历史</a>
         <div class="user-menu" id="userMenu">
           <div class="user-avatar" onclick="toggleUserDropdown()">
             <span id="avatarText">用</span>
@@ -83,16 +82,6 @@
               <span class="toggle-slider"></span>
             </label>
           </div>
-          <div class="plugin-toggle">
-            <div class="plugin-toggle-left">
-              <span class="plugin-toggle-label">自动播放下一集</span>
-              <span class="plugin-toggle-desc">剧集播放完成后自动跳转下一集</span>
-            </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="toggleAutoPlay">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
         </div>
       </section>
     </div>
@@ -129,7 +118,6 @@
     深色模式: localStorage.darkMode = "true"|"false"
               → document.documentElement.setAttribute/removeAttribute('data-theme','dark')
     相似电影: localStorage.similarMoviesEnabled = "true"|"false"
-    自动播放: localStorage.autoPlayNext = "true"|"false"
   所有开关状态在页面加载时从localStorage恢复
 -->
 <script>
@@ -139,7 +127,6 @@
 
       var darkToggle = document.getElementById('toggleDarkMode');
       var similarToggle = document.getElementById('toggleSimilarMovies');
-      var autoPlayToggle = document.getElementById('toggleAutoPlay');
 
       if (darkToggle) {
         darkToggle.checked = isDark;
@@ -162,11 +149,6 @@
         });
       }
 
-      if (autoPlayToggle) {
-        var autoPlay = localStorage.getItem('autoPlayNext') === 'true';
-        autoPlayToggle.checked = autoPlay;
-        autoPlayToggle.addEventListener('change', function() {
-          localStorage.setItem('autoPlayNext', this.checked ? 'true' : 'false');
         });
       }
     })();

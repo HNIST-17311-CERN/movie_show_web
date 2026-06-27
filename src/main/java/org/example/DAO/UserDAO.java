@@ -34,7 +34,11 @@ public class UserDAO
     public User Find_By_Name(String name)
     {
         String sql = "select * from users where username = ? limit 1";
-        return jdbcTemplate.queryForObject(sql,new Object[]{name},rowMapper);
+        try {
+            return jdbcTemplate.queryForObject(sql, new Object[]{name}, rowMapper);
+        } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     public List<String> Find_Permissions_By_UserId(Long userId)
