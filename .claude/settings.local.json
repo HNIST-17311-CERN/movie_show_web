@@ -41,7 +41,12 @@
       "Bash(sed -i '/autoPlayToggle/d' Setting.html)",
       "Bash(sed -i '/autoPlayNext/d' Setting.html)",
       "Bash(sed -i '/autoPlay = localStorage/,+6d' Setting.html)",
-      "Bash(grep -n '^}$' \"richtext-lab.html\")"
+      "Bash(grep -n '^}$' \"richtext-lab.html\")",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --force --index-filter \"git rm --cached --ignore-unmatch 'src/main/resources/Movie_Online/*.mkv' 'src/main/resources/Movie_Online/*.mp4'\" --prune-empty --tag-name-filter cat -- --all)",
+      "Bash(git diff-index *)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }
