@@ -4,7 +4,7 @@ set -euo pipefail
 SERVICE=security
 APP_DIR=/opt/security
 JAR_NAME=springboot-demo-1.0.0.jar
-INCOMING_DIR="$HOME/incoming"
+INCOMING_DIR="$HOME/incoming/deploy_package"
 INCOMING_JAR="$INCOMING_DIR/$JAR_NAME"
 BACKUP_DIR="$APP_DIR/backup"
 
@@ -32,7 +32,7 @@ for d in filmlane-master adminkit-web-ui-kit-dashboard-template live2d-example-m
   fi
 done
 
-rm -rf "$INCOMING_DIR"
+rm -rf "$HOME/incoming"
 
 sudo systemctl restart "$SERVICE"
 echo "Deploy OK: $(date)"
