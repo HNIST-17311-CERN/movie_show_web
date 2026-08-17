@@ -37,7 +37,7 @@ jobs:
           echo "-----BEGIN OPENSSH PRIVATE KEY-----" > "$GITHUB_WORKSPACE/.deploy/server_deploy_key"
           echo "${{ secrets.SERVER_SSH_KEY }}" | fold -w 70 >> "$GITHUB_WORKSPACE/.deploy/server_deploy_key"
           echo "-----END OPENSSH PRIVATE KEY-----" >> "$GITHUB_WORKSPACE/.deploy/server_deploy_key"
-          chmod 600 "$GITHUB_WORKSPACE/.deploy/server_deploy_key"
+          chmod 644 "$GITHUB_WORKSPACE/.deploy/server_deploy_key"
 
       - name: Upload to server
         uses: appleboy/scp-action@v0.1.7
