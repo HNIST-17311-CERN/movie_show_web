@@ -1,7 +1,8 @@
 # Movie Club — 电影俱乐部
 
 Spring Boot 3.2.2 + Java 21 电影分享平台，覆盖电影/剧集/动漫浏览、资源管理、视频流媒体、图片识电影、JWT 认证、操作审计。
-
+网站地址：  http://www.ciaohello.icu/
+测试账户：  user/user
 ## 快速开始
 
 ### 环境要求
