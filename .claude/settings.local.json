@@ -72,7 +72,9 @@
       "Bash(netsh http *)",
       "Bash(netsh interface *)",
       "Bash(ipconfig)",
-      "Bash(netsh advfirewall *)"
+      "Bash(netsh advfirewall *)",
+      "Bash(openssl req *)",
+      "Bash(curl -v http://127.0.0.1:80/)"
     ]
   }
 }
