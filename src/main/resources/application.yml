@@ -9,7 +9,7 @@ spring:
       max-request-size: 20MB
   datasource:
     username: ${DB_USERNAME:root} #用户名
-    password: ${DB_PASSWORD:ROOT} #密码
+    password: ${DB_PASSWORD:root} #密码
     url: jdbc:mysql://localhost:3306/security?useUnicode=true&characterEncoding=utf-8 #地址和端口和数据库
     driver-class-name: com.mysql.cj.jdbc.Driver #驱动
 

@@ -1,0 +1,16 @@
+[Unit]
+Description=movie_show_web Spring Boot app
+After=network.target mysql.service redis.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/security
+EnvironmentFile=-/etc/security/security.env
+ExecStart=/usr/bin/java -Xms512m -Xmx2g -jar /opt/security/springboot-demo-1.0.0.jar
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
