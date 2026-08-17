@@ -1,8 +1,45 @@
-# Movie Club — 电影俱乐部
+﻿# Movie Club — 电影俱乐部
 
 Spring Boot 3.2.2 + Java 21 电影分享平台，覆盖电影/剧集/动漫浏览、资源管理、视频流媒体、图片识电影、JWT 认证、操作审计。
 网站地址：  http://www.ciaohello.icu/
 测试账户：  user/user
+
+## 网站预览
+
+### 主页推荐：
+
+![image-20260817181213555](images/image-20260817181213555.png)
+
+
+
+![image-20260817181231812](images/image-20260817181231812.png)
+
+### 图识电影和相似推荐
+
+![image-20260817191316154](images/image-20260817191316154.png)
+
+![image-20260817191332773](images/image-20260817191332773.png)
+
+### 数据分类
+
+![image-20260817181318158](images/image-20260817181318158.png)
+
+![image-20260817181344958](images/image-20260817181344958.png)
+
+### 搜索功能
+
+![image-20260817181502366](images/image-20260817181502366.png)
+
+### 详情界面
+
+![image-20260817181550157](images/image-20260817181550157.png)
+
+### 后台管理
+
+![image-20260817181950775](images/image-20260817181950775.png)
+
+![image-20260817182039039](images/image-20260817182039039.png)
+
 ## 快速开始
 
 ### 环境要求
@@ -17,8 +54,8 @@ Spring Boot 3.2.2 + Java 21 电影分享平台，覆盖电影/剧集/动漫浏�
 ```bash
 DEEPSEEK_API_KEY=sk-...    # DeepSeek API 密钥 (RAG，暂未启用)
 QWEN_API_KEY=sk-...        # 通义千问 Embedding (RAG，暂未启用)
-DB_USERNAME=root           # MySQL 用户名 (默认 root)
-DB_PASSWORD=ROOT           # MySQL 密码 (默认 ROOT)
+DB_USERNAME=         # MySQL 用户名
+DB_PASSWORD=          # MySQL 密码
 ```
 
 ### 启动
